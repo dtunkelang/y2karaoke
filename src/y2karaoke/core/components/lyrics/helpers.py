@@ -208,6 +208,29 @@ def _extract_text_lines_from_lrc(lrc_text: str) -> List[str]:
     return lines
 
 
+def _is_non_substantive_offset_anchor(text: str) -> bool:
+    tokens = [re.sub(r"[^a-z]+", "", tok.lower()) for tok in text.split()]
+    tokens = [tok for tok in tokens if tok]
+    if not tokens or len(tokens) > 2:
+        return False
+    filler_tokens = {"oh", "ooh", "ah", "hey", "yeah"}
+    return all(tok in filler_tokens for tok in tokens)
+
+
+def _select_offset_anchor_timing(
+    line_timings: List[Tuple[float, str]],
+) -> Tuple[float, str, bool]:
+    if not line_timings:
+        raise ValueError("line_timings must not be empty")
+    first_time, first_text = line_timings[0]
+    if len(line_timings) < 2 or not _is_non_substantive_offset_anchor(first_text):
+        return first_time, first_text, False
+    second_time, second_text = line_timings[1]
+    if float(second_time) - float(first_time) < 8.0:
+        return first_time, first_text, False
+    return second_time, second_text, True
+
+
 def _create_lines_from_plain_text(text_lines: List[str]) -> List[Line]:
     if not text_lines:
         return []
@@ -290,12 +313,14 @@ def _detect_and_apply_offset(
     from ..alignment.alignment import detect_song_start
 
     detected_vocal_start = detect_song_start(vocals_path)
-    first_lrc_time = line_timings[0][0]
-    delta = detected_vocal_start - first_lrc_time
+    anchor_time, _anchor_text, used_alternate_anchor = _select_offset_anchor_timing(
+        line_timings
+    )
+    delta = detected_vocal_start - anchor_time
 
     logger.info(
         f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
-        f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
+        f"LRC_start={anchor_time:.2f}s, delta={delta:+.2f}s"
     )
 
     AUTO_OFFSET_MAX_ABS_SEC = 5.0
@@ -308,7 +333,8 @@ def _detect_and_apply_offset(
             f"Detected vocal offset ({delta:+.2f}s) matches suspicious range (2.5-5.0s) - NOT auto-applying."
         )
     elif abs(delta) > 0.3 and abs(delta) <= 2.5:
-        offset = delta
+        scale = 0.6 if used_alternate_anchor else 1.0
+        offset = delta * scale
         logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
     elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
         logger.warning(

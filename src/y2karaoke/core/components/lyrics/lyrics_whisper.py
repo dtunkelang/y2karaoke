@@ -15,6 +15,7 @@ from .lrc import (
 from .helpers import (
     _romanize_lines,
     _detect_and_apply_offset,
+    _select_offset_anchor_timing,
     _refine_timing_with_audio,
     _apply_timing_to_lines,
     _apply_whisper_alignment,
@@ -233,12 +234,14 @@ def _detect_offset_with_issues(
     from ..alignment.alignment import detect_song_start
 
     detected_vocal_start = detect_song_start(vocals_path)
-    first_lrc_time = line_timings[0][0]
-    delta = detected_vocal_start - first_lrc_time
+    anchor_time, _anchor_text, used_alternate_anchor = _select_offset_anchor_timing(
+        line_timings
+    )
+    delta = detected_vocal_start - anchor_time
 
     logger.info(
         f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
-        f"LRC_start={first_lrc_time:.2f}s, delta={delta:+.2f}s"
+        f"LRC_start={anchor_time:.2f}s, delta={delta:+.2f}s"
     )
 
     AUTO_OFFSET_MAX_ABS_SEC = 5.0
@@ -252,8 +255,10 @@ def _detect_offset_with_issues(
         )
     elif abs(delta) > 0.3 and abs(delta) <= 2.5:
         scale = 1.0
+        if used_alternate_anchor:
+            scale *= 0.6
         if scaled_offset_min_abs_sec <= abs(delta) <= scaled_offset_max_abs_sec:
-            scale = max(0.0, auto_offset_scale)
+            scale *= max(0.0, auto_offset_scale)
         offset = delta * scale
         logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
     elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
