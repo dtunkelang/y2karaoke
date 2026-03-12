@@ -77,6 +77,24 @@ def _validate_song(song: Any, index: int) -> list[str]:
 
     if "notes" in song and not isinstance(song["notes"], str):
         errors.append(f"songs[{index}].notes must be a string when present")
+    if "clip_id" in song:
+        clip_id = song["clip_id"]
+        if clip_id is not None and (
+            not isinstance(clip_id, str) or not clip_id.strip()
+        ):
+            errors.append(f"songs[{index}].clip_id must be a non-empty string")
+    if "audio_start_sec" in song:
+        audio_start_sec = song["audio_start_sec"]
+        if not isinstance(audio_start_sec, (int, float)):
+            errors.append(f"songs[{index}].audio_start_sec must be numeric")
+        elif float(audio_start_sec) < 0.0:
+            errors.append(f"songs[{index}].audio_start_sec must be >= 0")
+    if "lyrics_file" in song:
+        lyrics_file = song["lyrics_file"]
+        if lyrics_file is not None and (
+            not isinstance(lyrics_file, str) or not lyrics_file.strip()
+        ):
+            errors.append(f"songs[{index}].lyrics_file must be a non-empty string")
 
     return errors
 
@@ -114,7 +132,7 @@ def _validate_top_level(data: dict[str, Any]) -> tuple[list[Any], list[str]]:
 def _validate_uniqueness(songs: list[Any]) -> list[str]:
     errors: list[str] = []
     seen_ids: set[str] = set()
-    seen_tracks: set[tuple[str, str]] = set()
+    seen_tracks: set[tuple[str, str, str | None]] = set()
     for idx, song in enumerate(songs):
         if not isinstance(song, dict):
             continue
@@ -125,11 +143,13 @@ def _validate_uniqueness(songs: list[Any]) -> list[str]:
             seen_ids.add(youtube_id)
         artist = song.get("artist")
         title = song.get("title")
+        clip_id = song.get("clip_id")
+        clip_key = clip_id.strip().lower() if isinstance(clip_id, str) else None
         if isinstance(artist, str) and isinstance(title, str):
-            track_key = (artist.strip().lower(), title.strip().lower())
+            track_key = (artist.strip().lower(), title.strip().lower(), clip_key)
             if track_key in seen_tracks:
                 errors.append(
-                    f"Duplicate artist/title at songs[{idx}]: {artist} - {title}"
+                    f"Duplicate artist/title[/clip_id] at songs[{idx}]: {artist} - {title}"
                 )
             seen_tracks.add(track_key)
     return errors

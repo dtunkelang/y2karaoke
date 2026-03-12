@@ -189,6 +189,10 @@ Benchmark seed set for timing quality work:
 - `benchmarks/benchmark_songs.yaml` contains a curated core list (IDs, provider preference, tolerance hints).
 - `benchmarks/main_benchmark_songs.yaml` is the current **guardrail** subset for CI/main-metric enforcement (high-trust enough references).
 - `benchmarks/main_dev_songs.yaml` is the broader **development** set for alignment experiments and reference-mismatch investigation.
+- Clip-style entries are supported for fast targeted canaries:
+  - add `clip_id` to distinguish multiple entries for the same song
+  - add `audio_start_sec` to trim into the song before alignment
+  - keep full-song entries as the main truth set; use clips as a supplement, not a replacement
 - Validate it with: `make benchmark-validate`
 - Run the benchmark suite and aggregate report:
   - `make benchmark-run`

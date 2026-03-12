@@ -31,6 +31,8 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
         title="Y",
         youtube_id="abcdefghijk",
         youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+        clip_id="intro-30s",
+        audio_start_sec=12.5,
         lyrics_file=str(lyrics_file),
     )
     report_path = tmp_path / "report.json"
@@ -56,6 +58,8 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
     assert "--drop-lrc-line-timings" in cmd
     assert "--lyrics-file" in cmd
     assert str(lyrics_file) in cmd
+    assert "--audio-start" in cmd
+    assert "12.5" in cmd
 
 
 def test_build_generate_command_strategy_variants(tmp_path):
@@ -126,6 +130,8 @@ def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
                 "    title: Test Song",
                 "    youtube_id: abcdefghijk",
                 "    youtube_url: https://www.youtube.com/watch?v=abcdefghijk",
+                "    clip_id: intro-30s",
+                "    audio_start_sec: 18.25",
                 "    lyrics_file: lyrics/song.txt",
             ]
         ),
@@ -135,7 +141,23 @@ def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
     songs = module._parse_manifest(manifest)
 
     assert len(songs) == 1
+    assert songs[0].clip_id == "intro-30s"
+    assert songs[0].audio_start_sec == 18.25
     assert songs[0].lyrics_file == str(lyrics.resolve())
+
+
+def test_benchmark_song_slug_includes_clip_id():
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="The Weepies",
+        title="Take It From Me",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+        clip_id="Outro Reprise",
+    )
+
+    assert song.slug == "the-weepies-take-it-from-me-outro-reprise"
 
 
 def test_resolve_run_dir_resume_latest(tmp_path):

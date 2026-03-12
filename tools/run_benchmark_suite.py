@@ -150,12 +150,18 @@ class BenchmarkSong:
     title: str
     youtube_id: str
     youtube_url: str
+    clip_id: str | None = None
+    audio_start_sec: float = 0.0
     lyrics_file: str | None = None
 
     @property
     def slug(self) -> str:
         safe = f"{self.artist}-{self.title}".lower()
         safe = re.sub(r"[^a-z0-9]+", "-", safe).strip("-")
+        if self.clip_id:
+            clip_safe = re.sub(r"[^a-z0-9]+", "-", self.clip_id.lower()).strip("-")
+            if clip_safe:
+                safe = f"{safe}-{clip_safe}" if safe else clip_safe
         return safe or self.youtube_id
 
 
@@ -173,6 +179,9 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
         if not isinstance(song, dict):
             raise ValueError(f"songs[{idx}] must be a mapping")
         try:
+            audio_start_sec = song.get("audio_start_sec", 0.0)
+            if audio_start_sec is None:
+                audio_start_sec = 0.0
             songs.append(
                 BenchmarkSong(
                     manifest_index=idx + 1,
@@ -180,6 +189,8 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
                     title=str(song["title"]),
                     youtube_id=str(song["youtube_id"]),
                     youtube_url=str(song["youtube_url"]),
+                    clip_id=_normalize_optional_manifest_text(song.get("clip_id")),
+                    audio_start_sec=float(audio_start_sec),
                     lyrics_file=_resolve_manifest_optional_path(
                         path.parent, song.get("lyrics_file")
                     ),
@@ -202,6 +213,13 @@ def _resolve_manifest_optional_path(
     if not candidate.is_absolute():
         candidate = (manifest_dir / candidate).resolve()
     return str(candidate)
+
+
+def _normalize_optional_manifest_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
 
 
 def _validate_cli_args(args: argparse.Namespace) -> None:
@@ -958,6 +976,8 @@ def _build_generate_command(
         cmd.extend(["--work-dir", str(cache_dir)])
     if song.lyrics_file:
         cmd.extend(["--lyrics-file", song.lyrics_file])
+    if song.audio_start_sec > 0.0:
+        cmd.extend(["--audio-start", f"{song.audio_start_sec:g}"])
     if offline:
         cmd.append("--offline")
     if force:
