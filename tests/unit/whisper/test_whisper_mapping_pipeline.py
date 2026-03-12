@@ -2,6 +2,9 @@ from y2karaoke.core.components.whisper import whisper_mapping_pipeline as wmp
 from y2karaoke.core.components.whisper import (
     whisper_mapping_pipeline_candidates as candidates,
 )
+from y2karaoke.core.components.whisper import (
+    whisper_mapping_pipeline_matching as matching,
+)
 from y2karaoke.core.components.whisper.whisper_dtw_tokens import _LineMappingContext
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionSegment,
@@ -346,3 +349,40 @@ def test_select_best_candidate_prefers_lexical_match_over_tighter_time_fit():
 
     assert best_idx == 1
     assert best_word.text == "Fuck"
+
+
+def test_skip_collapsed_assigned_match_for_late_fragment_anchor():
+    ctx = _LineMappingContext(
+        all_words=[
+            TranscriptionWord(text="It's", start=38.44, end=39.24),
+            TranscriptionWord(text="funny", start=39.24, end=39.44),
+            TranscriptionWord(text="how", start=39.44, end=39.68),
+        ],
+        segments=[],
+        word_segment_idx={0: 7, 1: 8, 2: 8},
+        language="eng-Latn",
+        total_lrc_words=8,
+        total_whisper_words=3,
+    )
+    line = Line(
+        words=[
+            Word("It's", start_time=33.1, end_time=33.45),
+            Word("funny", start_time=33.45, end_time=33.7),
+            Word("how", start_time=33.7, end_time=33.95),
+            Word("we", start_time=33.95, end_time=34.25),
+            Word("animate", start_time=34.25, end_time=35.75),
+            Word("colorful", start_time=36.15, end_time=36.9),
+            Word("objects", start_time=36.9, end_time=37.6),
+            Word("saved", start_time=37.6, end_time=38.35),
+        ]
+    )
+    lrc_index_by_loc = {(2, idx): idx for idx in range(len(line.words))}
+    lrc_assignments = {idx: [min(idx, 2)] for idx in range(len(line.words))}
+
+    assert matching._should_skip_collapsed_assigned_match(
+        ctx=ctx,
+        line_idx=2,
+        line=line,
+        lrc_index_by_loc=lrc_index_by_loc,
+        lrc_assignments=lrc_assignments,
+    )

@@ -13,6 +13,36 @@ from .whisper_mapping_helpers import (
 from . import whisper_utils
 
 
+def _should_skip_collapsed_assigned_match(
+    *,
+    ctx: _LineMappingContext,
+    line_idx: int,
+    line: "models.Line",
+    lrc_index_by_loc: Dict[Tuple[int, int], int],
+    lrc_assignments: Dict[int, List[int]],
+    min_words: int = 6,
+    max_unique_assigned_words: int = 3,
+    min_late_start_sec: float = 2.5,
+) -> bool:
+    if len(line.words) < min_words:
+        return False
+    assigned_indices: set[int] = set()
+    for word_idx in range(len(line.words)):
+        lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
+        if lrc_idx_opt is None:
+            continue
+        assigned_indices.update(lrc_assignments.get(lrc_idx_opt, []))
+    if not assigned_indices or len(assigned_indices) > max_unique_assigned_words:
+        return False
+    valid_indices = [
+        idx for idx in assigned_indices if 0 <= idx < len(ctx.all_words)
+    ]
+    if len(valid_indices) != len(assigned_indices):
+        return False
+    earliest_assigned_start = min(ctx.all_words[idx].start for idx in valid_indices)
+    return (earliest_assigned_start - line.start_time) >= min_late_start_sec
+
+
 def _compute_gap_window(
     line: "models.Line",
     word_idx: int,
@@ -50,6 +80,14 @@ def _match_assigned_words(
     register_word_match_fn: Callable[..., None],
 ) -> None:
     """Phase 1: match words using DTW assignments."""
+    if _should_skip_collapsed_assigned_match(
+        ctx=ctx,
+        line_idx=line_idx,
+        line=line,
+        lrc_index_by_loc=lrc_index_by_loc,
+        lrc_assignments=lrc_assignments,
+    ):
+        return
     for word_idx, word in enumerate(line.words):
         lrc_idx_opt = lrc_index_by_loc.get((line_idx, word_idx))
         if lrc_idx_opt is None:
