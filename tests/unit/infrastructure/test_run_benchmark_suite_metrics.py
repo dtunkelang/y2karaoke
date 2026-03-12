@@ -382,6 +382,63 @@ def test_evaluate_agreement_line_low_token_overlap_marks_eligible() -> None:
     assert result["skip_reason"] == "low_token_overlap"
 
 
+def test_evaluate_agreement_line_skips_missing_window_line_start() -> None:
+    module = _load_module()
+    line = {
+        "start": 50.72,
+        "nearest_segment_start": 49.7,
+        "text": "Sin City's cold and empty (oh)",
+        "nearest_segment_start_text": "I look around and see the city's cold and empty",
+        "whisper_window_word_count": 10,
+        "whisper_window_avg_prob": 0.87,
+        "whisper_window_words": [
+            {"text": "look", "start": 50.22},
+            {"text": "around", "start": 50.48},
+            {"text": "and", "start": 50.78},
+            {"text": "see", "start": 50.98},
+            {"text": "the", "start": 51.48},
+            {"text": "city's", "start": 51.78},
+            {"text": "cold", "start": 52.22},
+            {"text": "and", "start": 52.46},
+            {"text": "empty", "start": 52.78},
+        ],
+        "words": [{"text": token} for token in "Sin City's cold and empty oh".split()],
+    }
+    result = module._evaluate_agreement_line(
+        line=line,
+        min_text_similarity=0.58,
+        min_token_overlap=0.5,
+    )
+    assert result["eligible"] is True
+    assert result["skip_reason"] == "missing_window_line_start"
+
+
+def test_evaluate_agreement_line_keeps_exact_match_when_window_contains_start() -> None:
+    module = _load_module()
+    line = {
+        "start": 20.0,
+        "nearest_segment_start": 20.9,
+        "text": "Maybe I can make this right",
+        "nearest_segment_start_text": "Maybe I can make this right",
+        "whisper_window_word_count": 6,
+        "whisper_window_avg_prob": 0.92,
+        "whisper_window_words": [
+            {"text": "Maybe", "start": 20.9},
+            {"text": "I", "start": 21.2},
+            {"text": "can", "start": 21.4},
+            {"text": "make", "start": 21.7},
+        ],
+        "words": [{"text": token} for token in "Maybe I can make this right".split()],
+    }
+    result = module._evaluate_agreement_line(
+        line=line,
+        min_text_similarity=0.58,
+        min_token_overlap=0.5,
+    )
+    assert "skip_reason" not in result
+    assert round(result["anchor_start_delta"], 3) == 0.9
+
+
 def test_compute_timing_quality_score_anchor_with_gold_mode() -> None:
     module = _load_module()
     score, band, mode = module._compute_timing_quality_score(

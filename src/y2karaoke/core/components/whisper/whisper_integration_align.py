@@ -114,6 +114,43 @@ def _should_ignore_trimmed_transcript(
     )
 
 
+def _enable_tail_shortfall_forced_fallback() -> bool:
+    return os.getenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK") == "1"
+
+
+def _should_force_whisperx_for_tail_shortfall(
+    *,
+    all_words: List[timing_models.TranscriptionWord],
+    lines: List[models.Line],
+    language: str | None,
+    detected_lang: str | None = None,
+    min_total_words: int = 80,
+    min_tail_shortfall_sec: float = 8.0,
+    recent_window_sec: float = 20.0,
+    max_recent_non_vocal_words: int = 8,
+) -> bool:
+    if not _enable_tail_shortfall_forced_fallback():
+        return False
+    lang_code = (language or detected_lang or "").split("-", 1)[0].strip().lower()
+    if lang_code not in {"fr"}:
+        return False
+    if len(all_words) < min_total_words:
+        return False
+
+    transcript_end = max((word.end for word in all_words), default=0.0)
+    lyric_end = _line_set_end(lines)
+    if lyric_end - transcript_end < min_tail_shortfall_sec:
+        return False
+
+    cutoff = transcript_end - recent_window_sec
+    recent_non_vocal_words = sum(
+        1
+        for word in all_words
+        if word.end >= cutoff and word.text.strip().lower() != "[vocal]"
+    )
+    return recent_non_vocal_words <= max_recent_non_vocal_words
+
+
 def _parse_trace_line_range() -> tuple[int, int] | None:
     raw = os.environ.get("Y2K_TRACE_WHISPER_LINE_RANGE", "").strip()
     if not raw:
@@ -742,16 +779,49 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
         )
 
+    trace_path = os.environ.get("Y2K_TRACE_WHISPER_STAGES_JSON", "").strip()
+    trace_line_range = _parse_trace_line_range()
+    trace_snapshots: list[dict[str, Any]] = []
+
     sparse_whisper_output = (
         len(all_words) < config.sparse_word_threshold
         or len(transcription) <= config.sparse_segment_threshold
     )
+    if _should_force_whisperx_for_tail_shortfall(
+        all_words=all_words,
+        lines=lines,
+        language=language,
+        detected_lang=detected_lang,
+    ):
+        forced_result = attempt_whisperx_forced_alignment(
+            lines=lines,
+            baseline_lines=baseline_lines,
+            vocals_path=vocals_path,
+            language=language,
+            detected_lang=detected_lang,
+            logger=logger,
+            used_model=used_model,
+            reason="early Whisper transcript tail shortfall",
+            align_lines_with_whisperx_fn=align_lines_with_whisperx,
+            should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+            restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+            min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
+            min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
+        )
+        if forced_result is not None:
+            _maybe_write_trace_snapshot_file(
+                snapshots=trace_snapshots,
+                trace_path=trace_path,
+            )
+            return forced_result
+
     if sparse_whisper_output:
         forced_result = attempt_whisperx_forced_alignment(
             lines=lines,
             baseline_lines=baseline_lines,
             vocals_path=vocals_path,
             language=language,
+            detected_lang=detected_lang,
             logger=logger,
             used_model=used_model,
             reason="sparse Whisper transcript",
@@ -762,10 +832,18 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
         )
         if forced_result is not None:
+            _maybe_write_trace_snapshot_file(
+                snapshots=trace_snapshots,
+                trace_path=trace_path,
+            )
             return forced_result
 
     if not transcription or not all_words:
         logger.warning("No transcription available, skipping Whisper timing map")
+        _maybe_write_trace_snapshot_file(
+            snapshots=trace_snapshots,
+            trace_path=trace_path,
+        )
         return lines, [], {}
 
     if audio_features:
@@ -858,9 +936,6 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             )
 
     corrections: List[str] = []
-    trace_path = os.environ.get("Y2K_TRACE_WHISPER_STAGES_JSON", "").strip()
-    trace_line_range = _parse_trace_line_range()
-    trace_snapshots: list[dict[str, Any]] = []
     mapping_start = time.perf_counter()
     mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
         map_lrc_words_to_whisper_fn(
@@ -922,6 +997,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             baseline_lines=baseline_lines,
             vocals_path=vocals_path,
             language=language,
+            detected_lang=detected_lang,
             logger=logger,
             used_model=used_model,
             reason="low DTW mapping coverage",
@@ -932,6 +1008,10 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
         )
         if forced_result is not None:
+            _maybe_write_trace_snapshot_file(
+                snapshots=trace_snapshots,
+                trace_path=trace_path,
+            )
             return forced_result
 
     whisper_end = max((w.end for w in all_words), default=0.0)

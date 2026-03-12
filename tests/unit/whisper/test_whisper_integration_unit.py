@@ -118,6 +118,61 @@ def test_should_ignore_trimmed_transcript_keeps_normal_tail_trim():
     )
 
 
+def test_should_force_whisperx_for_tail_shortfall(monkeypatch):
+    monkeypatch.setenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", "1")
+    words = [
+        TranscriptionWord(
+            text=f"w{i}",
+            start=100.0 + i * 0.7,
+            end=100.2 + i * 0.7,
+            probability=1.0,
+        )
+        for i in range(72)
+    ] + [
+        TranscriptionWord(
+            text=f"tail{i}",
+            start=183.0 + i * 0.1,
+            end=183.05 + i * 0.1,
+            probability=1.0,
+        )
+        for i in range(8)
+    ]
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=195.0, end_time=196.0)]),
+    ]
+
+    assert wialign._should_force_whisperx_for_tail_shortfall(
+        all_words=words,
+        lines=lines,
+        language="fr",
+    )
+
+    assert wialign._should_force_whisperx_for_tail_shortfall(
+        all_words=words,
+        lines=lines,
+        language=None,
+        detected_lang="fr",
+    )
+
+
+def test_should_not_force_whisperx_for_tail_shortfall_without_flag(monkeypatch):
+    monkeypatch.delenv(
+        "Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", raising=False
+    )
+    words = [
+        TranscriptionWord(text="w", start=180.0 + i, end=180.2 + i, probability=1.0)
+        for i in range(90)
+    ]
+    lines = [Line(words=[Word(text="b", start_time=195.0, end_time=196.0)])]
+
+    assert not wialign._should_force_whisperx_for_tail_shortfall(
+        all_words=words,
+        lines=lines,
+        language="fr",
+    )
+
+
 def test_build_word_to_segment_index():
     segments = [
         TranscriptionSegment(

@@ -23,6 +23,7 @@ def test_attempt_whisperx_forced_alignment_returns_none_when_under_coverage():
         baseline_lines=lines,
         vocals_path="vocals.wav",
         language="en",
+        detected_lang=None,
         logger=_Logger(),
         used_model="base",
         reason="test",
@@ -43,6 +44,7 @@ def test_attempt_whisperx_forced_alignment_returns_payload_on_success():
         baseline_lines=lines,
         vocals_path="vocals.wav",
         language="en",
+        detected_lang=None,
         logger=_Logger(),
         used_model="base",
         reason="sparse",
@@ -58,3 +60,31 @@ def test_attempt_whisperx_forced_alignment_returns_payload_on_success():
     assert len(out_lines) == 2
     assert "sparse" in corrections[0]
     assert payload["whisperx_forced"] == 1.0
+
+
+def test_attempt_whisperx_forced_alignment_uses_detected_lang_fallback():
+    lines = [_line(1.0)]
+    observed: list[str | None] = []
+
+    def _align(_lines, _vocals_path, language, _logger):
+        observed.append(language)
+        return (
+            lines,
+            {"forced_word_coverage": 0.9, "forced_line_coverage": 1.0},
+        )
+
+    result = attempt_whisperx_forced_alignment(
+        lines=lines,
+        baseline_lines=lines,
+        vocals_path="vocals.wav",
+        language=None,
+        detected_lang="fr",
+        logger=_Logger(),
+        used_model="base",
+        reason="tail shortfall",
+        align_lines_with_whisperx_fn=_align,
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: (lines, 0),
+    )
+    assert result is not None
+    assert observed == ["fr"]

@@ -13,6 +13,7 @@ def attempt_whisperx_forced_alignment(
     baseline_lines: List[models.Line],
     vocals_path: str,
     language: str | None,
+    detected_lang: str | None,
     logger: Any,
     used_model: str,
     reason: str,
@@ -22,7 +23,8 @@ def attempt_whisperx_forced_alignment(
     min_forced_word_coverage: float = 0.2,
     min_forced_line_coverage: float = 0.2,
 ) -> Optional[Tuple[List[models.Line], List[str], Dict[str, Any]]]:
-    forced = align_lines_with_whisperx_fn(lines, vocals_path, language, logger)
+    forced_language = language or detected_lang
+    forced = align_lines_with_whisperx_fn(lines, vocals_path, forced_language, logger)
     if forced is None:
         return None
     forced_lines, forced_metrics = forced

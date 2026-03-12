@@ -2,14 +2,24 @@
 
 from __future__ import annotations
 
+import json
 import math
+import os
 import re
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ... import models
 from .whisperx_compat import patch_torchaudio_for_whisperx
 
 _TOKEN_RE = re.compile(r"[a-z0-9']+")
+
+
+def _maybe_write_whisperx_trace(payload: Dict[str, Any]) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_WHISPERX_FORCED_JSON", "").strip()
+    if not trace_path:
+        return
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2, sort_keys=True)
 
 
 def _norm_token(text: str) -> str:
@@ -189,6 +199,20 @@ def _count_line_overlaps(lines: List[models.Line]) -> int:
     return overlaps
 
 
+def _index_aligned_segments(
+    aligned_segments: Sequence[dict], non_empty: Sequence[int]
+) -> Dict[int, dict]:
+    seg_by_idx: Dict[int, dict] = {}
+    fallback_pairs = zip(non_empty, aligned_segments)
+    for fallback_idx, seg in fallback_pairs:
+        idx_raw = seg.get("id")
+        if isinstance(idx_raw, int):
+            seg_by_idx[idx_raw] = seg
+        elif fallback_idx not in seg_by_idx:
+            seg_by_idx[fallback_idx] = seg
+    return seg_by_idx
+
+
 def align_lines_with_whisperx(  # noqa: C901
     lines: List[models.Line],
     vocals_path: str,
@@ -196,22 +220,34 @@ def align_lines_with_whisperx(  # noqa: C901
     logger,
 ) -> Optional[Tuple[List[models.Line], Dict[str, float]]]:
     """Force-align known lyric lines with WhisperX and return aligned lines."""
+    trace: Dict[str, Any] = {
+        "status": "started",
+        "language": language,
+        "vocals_path": vocals_path,
+    }
     patch_torchaudio_for_whisperx()
     try:
         import whisperx  # type: ignore
-    except Exception:
+    except Exception as exc:
+        trace.update({"status": "import_failed", "error": repr(exc)})
+        _maybe_write_whisperx_trace(trace)
         return None
 
     non_empty = [
         idx for idx, line in enumerate(lines) if line.words and line.text.strip()
     ]
+    trace["non_empty_line_count"] = len(non_empty)
     if len(non_empty) < 4:
+        trace["status"] = "too_few_non_empty_lines"
+        _maybe_write_whisperx_trace(trace)
         return None
 
     try:
         audio = whisperx.load_audio(vocals_path)
         audio_end = (len(audio) / 16000.0) if hasattr(audio, "__len__") else 0.0
         lang_code = (language or "en").split("-", 1)[0].strip() or "en"
+        trace["language_code"] = lang_code
+        trace["audio_end"] = audio_end
         align_model, metadata = whisperx.load_align_model(
             language_code=lang_code,
             device="cpu",
@@ -238,17 +274,18 @@ def align_lines_with_whisperx(  # noqa: C901
         )
     except Exception as exc:
         logger.debug("whisperx forced alignment failed: %s", exc)
+        trace.update({"status": "align_failed", "error": repr(exc)})
+        _maybe_write_whisperx_trace(trace)
         return None
 
     aligned_segments = aligned.get("segments", [])
+    trace["aligned_segment_count"] = len(aligned_segments)
     if not aligned_segments:
+        trace["status"] = "no_aligned_segments"
+        _maybe_write_whisperx_trace(trace)
         return None
 
-    seg_by_idx: Dict[int, dict] = {}
-    for seg in aligned_segments:
-        idx_raw = seg.get("id")
-        if isinstance(idx_raw, int):
-            seg_by_idx[idx_raw] = seg
+    seg_by_idx = _index_aligned_segments(aligned_segments, non_empty)
 
     forced_lines: List[models.Line] = []
     timed_lines = 0
@@ -283,15 +320,28 @@ def align_lines_with_whisperx(  # noqa: C901
         else:
             forced_lines.append(line)
 
-    if timed_lines < max(3, int(len(non_empty) * 0.5)):
+    min_timed_lines = max(3, int(len(non_empty) * 0.5))
+    trace["timed_line_count"] = timed_lines
+    trace["timed_word_count"] = timed_words
+    trace["min_timed_lines_required"] = min_timed_lines
+    if timed_lines < min_timed_lines:
+        trace["status"] = "insufficient_timed_lines"
+        _maybe_write_whisperx_trace(trace)
         return None
 
     overlaps = _count_line_overlaps(forced_lines)
     timed_ratio = timed_lines / max(1, len(non_empty))
     word_ratio = timed_words / max(1, total_words)
+    trace["timed_ratio"] = timed_ratio
+    trace["word_ratio"] = word_ratio
+    trace["overlaps"] = overlaps
     if timed_ratio < 0.7 or word_ratio < 0.7:
+        trace["status"] = "insufficient_coverage"
+        _maybe_write_whisperx_trace(trace)
         return None
     if overlaps > max(2, int(len(non_empty) * 0.08)):
+        trace["status"] = "too_many_overlaps"
+        _maybe_write_whisperx_trace(trace)
         return None
 
     metrics = {
@@ -299,6 +349,8 @@ def align_lines_with_whisperx(  # noqa: C901
         "forced_word_coverage": word_ratio,
         "forced_line_overlaps": float(overlaps),
     }
+    trace.update({"status": "accepted", "metrics": metrics})
+    _maybe_write_whisperx_trace(trace)
     logger.info(
         "WhisperX forced alignment accepted: %.0f%% lines, %.0f%% words",
         timed_ratio * 100.0,

@@ -77,6 +77,7 @@ def _select_best_candidate(
         lrc_idx_opt,
         trace_context=trace_context,
         time_drift_threshold=_TIME_DRIFT_THRESHOLD,
+        phonetic_similarity_fn=phonetic_utils._phonetic_similarity,
     )
 
 

@@ -224,6 +224,98 @@ def test_align_lrc_text_pipeline_uses_whisperx_for_sparse_transcript(monkeypatch
     )
 
 
+def test_align_lrc_text_pipeline_uses_whisperx_for_tail_shortfall_experiment(
+    monkeypatch,
+):
+    monkeypatch.setenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", "1")
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=10.2)]),
+        Line(words=[Word(text="b", start_time=195.0, end_time=195.2)]),
+    ]
+    forced_lines = [
+        Line(words=[Word(text="a", start_time=10.5, end_time=10.8)]),
+        Line(words=[Word(text="b", start_time=195.5, end_time=195.8)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(
+            text=f"w{i}",
+            start=100.0 + i * 0.7,
+            end=100.2 + i * 0.7,
+            probability=0.9,
+        )
+        for i in range(72)
+    ] + [
+        TranscriptionWord(
+            text=f"tail{i}",
+            start=183.0 + i * 0.1,
+            end=183.05 + i * 0.1,
+            probability=0.9,
+        )
+        for i in range(8)
+    ]
+    segments = [
+        TranscriptionSegment(
+            start=100.0 + i * 4.0,
+            end=102.0 + i * 4.0,
+            text=f"s{i}",
+            words=[],
+        )
+        for i in range(19)
+    ]
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.whisper.whisper_integration_align.align_lines_with_whisperx",
+        lambda *_args, **_kwargs: (
+            forced_lines,
+            {"forced_line_coverage": 1.0, "forced_word_coverage": 1.0},
+        ),
+    )
+
+    mapped, corrections, metrics = align_lrc_text_to_whisper_timings_impl(
+        lines,
+        vocals_path="vocals.wav",
+        language="fr",
+        model_size="base",
+        aggressive=False,
+        temperature=0.0,
+        min_similarity=0.15,
+        audio_features=None,
+        lenient_vocal_activity_threshold=0.3,
+        lenient_activity_bonus=0.4,
+        low_word_confidence_threshold=0.5,
+        transcribe_vocals_fn=lambda *_a, **_k: (segments, whisper_words, "fr", "base"),
+        extract_audio_features_fn=lambda *_a, **_k: None,
+        dedupe_whisper_segments_fn=lambda s: s,
+        trim_whisper_transcription_by_lyrics_fn=lambda s, w, _t: (s, w, None),
+        fill_vocal_activity_gaps_fn=lambda w, _a, _t, segments=None: (w, segments),
+        dedupe_whisper_words_fn=lambda w: w,
+        extract_lrc_words_all_fn=lambda _in_lines: [],
+        build_phoneme_tokens_from_lrc_words_fn=lambda *_a, **_k: [],
+        build_phoneme_tokens_from_whisper_words_fn=lambda *_a, **_k: [],
+        build_syllable_tokens_from_phonemes_fn=lambda *_a, **_k: [],
+        build_segment_text_overlap_assignments_fn=lambda *_a, **_k: {},
+        build_phoneme_dtw_path_fn=lambda *_a, **_k: [],
+        build_word_assignments_from_phoneme_path_fn=lambda *_a, **_k: {},
+        build_block_segmented_syllable_assignments_fn=lambda *_a, **_k: {},
+        map_lrc_words_to_whisper_fn=lambda *_a, **_k: (lines, 0, 0.0, set()),
+        shift_repeated_lines_to_next_whisper_fn=lambda ml, _aw: ml,
+        enforce_monotonic_line_starts_whisper_fn=lambda ml, _aw: ml,
+        resolve_line_overlaps_fn=lambda ml: ml,
+        extend_line_to_trailing_whisper_matches_fn=lambda ml, _aw: ml,
+        pull_late_lines_to_matching_segments_fn=lambda ml, _s, _lang: ml,
+        retime_short_interjection_lines_fn=lambda ml, _s: ml,
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw: ml,
+        interpolate_unmatched_lines_fn=lambda ml, _set: ml,
+        refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        logger=wi.logger,
+    )
+
+    assert mapped == forced_lines
+    assert metrics["whisperx_forced"] == 1.0
+    assert any("early Whisper transcript tail shortfall" in msg for msg in corrections)
+
+
 def test_correct_timing_with_whisper_uses_whisperx_when_sparse(monkeypatch):
     lines = [Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)])]
     forced = [Line(words=[Word(text="hello", start_time=10.3, end_time=11.2)])]

@@ -11,6 +11,11 @@ from ..alignment import timing_models
 from .whisper_dtw import _LineMappingContext
 from . import whisper_utils
 from .whisper_mapping_helpers import _find_nearest_word_in_segment, _word_match_score
+from .whisper_mapping_post_text import (
+    _is_placeholder_whisper_token,
+    _normalize_match_token,
+    _soft_token_match,
+)
 
 _MAPPER_CANDIDATE_TRACE_ROWS: list[dict[str, object]] = []
 
@@ -76,8 +81,22 @@ def _select_best_candidate(
     *,
     trace_context: Optional[dict[str, object]] = None,
     time_drift_threshold: float,
+    phonetic_similarity_fn: Callable[[str, str, str], float],
 ) -> Tuple[timing_models.TranscriptionWord, int]:
     """Score candidates, pick the best, and apply drift fallback."""
+    target_token = _normalize_match_token(word.text)
+    plausible_candidates = [
+        pair
+        for pair in whisper_candidates
+        if _candidate_is_lexically_plausible(
+            target_token=target_token,
+            candidate_text=pair[0].text,
+            phonetic_similarity_fn=phonetic_similarity_fn,
+            target_text=word.text,
+            language=ctx.language,
+        )
+    ]
+    candidate_pool = plausible_candidates or whisper_candidates
     scored_candidates = [
         (
             pair[0],
@@ -95,14 +114,14 @@ def _select_best_candidate(
                 total_whisper_words=ctx.total_whisper_words,
             ),
         )
-        for pair in whisper_candidates
+        for pair in candidate_pool
     ]
     best_word, best_idx, best_score = min(scored_candidates, key=lambda row: row[2])
     drift = abs(best_word.start - word.start_time)
     fallback_used = False
     if drift > time_drift_threshold:
         fallback = _find_nearest_word_in_segment(
-            whisper_candidates,
+            candidate_pool,
             word.start_time,
             line_segment,
             ctx.word_segment_idx,
@@ -126,11 +145,13 @@ def _select_best_candidate(
         {
             "target_word": word.text,
             "target_start": round(word.start_time, 3),
+            "target_token": target_token,
             "line_shift": round(line_shift, 3),
             "line_anchor_time": round(line_anchor_time, 3),
             "line_segment": line_segment,
             "lrc_index": lrc_idx_opt,
             "trace_context": trace_context or {},
+            "lexical_candidate_count": len(plausible_candidates),
             "chosen_index": best_idx,
             "chosen_word": best_word.text,
             "chosen_start": round(best_word.start, 3),
@@ -149,6 +170,30 @@ def _select_best_candidate(
         }
     )
     return best_word, best_idx
+
+
+def _candidate_is_lexically_plausible(
+    *,
+    target_token: str,
+    candidate_text: str,
+    phonetic_similarity_fn: Callable[[str, str, str], float],
+    target_text: str,
+    language: str,
+    min_phonetic_similarity: float = 0.55,
+) -> bool:
+    if not target_token:
+        return True
+    if _is_placeholder_whisper_token(candidate_text):
+        return False
+    candidate_token = _normalize_match_token(candidate_text)
+    if not candidate_token:
+        return False
+    if _soft_token_match(target_token, candidate_token):
+        return True
+    return (
+        phonetic_similarity_fn(target_text, candidate_text, language)
+        >= min_phonetic_similarity
+    )
 
 
 def _filter_and_order_candidates(

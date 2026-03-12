@@ -922,6 +922,17 @@ def _iter_agreement_window_tokens(
     return out
 
 
+def _first_agreement_content_token(
+    text: Any,
+    *,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> str | None:
+    for token in normalize_fn(text).split():
+        if len(token) >= 3:
+            return token
+    return None
+
+
 def _match_agreement_window_token_sequence(
     window_tokens: list[tuple[str, float]],
     start_index: int,
@@ -1504,6 +1515,23 @@ def _evaluate_agreement_line(
     overlap = _agreement_token_overlap(
         line_text, whisper_anchor_text, normalize_fn=normalize_fn
     )
+    first_content_token = _first_agreement_content_token(
+        line_text, normalize_fn=normalize_fn
+    )
+    window_tokens = _iter_agreement_window_tokens(line, normalize_fn=normalize_fn)
+    leading_window_tokens = [token for token, _ in window_tokens[:4]]
+    missing_leading_start_evidence = (
+        anchor_start_delta >= 0.8
+        and bool(first_content_token)
+        and bool(window_tokens)
+        and all(
+            not _agreement_window_tokens_similar(first_content_token, token)
+            for token in leading_window_tokens
+        )
+        and overlap >= max(0.6, min_token_overlap + 0.1)
+    )
+    if missing_leading_start_evidence:
+        return {"skip_reason": "missing_window_line_start", "eligible": True}
     has_strong_window_evidence = (
         window_word_count >= max(3, int(0.6 * line_word_count))
         and isinstance(window_avg_prob, (int, float))
@@ -5500,6 +5528,69 @@ def _load_song_result(path: Path) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
+def _load_run_metadata(run_dir: Path) -> dict[str, Any] | None:
+    for name in ("benchmark_progress.json", "benchmark_report.json"):
+        path = run_dir / name
+        if not path.exists():
+            continue
+        try:
+            loaded = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(loaded, dict):
+            return loaded
+    return None
+
+
+def _infer_gold_root_from_cached_results(run_dir: Path) -> Path | None:
+    candidates: list[str] = []
+    for path in sorted(run_dir.glob("*_result.json")):
+        loaded = _load_song_result(path)
+        if not loaded:
+            continue
+        run_signature = loaded.get("run_signature")
+        if isinstance(run_signature, dict):
+            value = run_signature.get("gold_root")
+            if isinstance(value, str) and value.strip():
+                candidates.append(value)
+                continue
+        gold_path = loaded.get("gold_path")
+        if isinstance(gold_path, str) and gold_path.strip():
+            candidates.append(str(Path(gold_path).resolve().parent))
+    if not candidates:
+        return None
+    counts: dict[str, int] = {}
+    for candidate in candidates:
+        counts[candidate] = counts.get(candidate, 0) + 1
+    best = max(counts.items(), key=lambda item: item[1])[0]
+    return Path(best).resolve()
+
+
+def _inherit_resume_gold_root(args: argparse.Namespace, run_dir: Path) -> Path | None:
+    if not args.aggregate_only or args.resume_run_dir is None:
+        return None
+    try:
+        requested_gold_root = args.gold_root.resolve()
+    except Exception:
+        return None
+    if requested_gold_root != DEFAULT_GOLD_ROOT.resolve():
+        return None
+    inferred_from_results = _infer_gold_root_from_cached_results(run_dir)
+    if inferred_from_results is not None and inferred_from_results != requested_gold_root:
+        return inferred_from_results
+    metadata = _load_run_metadata(run_dir)
+    if not metadata:
+        return None
+    options = metadata.get("options")
+    if not isinstance(options, dict):
+        return None
+    prior_gold_root = options.get("gold_root")
+    if not isinstance(prior_gold_root, str) or not prior_gold_root.strip():
+        return None
+    inherited = Path(prior_gold_root).resolve()
+    return inherited if inherited != requested_gold_root else None
+
+
 def _refresh_cached_metrics(
     record: dict[str, Any],
     *,
@@ -7206,6 +7297,9 @@ def _prepare_run_context(
         resume_latest=args.resume_latest,
     )
     run_dir.mkdir(parents=True, exist_ok=True)
+    inherited_gold_root = _inherit_resume_gold_root(args, run_dir)
+    if inherited_gold_root is not None:
+        args.gold_root = inherited_gold_root
     songs = _apply_aggregate_only_cached_scope(
         songs,
         aggregate_only=args.aggregate_only,

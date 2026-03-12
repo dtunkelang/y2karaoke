@@ -304,3 +304,45 @@ def test_register_word_match_keeps_later_best_segment_when_ahead_of_override():
     )
 
     assert ctx.current_segment == 8
+
+
+def test_candidate_is_lexically_plausible_rejects_placeholder():
+    assert not candidates._candidate_is_lexically_plausible(
+        target_token="lo",
+        candidate_text="[VOCAL]",
+        phonetic_similarity_fn=lambda *_: 0.0,
+        target_text="Lo",
+        language="eng-Latn",
+    )
+
+
+def test_select_best_candidate_prefers_lexical_match_over_tighter_time_fit():
+    ctx = _LineMappingContext(
+        all_words=[
+            TranscriptionWord(text="la", start=62.83, end=63.03),
+            TranscriptionWord(text="Fuck", start=63.05, end=63.25),
+        ],
+        segments=[],
+        word_segment_idx={0: 0, 1: 0},
+        language="eng-Latn",
+        total_lrc_words=2,
+        total_whisper_words=2,
+    )
+    word = Word("Fuck", start_time=61.737, end_time=61.9)
+
+    best_word, best_idx = candidates._select_best_candidate(
+        ctx,
+        [(ctx.all_words[0], 0), (ctx.all_words[1], 1)],
+        word,
+        line_shift=1.093,
+        line_segment=0,
+        line_anchor_time=62.83,
+        lrc_idx_opt=0,
+        time_drift_threshold=0.8,
+        phonetic_similarity_fn=lambda left, right, _lang: (
+            1.0 if left.lower().strip("',.!?") == right.lower().strip("',.!?") else 0.0
+        ),
+    )
+
+    assert best_idx == 1
+    assert best_word.text == "Fuck"
