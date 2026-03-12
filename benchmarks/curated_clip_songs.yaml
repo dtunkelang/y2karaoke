@@ -63,7 +63,7 @@ songs:
   - artist: "The Weepies"
     title: "Take It From Me"
     clip_id: "source-text-stress"
-    audio_start_sec: 34
+    audio_start_sec: 33
     youtube_id: "5yUv1QYD770"
     youtube_url: "https://www.youtube.com/watch?v=5yUv1QYD770"
     preferred_lyrics_provider: "lyriq"
