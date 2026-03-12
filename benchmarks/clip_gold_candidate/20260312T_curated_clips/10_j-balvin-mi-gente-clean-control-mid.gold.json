@@ -1,0 +1,634 @@
+{
+  "schema_version": "1.0",
+  "title": "Mi Gente",
+  "artist": "J Balvin",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/wnJ6LuUFpMo/J Balvin, Willy William - Mi Gente (Official Video).wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "rompiendo la discoteca",
+      "start": 0.0,
+      "end": 0.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "rompiendo",
+          "start": 0.0,
+          "end": 0.1
+        },
+        {
+          "word_index": 2,
+          "text": "la",
+          "start": 0.1,
+          "end": 0.35
+        },
+        {
+          "word_index": 3,
+          "text": "discoteca",
+          "start": 0.35,
+          "end": 0.9
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "La fiesta no para, apenas comienza",
+      "start": 0.9,
+      "end": 2.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "La",
+          "start": 0.9,
+          "end": 1.2
+        },
+        {
+          "word_index": 2,
+          "text": "fiesta",
+          "start": 1.2,
+          "end": 1.55
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 1.55,
+          "end": 1.7
+        },
+        {
+          "word_index": 4,
+          "text": "para,",
+          "start": 1.7,
+          "end": 2.05
+        },
+        {
+          "word_index": 5,
+          "text": "apenas",
+          "start": 2.05,
+          "end": 2.4
+        },
+        {
+          "word_index": 6,
+          "text": "comienza",
+          "start": 2.4,
+          "end": 2.75
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "(\u00a1Eh!) C'est comme ci (\u00a1eh!), c'est comme \u00e7a",
+      "start": 3.3,
+      "end": 5.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(\u00a1Eh!)",
+          "start": 3.3,
+          "end": 3.6
+        },
+        {
+          "word_index": 2,
+          "text": "C'est",
+          "start": 3.6,
+          "end": 3.9
+        },
+        {
+          "word_index": 3,
+          "text": "comme",
+          "start": 3.9,
+          "end": 4.2
+        },
+        {
+          "word_index": 4,
+          "text": "ci",
+          "start": 4.2,
+          "end": 4.6
+        },
+        {
+          "word_index": 5,
+          "text": "(\u00a1eh!),",
+          "start": 4.6,
+          "end": 4.9
+        },
+        {
+          "word_index": 6,
+          "text": "c'est",
+          "start": 4.9,
+          "end": 5.2
+        },
+        {
+          "word_index": 7,
+          "text": "comme",
+          "start": 5.2,
+          "end": 5.5
+        },
+        {
+          "word_index": 8,
+          "text": "\u00e7a",
+          "start": 5.5,
+          "end": 5.8
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "(\u00a1Eh!) Ma ch\u00e9rie, la-la-la-la-la",
+      "start": 5.8,
+      "end": 7.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(\u00a1Eh!)",
+          "start": 5.8,
+          "end": 6.25
+        },
+        {
+          "word_index": 2,
+          "text": "Ma",
+          "start": 6.25,
+          "end": 6.55
+        },
+        {
+          "word_index": 3,
+          "text": "ch\u00e9rie,",
+          "start": 6.55,
+          "end": 6.95
+        },
+        {
+          "word_index": 4,
+          "text": "la-la-la-la-la",
+          "start": 6.95,
+          "end": 7.85
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "(Eh) Francia (eh), Colombia (eh)",
+      "start": 8.05,
+      "end": 10.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Eh)",
+          "start": 8.05,
+          "end": 8.5
+        },
+        {
+          "word_index": 2,
+          "text": "Francia",
+          "start": 8.5,
+          "end": 8.95
+        },
+        {
+          "word_index": 3,
+          "text": "(eh),",
+          "start": 8.95,
+          "end": 9.4
+        },
+        {
+          "word_index": 4,
+          "text": "Colombia",
+          "start": 9.4,
+          "end": 9.9
+        },
+        {
+          "word_index": 5,
+          "text": "(eh)",
+          "start": 9.9,
+          "end": 10.35
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Me gusta (\u00a1freeze!)",
+      "start": 10.5,
+      "end": 12.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Me",
+          "start": 10.5,
+          "end": 11.0
+        },
+        {
+          "word_index": 2,
+          "text": "gusta",
+          "start": 11.0,
+          "end": 11.5
+        },
+        {
+          "word_index": 3,
+          "text": "(\u00a1freeze!)",
+          "start": 11.5,
+          "end": 12.0
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "(Eh) J Balvin (eh), Willy William (eh)",
+      "start": 12.45,
+      "end": 15.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Eh)",
+          "start": 12.45,
+          "end": 12.85
+        },
+        {
+          "word_index": 2,
+          "text": "J",
+          "start": 12.85,
+          "end": 13.2
+        },
+        {
+          "word_index": 3,
+          "text": "Balvin",
+          "start": 13.2,
+          "end": 13.6
+        },
+        {
+          "word_index": 4,
+          "text": "(eh),",
+          "start": 13.6,
+          "end": 13.95
+        },
+        {
+          "word_index": 5,
+          "text": "Willy",
+          "start": 13.95,
+          "end": 14.3
+        },
+        {
+          "word_index": 6,
+          "text": "William",
+          "start": 14.3,
+          "end": 14.85
+        },
+        {
+          "word_index": 7,
+          "text": "(eh)",
+          "start": 14.85,
+          "end": 15.2
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Me gusta (\u00a1freeze!)",
+      "start": 15.25,
+      "end": 16.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Me",
+          "start": 15.25,
+          "end": 15.5
+        },
+        {
+          "word_index": 2,
+          "text": "gusta",
+          "start": 15.5,
+          "end": 15.9
+        },
+        {
+          "word_index": 3,
+          "text": "(\u00a1freeze!)",
+          "start": 15.9,
+          "end": 16.75
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Los DJs no mienten, les gusta mi gente",
+      "start": 17.0,
+      "end": 19.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Los",
+          "start": 17.0,
+          "end": 17.25
+        },
+        {
+          "word_index": 2,
+          "text": "DJs",
+          "start": 17.25,
+          "end": 17.5
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 17.5,
+          "end": 17.75
+        },
+        {
+          "word_index": 4,
+          "text": "mienten,",
+          "start": 17.75,
+          "end": 18.05
+        },
+        {
+          "word_index": 5,
+          "text": "les",
+          "start": 18.05,
+          "end": 18.35
+        },
+        {
+          "word_index": 6,
+          "text": "gusta",
+          "start": 18.35,
+          "end": 18.65
+        },
+        {
+          "word_index": 7,
+          "text": "mi",
+          "start": 18.65,
+          "end": 18.9
+        },
+        {
+          "word_index": 8,
+          "text": "gente",
+          "start": 18.9,
+          "end": 19.15
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "Y eso se fue mundial (\u00a1freeze!)",
+      "start": 19.4,
+      "end": 21.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Y",
+          "start": 19.4,
+          "end": 19.65
+        },
+        {
+          "word_index": 2,
+          "text": "eso",
+          "start": 19.65,
+          "end": 19.85
+        },
+        {
+          "word_index": 3,
+          "text": "se",
+          "start": 19.85,
+          "end": 20.1
+        },
+        {
+          "word_index": 4,
+          "text": "fue",
+          "start": 20.1,
+          "end": 20.35
+        },
+        {
+          "word_index": 5,
+          "text": "mundial",
+          "start": 20.35,
+          "end": 20.75
+        },
+        {
+          "word_index": 6,
+          "text": "(\u00a1freeze!)",
+          "start": 20.75,
+          "end": 21.25
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "No le bajamos, mas nunca paramos",
+      "start": 21.8,
+      "end": 23.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No",
+          "start": 21.8,
+          "end": 22.05
+        },
+        {
+          "word_index": 2,
+          "text": "le",
+          "start": 22.05,
+          "end": 22.25
+        },
+        {
+          "word_index": 3,
+          "text": "bajamos,",
+          "start": 22.25,
+          "end": 22.65
+        },
+        {
+          "word_index": 4,
+          "text": "mas",
+          "start": 22.65,
+          "end": 23.0
+        },
+        {
+          "word_index": 5,
+          "text": "nunca",
+          "start": 23.0,
+          "end": 23.4
+        },
+        {
+          "word_index": 6,
+          "text": "paramos",
+          "start": 23.4,
+          "end": 23.8
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "Es otro palo y, \u00a1blam!",
+      "start": 23.9,
+      "end": 25.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Es",
+          "start": 23.9,
+          "end": 24.1
+        },
+        {
+          "word_index": 2,
+          "text": "otro",
+          "start": 24.1,
+          "end": 24.3
+        },
+        {
+          "word_index": 3,
+          "text": "palo",
+          "start": 24.3,
+          "end": 24.5
+        },
+        {
+          "word_index": 4,
+          "text": "y,",
+          "start": 24.5,
+          "end": 24.75
+        },
+        {
+          "word_index": 5,
+          "text": "\u00a1blam!",
+          "start": 24.75,
+          "end": 25.3
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
+      "start": 25.3,
+      "end": 26.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00bfY",
+          "start": 25.3,
+          "end": 25.5
+        },
+        {
+          "word_index": 2,
+          "text": "d\u00f3nde",
+          "start": 25.5,
+          "end": 25.85
+        },
+        {
+          "word_index": 3,
+          "text": "est\u00e1",
+          "start": 25.85,
+          "end": 26.2
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 26.2,
+          "end": 26.55
+        },
+        {
+          "word_index": 5,
+          "text": "gente?",
+          "start": 26.55,
+          "end": 26.9
+        }
+      ]
+    },
+    {
+      "line_index": 14,
+      "text": "Mais fais bouger la t\u00eate",
+      "start": 27.55,
+      "end": 29.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mais",
+          "start": 27.55,
+          "end": 27.8
+        },
+        {
+          "word_index": 2,
+          "text": "fais",
+          "start": 27.8,
+          "end": 28.05
+        },
+        {
+          "word_index": 3,
+          "text": "bouger",
+          "start": 28.05,
+          "end": 28.4
+        },
+        {
+          "word_index": 4,
+          "text": "la",
+          "start": 28.4,
+          "end": 28.6
+        },
+        {
+          "word_index": 5,
+          "text": "t\u00eate",
+          "start": 28.6,
+          "end": 29.1
+        }
+      ]
+    },
+    {
+      "line_index": 15,
+      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
+      "start": 29.75,
+      "end": 31.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00bfY",
+          "start": 29.75,
+          "end": 30.05
+        },
+        {
+          "word_index": 2,
+          "text": "d\u00f3nde",
+          "start": 30.05,
+          "end": 30.35
+        },
+        {
+          "word_index": 3,
+          "text": "est\u00e1",
+          "start": 30.35,
+          "end": 30.65
+        },
+        {
+          "word_index": 4,
+          "text": "mi",
+          "start": 30.65,
+          "end": 30.95
+        },
+        {
+          "word_index": 5,
+          "text": "gente?",
+          "start": 30.95,
+          "end": 31.3
+        }
+      ]
+    },
+    {
+      "line_index": 16,
+      "text": "Say yeah, yeah, yeah",
+      "start": 31.3,
+      "end": 33.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Say",
+          "start": 31.3,
+          "end": 31.4
+        },
+        {
+          "word_index": 2,
+          "text": "yeah,",
+          "start": 31.4,
+          "end": 31.5
+        },
+        {
+          "word_index": 3,
+          "text": "yeah,",
+          "start": 31.5,
+          "end": 32.8
+        },
+        {
+          "word_index": 4,
+          "text": "yeah",
+          "start": 32.8,
+          "end": 33.25
+        }
+      ]
+    }
+  ]
+}
