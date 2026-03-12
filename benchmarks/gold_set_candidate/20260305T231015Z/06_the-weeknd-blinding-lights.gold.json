@@ -1,4115 +1,1842 @@
 {
+  "schema_version": "1.0",
   "title": "Blinding Lights",
   "artist": "The Weeknd",
-  "lyrics_source": "lyriq (LRCLib)",
-  "alignment_method": "whisper_map_lrc_dtw",
-  "whisper_requested": true,
-  "whisper_force_dtw": false,
-  "whisper_used": true,
-  "whisper_corrections": 2,
-  "issues": [
-    "Large timing delta (+14.56s) exceeded auto-offset clamp and was not applied",
-    "1 line(s) had low Whisper confidence"
-  ],
-  "dtw_metrics": {
-    "matched_ratio": 0.822429906542056,
-    "word_coverage": 0.822429906542056,
-    "avg_similarity": 0.7231510886393697,
-    "line_coverage": 0.9428571428571428,
-    "phonetic_similarity_coverage": 0.594741082245463,
-    "high_similarity_ratio": 0.7231510886393697,
-    "exact_match_ratio": 0.0,
-    "unmatched_ratio": 0.17757009345794394,
-    "dtw_used": 1.0,
-    "dtw_mode": 1.0,
-    "whisper_model": "large"
-  },
-  "line_count": 35,
+  "audio_path": "",
   "lines": [
     {
-      "index": 1,
-      "start": 13.42,
-      "end": 13.94,
+      "line_index": 1,
       "text": "Yeah",
+      "start": 14.05,
+      "end": 14.4,
       "words": [
         {
+          "word_index": 1,
           "text": "Yeah",
-          "start": 13.42,
-          "end": 13.94
+          "start": 14.05,
+          "end": 14.4
         }
-      ],
-      "word_slots": [
-        0.52
-      ],
-      "word_spoken": [
-        0.52
-      ],
-      "whisper_window_start": 12.42,
-      "whisper_window_end": 26.95,
-      "whisper_window_word_count": 0,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": null,
-      "whisper_window_words": [],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 27.56,
-      "nearest_segment_start_end": 28.78,
-      "nearest_segment_start_text": "I've been trying to call",
-      "nearest_segment_end": 28.78,
-      "nearest_segment_end_start": 27.56,
-      "nearest_segment_end_text": "I've been trying to call"
+      ]
     },
     {
-      "index": 2,
-      "start": 26.95,
-      "end": 27.97,
+      "line_index": 2,
       "text": "I've been tryna call",
+      "start": 28.05,
+      "end": 28.7,
       "words": [
         {
+          "word_index": 1,
           "text": "I've",
-          "start": 26.95,
-          "end": 27.46
+          "start": 28.05,
+          "end": 28.2
         },
         {
+          "word_index": 2,
           "text": "been",
-          "start": 27.46,
-          "end": 27.58
+          "start": 28.2,
+          "end": 28.35
         },
         {
+          "word_index": 3,
           "text": "tryna",
-          "start": 27.58,
-          "end": 27.76
+          "start": 28.35,
+          "end": 28.5
         },
         {
+          "word_index": 4,
           "text": "call",
-          "start": 27.76,
-          "end": 27.97
+          "start": 28.5,
+          "end": 28.7
         }
-      ],
-      "word_slots": [
-        0.51,
-        0.12,
-        0.18,
-        0.21
-      ],
-      "word_spoken": [
-        0.51,
-        0.12,
-        0.18,
-        0.21
-      ],
-      "whisper_window_start": 25.95,
-      "whisper_window_end": 29.83,
-      "whisper_window_word_count": 5,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.862,
-      "whisper_window_words": [
-        {
-          "text": "I've",
-          "start": 27.56,
-          "end": 28.08,
-          "probability": 0.527
-        },
-        {
-          "text": "been",
-          "start": 28.08,
-          "end": 28.18,
-          "probability": 0.986
-        },
-        {
-          "text": "trying",
-          "start": 28.18,
-          "end": 28.42,
-          "probability": 0.94
-        },
-        {
-          "text": "to",
-          "start": 28.42,
-          "end": 28.58,
-          "probability": 0.992
-        },
-        {
-          "text": "call",
-          "start": 28.58,
-          "end": 28.78,
-          "probability": 0.867
-        }
-      ],
-      "whisper_line_start_delta": 0.61,
-      "nearest_segment_start": 27.56,
-      "nearest_segment_start_end": 28.78,
-      "nearest_segment_start_text": "I've been trying to call",
-      "nearest_segment_end": 28.78,
-      "nearest_segment_end_start": 27.56,
-      "nearest_segment_end_text": "I've been trying to call"
+      ]
     },
     {
-      "index": 3,
-      "start": 29.83,
-      "end": 32.04,
+      "line_index": 3,
       "text": "I've been on my own for long enough",
+      "start": 30.6,
+      "end": 32.6,
       "words": [
         {
+          "word_index": 1,
           "text": "I've",
-          "start": 29.83,
-          "end": 30.082
+          "start": 30.6,
+          "end": 30.85
         },
         {
+          "word_index": 2,
           "text": "been",
-          "start": 30.11,
-          "end": 30.362
+          "start": 30.85,
+          "end": 31.1
         },
         {
+          "word_index": 3,
           "text": "on",
-          "start": 30.39,
-          "end": 30.642
+          "start": 31.1,
+          "end": 31.35
         },
         {
+          "word_index": 4,
           "text": "my",
-          "start": 30.67,
-          "end": 30.922
+          "start": 31.35,
+          "end": 31.6
         },
         {
+          "word_index": 5,
           "text": "own",
-          "start": 30.95,
-          "end": 31.202
-        },
-        {
-          "text": "for",
-          "start": 31.23,
-          "end": 31.482
-        },
-        {
-          "text": "long",
-          "start": 31.51,
-          "end": 31.762
-        },
-        {
-          "text": "enough",
-          "start": 31.79,
-          "end": 32.042
-        }
-      ],
-      "word_slots": [
-        0.28,
-        0.28,
-        0.28,
-        0.28,
-        0.28,
-        0.28,
-        0.28,
-        0.252
-      ],
-      "word_spoken": [
-        0.252,
-        0.252,
-        0.252,
-        0.252,
-        0.252,
-        0.252,
-        0.252,
-        0.252
-      ],
-      "whisper_window_start": 28.83,
-      "whisper_window_end": 32.62,
-      "whisper_window_word_count": 9,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.916,
-      "whisper_window_words": [
-        {
-          "text": "I've",
-          "start": 30.36,
-          "end": 30.88,
-          "probability": 0.699
-        },
-        {
-          "text": "been",
-          "start": 30.88,
-          "end": 31.0,
-          "probability": 0.996
-        },
-        {
-          "text": "on",
-          "start": 31.0,
-          "end": 31.18,
-          "probability": 0.994
-        },
-        {
-          "text": "my",
-          "start": 31.18,
-          "end": 31.38,
-          "probability": 0.999
-        },
-        {
-          "text": "own",
-          "start": 31.38,
-          "end": 31.6,
-          "probability": 0.994
-        },
-        {
-          "text": "for",
           "start": 31.6,
-          "end": 31.86,
-          "probability": 0.977
+          "end": 31.85
         },
         {
+          "word_index": 6,
+          "text": "for",
+          "start": 31.85,
+          "end": 32.1
+        },
+        {
+          "word_index": 7,
           "text": "long",
-          "start": 31.86,
-          "end": 32.14,
-          "probability": 0.997
+          "start": 32.1,
+          "end": 32.35
         },
         {
+          "word_index": 8,
           "text": "enough",
-          "start": 32.14,
-          "end": 32.6,
-          "probability": 0.993
-        },
-        {
-          "text": "Maybe",
-          "start": 32.6,
-          "end": 33.64,
-          "probability": 0.6
+          "start": 32.35,
+          "end": 32.6
         }
-      ],
-      "whisper_line_start_delta": 0.53,
-      "nearest_segment_start": 30.36,
-      "nearest_segment_start_end": 32.6,
-      "nearest_segment_start_text": "I've been on my own for long enough",
-      "nearest_segment_end": 28.78,
-      "nearest_segment_end_start": 27.56,
-      "nearest_segment_end_text": "I've been trying to call",
-      "prior_segment_start": 27.56,
-      "prior_segment_end": 28.78,
-      "prior_segment_late_by": 1.05
+      ]
     },
     {
-      "index": 4,
-      "start": 32.62,
-      "end": 35.43,
+      "line_index": 4,
       "text": "Maybe you can show me how to love, maybe",
+      "start": 33.3,
+      "end": 37.4,
       "words": [
         {
+          "word_index": 1,
           "text": "Maybe",
-          "start": 32.62,
-          "end": 32.904
+          "start": 33.3,
+          "end": 33.6
         },
         {
+          "word_index": 2,
           "text": "you",
-          "start": 32.935,
-          "end": 33.219
-        },
-        {
-          "text": "can",
-          "start": 33.251,
-          "end": 33.534
-        },
-        {
-          "text": "show",
-          "start": 33.566,
+          "start": 33.6,
           "end": 33.85
         },
         {
-          "text": "me",
-          "start": 33.881,
-          "end": 34.165
-        },
-        {
-          "text": "how",
-          "start": 34.197,
-          "end": 34.48
-        },
-        {
-          "text": "to",
-          "start": 34.512,
-          "end": 34.796
-        },
-        {
-          "text": "love,",
-          "start": 34.827,
-          "end": 35.111
-        },
-        {
-          "text": "maybe",
-          "start": 35.143,
-          "end": 35.426
-        }
-      ],
-      "word_slots": [
-        0.315,
-        0.315,
-        0.315,
-        0.315,
-        0.315,
-        0.315,
-        0.315,
-        0.315,
-        0.284
-      ],
-      "word_spoken": [
-        0.284,
-        0.284,
-        0.284,
-        0.284,
-        0.284,
-        0.284,
-        0.284,
-        0.284,
-        0.284
-      ],
-      "whisper_window_start": 31.62,
-      "whisper_window_end": 38.24,
-      "whisper_window_word_count": 11,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.937,
-      "whisper_window_words": [
-        {
-          "text": "long",
-          "start": 31.86,
-          "end": 32.14,
-          "probability": 0.997
-        },
-        {
-          "text": "enough",
-          "start": 32.14,
-          "end": 32.6,
-          "probability": 0.993
-        },
-        {
-          "text": "Maybe",
-          "start": 32.6,
-          "end": 33.64,
-          "probability": 0.6
-        },
-        {
-          "text": "you",
-          "start": 33.64,
-          "end": 33.9,
-          "probability": 0.987
-        },
-        {
+          "word_index": 3,
           "text": "can",
-          "start": 33.9,
-          "end": 34.1,
-          "probability": 0.984
+          "start": 33.85,
+          "end": 34.15
         },
         {
+          "word_index": 4,
           "text": "show",
-          "start": 34.1,
-          "end": 34.36,
-          "probability": 0.998
+          "start": 34.15,
+          "end": 34.45
         },
         {
+          "word_index": 5,
           "text": "me",
-          "start": 34.36,
-          "end": 34.58,
-          "probability": 0.999
+          "start": 34.45,
+          "end": 34.7
         },
         {
+          "word_index": 6,
           "text": "how",
-          "start": 34.58,
-          "end": 34.88,
-          "probability": 0.99
+          "start": 34.7,
+          "end": 35.0
         },
         {
+          "word_index": 7,
           "text": "to",
-          "start": 34.88,
-          "end": 35.2,
-          "probability": 0.995
+          "start": 35.0,
+          "end": 35.3
         },
         {
-          "text": "love",
-          "start": 35.2,
-          "end": 35.46,
-          "probability": 0.987
+          "word_index": 8,
+          "text": "love,",
+          "start": 35.3,
+          "end": 35.55
         },
         {
-          "text": "Maybe",
+          "word_index": 9,
+          "text": "maybe",
           "start": 36.1,
-          "end": 36.62,
-          "probability": 0.779
+          "end": 37.4
         }
-      ],
-      "whisper_line_start_delta": -0.02,
-      "nearest_segment_start": 32.6,
-      "nearest_segment_start_end": 35.46,
-      "nearest_segment_start_text": "Maybe you can show me how to love",
-      "nearest_segment_end": 32.6,
-      "nearest_segment_end_start": 30.36,
-      "nearest_segment_end_text": "I've been on my own for long enough",
-      "prior_segment_start": 30.36,
-      "prior_segment_end": 32.6,
-      "prior_segment_late_by": 0.02
+      ]
     },
     {
-      "index": 5,
-      "start": 38.24,
-      "end": 40.2,
+      "line_index": 5,
       "text": "I'm going through withdrawals",
+      "start": 38.7,
+      "end": 40.3,
       "words": [
         {
+          "word_index": 1,
           "text": "I'm",
-          "start": 38.24,
-          "end": 38.919
+          "start": 38.7,
+          "end": 39.0
         },
         {
+          "word_index": 2,
           "text": "going",
-          "start": 38.919,
-          "end": 39.181
+          "start": 39.0,
+          "end": 39.3
         },
         {
-          "text": "through",
-          "start": 39.181,
-          "end": 39.547
-        },
-        {
-          "text": "withdrawals",
-          "start": 39.547,
-          "end": 40.2
-        }
-      ],
-      "word_slots": [
-        0.679,
-        0.261,
-        0.366,
-        0.653
-      ],
-      "word_spoken": [
-        0.679,
-        0.261,
-        0.366,
-        0.653
-      ],
-      "whisper_window_start": 37.24,
-      "whisper_window_end": 41.1,
-      "whisper_window_word_count": 5,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.985,
-      "whisper_window_words": [
-        {
-          "text": "I'm",
-          "start": 38.58,
-          "end": 39.1,
-          "probability": 0.98
-        },
-        {
-          "text": "going",
-          "start": 39.1,
-          "end": 39.3,
-          "probability": 0.996
-        },
-        {
+          "word_index": 3,
           "text": "through",
           "start": 39.3,
-          "end": 39.58,
-          "probability": 0.996
+          "end": 39.65
         },
         {
-          "text": "a",
-          "start": 39.58,
-          "end": 39.76,
-          "probability": 0.968
-        },
-        {
-          "text": "drought",
-          "start": 39.76,
-          "end": 40.04,
-          "probability": 0.986
+          "word_index": 4,
+          "text": "withdrawals",
+          "start": 39.65,
+          "end": 40.3
         }
-      ],
-      "whisper_line_start_delta": 0.34,
-      "nearest_segment_start": 38.58,
-      "nearest_segment_start_end": 40.04,
-      "nearest_segment_start_text": "I'm going through a drought",
-      "nearest_segment_end": 36.62,
-      "nearest_segment_end_start": 36.1,
-      "nearest_segment_end_text": "Maybe",
-      "prior_segment_start": 36.1,
-      "prior_segment_end": 36.62,
-      "prior_segment_late_by": 1.62
+      ]
     },
     {
-      "index": 6,
-      "start": 41.1,
-      "end": 43.8,
+      "line_index": 6,
       "text": "You don't even have to do too much",
+      "start": 41.6,
+      "end": 44.0,
       "words": [
         {
+          "word_index": 1,
           "text": "You",
-          "start": 41.1,
-          "end": 41.62
+          "start": 41.6,
+          "end": 41.95
         },
         {
+          "word_index": 2,
           "text": "don't",
-          "start": 41.62,
-          "end": 42.14
+          "start": 41.95,
+          "end": 42.3
         },
         {
+          "word_index": 3,
           "text": "even",
-          "start": 42.14,
-          "end": 42.34
+          "start": 42.3,
+          "end": 42.55
         },
         {
+          "word_index": 4,
           "text": "have",
-          "start": 42.34,
-          "end": 42.64
+          "start": 42.55,
+          "end": 42.85
         },
         {
+          "word_index": 5,
           "text": "to",
-          "start": 42.64,
-          "end": 42.9
+          "start": 42.85,
+          "end": 43.1
         },
         {
+          "word_index": 6,
           "text": "do",
-          "start": 42.9,
-          "end": 43.14
+          "start": 43.1,
+          "end": 43.35
         },
         {
+          "word_index": 7,
           "text": "too",
-          "start": 43.14,
-          "end": 43.48
+          "start": 43.35,
+          "end": 43.7
         },
         {
+          "word_index": 8,
           "text": "much",
-          "start": 43.48,
-          "end": 43.8
+          "start": 43.7,
+          "end": 44.0
         }
-      ],
-      "word_slots": [
-        0.52,
-        0.52,
-        0.2,
-        0.3,
-        0.26,
-        0.24,
-        0.34,
-        0.32
-      ],
-      "word_spoken": [
-        0.52,
-        0.52,
-        0.2,
-        0.3,
-        0.26,
-        0.24,
-        0.34,
-        0.32
-      ],
-      "whisper_window_start": 40.1,
-      "whisper_window_end": 43.9,
-      "whisper_window_word_count": 8,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.997,
-      "whisper_window_words": [
-        {
-          "text": "You",
-          "start": 41.24,
-          "end": 41.76,
-          "probability": 0.991
-        },
-        {
-          "text": "don't",
-          "start": 41.76,
-          "end": 42.28,
-          "probability": 1.0
-        },
-        {
-          "text": "even",
-          "start": 42.28,
-          "end": 42.48,
-          "probability": 0.999
-        },
-        {
-          "text": "have",
-          "start": 42.48,
-          "end": 42.78,
-          "probability": 0.998
-        },
-        {
-          "text": "to",
-          "start": 42.78,
-          "end": 43.04,
-          "probability": 0.999
-        },
-        {
-          "text": "do",
-          "start": 43.04,
-          "end": 43.28,
-          "probability": 0.999
-        },
-        {
-          "text": "too",
-          "start": 43.28,
-          "end": 43.62,
-          "probability": 0.995
-        },
-        {
-          "text": "much",
-          "start": 43.62,
-          "end": 43.94,
-          "probability": 1.0
-        }
-      ],
-      "whisper_line_start_delta": 0.14,
-      "nearest_segment_start": 41.24,
-      "nearest_segment_start_end": 43.94,
-      "nearest_segment_start_text": "You don't even have to do too much",
-      "nearest_segment_end": 40.04,
-      "nearest_segment_end_start": 38.58,
-      "nearest_segment_end_text": "I'm going through a drought",
-      "prior_segment_start": 38.58,
-      "prior_segment_end": 40.04,
-      "prior_segment_late_by": 1.06
+      ]
     },
     {
-      "index": 7,
-      "start": 43.9,
-      "end": 47.9,
+      "line_index": 7,
       "text": "You can turn me on with just a touch, baby",
+      "start": 44.55,
+      "end": 48.65,
       "words": [
         {
+          "word_index": 1,
           "text": "You",
-          "start": 43.9,
-          "end": 44.74
+          "start": 44.55,
+          "end": 44.95
         },
         {
+          "word_index": 2,
           "text": "can",
-          "start": 44.75,
-          "end": 44.97
+          "start": 44.95,
+          "end": 45.15
         },
         {
+          "word_index": 3,
           "text": "turn",
-          "start": 44.98,
-          "end": 45.2
+          "start": 45.15,
+          "end": 45.35
         },
         {
+          "word_index": 4,
           "text": "me",
-          "start": 45.21,
-          "end": 45.39
+          "start": 45.35,
+          "end": 45.55
         },
         {
+          "word_index": 5,
           "text": "on",
-          "start": 45.4,
-          "end": 45.58
+          "start": 45.55,
+          "end": 45.75
         },
         {
+          "word_index": 6,
           "text": "with",
-          "start": 45.59,
-          "end": 45.85
+          "start": 45.75,
+          "end": 46.0
         },
         {
+          "word_index": 7,
           "text": "just",
-          "start": 45.86,
-          "end": 46.26
+          "start": 46.0,
+          "end": 46.3
         },
         {
+          "word_index": 8,
           "text": "a",
-          "start": 46.27,
-          "end": 46.47
+          "start": 46.3,
+          "end": 46.5
         },
         {
+          "word_index": 9,
           "text": "touch,",
-          "start": 46.48,
-          "end": 46.76
+          "start": 46.5,
+          "end": 46.75
         },
         {
+          "word_index": 10,
           "text": "baby",
-          "start": 47.38,
-          "end": 47.9
+          "start": 47.65,
+          "end": 48.65
         }
-      ],
-      "word_slots": [
-        0.85,
-        0.23,
-        0.23,
-        0.19,
-        0.19,
-        0.27,
-        0.41,
-        0.21,
-        0.9,
-        0.52
-      ],
-      "word_spoken": [
-        0.84,
-        0.22,
-        0.22,
-        0.18,
-        0.18,
-        0.26,
-        0.4,
-        0.2,
-        0.28,
-        0.52
-      ],
-      "whisper_window_start": 42.9,
-      "whisper_window_end": 49.41,
-      "whisper_window_word_count": 13,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.967,
-      "whisper_window_words": [
-        {
-          "text": "do",
-          "start": 43.04,
-          "end": 43.28,
-          "probability": 0.999
-        },
-        {
-          "text": "too",
-          "start": 43.28,
-          "end": 43.62,
-          "probability": 0.995
-        },
-        {
-          "text": "much",
-          "start": 43.62,
-          "end": 43.94,
-          "probability": 1.0
-        },
-        {
-          "text": "You",
-          "start": 43.94,
-          "end": 44.78,
-          "probability": 0.989
-        },
-        {
-          "text": "can",
-          "start": 44.78,
-          "end": 45.0,
-          "probability": 0.999
-        },
-        {
-          "text": "turn",
-          "start": 45.0,
-          "end": 45.22,
-          "probability": 0.997
-        },
-        {
-          "text": "me",
-          "start": 45.22,
-          "end": 45.4,
-          "probability": 1.0
-        },
-        {
-          "text": "on",
-          "start": 45.4,
-          "end": 45.58,
-          "probability": 0.998
-        },
-        {
-          "text": "with",
-          "start": 45.58,
-          "end": 45.84,
-          "probability": 0.693
-        },
-        {
-          "text": "just",
-          "start": 45.84,
-          "end": 46.24,
-          "probability": 0.999
-        },
-        {
-          "text": "a",
-          "start": 46.24,
-          "end": 46.44,
-          "probability": 0.999
-        },
-        {
-          "text": "touch",
-          "start": 46.44,
-          "end": 46.72,
-          "probability": 1.0
-        },
-        {
-          "text": "Baby",
-          "start": 47.42,
-          "end": 47.94,
-          "probability": 0.901
-        }
-      ],
-      "whisper_line_start_delta": 0.04,
-      "nearest_segment_start": 43.94,
-      "nearest_segment_start_end": 46.72,
-      "nearest_segment_start_text": "You can turn me on with just a touch",
-      "nearest_segment_end": 43.94,
-      "nearest_segment_end_start": 41.24,
-      "nearest_segment_end_text": "You don't even have to do too much",
-      "prior_segment_start": 38.58,
-      "prior_segment_end": 40.04,
-      "prior_segment_late_by": 3.86
+      ]
     },
     {
-      "index": 8,
-      "start": 49.41,
-      "end": 50.49,
+      "line_index": 8,
       "text": "I look around and",
+      "start": 49.9,
+      "end": 50.6,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 49.41,
-          "end": 49.471
+          "start": 49.9,
+          "end": 50.0
         },
         {
+          "word_index": 2,
           "text": "look",
-          "start": 49.471,
-          "end": 50.108
+          "start": 50.0,
+          "end": 50.25
         },
         {
+          "word_index": 3,
           "text": "around",
-          "start": 50.108,
-          "end": 50.426
+          "start": 50.25,
+          "end": 50.5
         },
         {
+          "word_index": 4,
           "text": "and",
-          "start": 50.426,
-          "end": 50.49
+          "start": 50.5,
+          "end": 50.6
         }
-      ],
-      "word_slots": [
-        0.061,
-        0.637,
-        0.318,
-        0.064
-      ],
-      "word_spoken": [
-        0.061,
-        0.637,
-        0.318,
-        0.064
-      ],
-      "whisper_window_start": 48.41,
-      "whisper_window_end": 50.72,
-      "whisper_window_word_count": 3,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.935,
-      "whisper_window_words": [
-        {
-          "text": "I",
-          "start": 49.7,
-          "end": 50.22,
-          "probability": 0.953
-        },
-        {
-          "text": "look",
-          "start": 50.22,
-          "end": 50.48,
-          "probability": 0.866
-        },
-        {
-          "text": "around",
-          "start": 50.48,
-          "end": 50.78,
-          "probability": 0.984
-        }
-      ],
-      "whisper_line_start_delta": 0.29,
-      "nearest_segment_start": 49.7,
-      "nearest_segment_start_end": 53.36,
-      "nearest_segment_start_text": "I look around and see the city's cold and empty",
-      "nearest_segment_end": 47.94,
-      "nearest_segment_end_start": 47.42,
-      "nearest_segment_end_text": "Baby",
-      "prior_segment_start": 47.42,
-      "prior_segment_end": 47.94,
-      "prior_segment_late_by": 1.47
+      ]
     },
     {
-      "index": 9,
-      "start": 50.72,
-      "end": 53.3,
+      "line_index": 9,
       "text": "Sin City's cold and empty (oh)",
+      "start": 50.7,
+      "end": 54.2,
       "words": [
         {
+          "word_index": 1,
           "text": "Sin",
-          "start": 50.72,
-          "end": 50.948
+          "start": 50.7,
+          "end": 51.25
         },
         {
+          "word_index": 2,
           "text": "City's",
-          "start": 50.948,
-          "end": 51.519
+          "start": 51.25,
+          "end": 51.8
         },
         {
+          "word_index": 3,
           "text": "cold",
-          "start": 51.519,
-          "end": 51.862
+          "start": 51.8,
+          "end": 52.2
         },
         {
+          "word_index": 4,
           "text": "and",
-          "start": 51.862,
-          "end": 52.364
+          "start": 52.2,
+          "end": 52.7
         },
         {
+          "word_index": 5,
           "text": "empty",
-          "start": 52.364,
-          "end": 52.638
+          "start": 52.7,
+          "end": 53.7
         },
         {
+          "word_index": 6,
           "text": "(oh)",
-          "start": 52.638,
-          "end": 53.3
+          "start": 53.7,
+          "end": 54.2
         }
-      ],
-      "word_slots": [
-        0.228,
-        0.571,
-        0.342,
-        0.502,
-        0.274,
-        0.662
-      ],
-      "word_spoken": [
-        0.228,
-        0.571,
-        0.342,
-        0.502,
-        0.274,
-        0.662
-      ],
-      "whisper_window_start": 49.72,
-      "whisper_window_end": 53.53,
-      "whisper_window_word_count": 10,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.871,
-      "whisper_window_words": [
-        {
-          "text": "look",
-          "start": 50.22,
-          "end": 50.48,
-          "probability": 0.866
-        },
-        {
-          "text": "around",
-          "start": 50.48,
-          "end": 50.78,
-          "probability": 0.984
-        },
-        {
-          "text": "and",
-          "start": 50.78,
-          "end": 50.98,
-          "probability": 0.859
-        },
-        {
-          "text": "see",
-          "start": 50.98,
-          "end": 51.48,
-          "probability": 0.882
-        },
-        {
-          "text": "the",
-          "start": 51.48,
-          "end": 51.78,
-          "probability": 0.988
-        },
-        {
-          "text": "city's",
-          "start": 51.78,
-          "end": 52.22,
-          "probability": 0.987
-        },
-        {
-          "text": "cold",
-          "start": 52.22,
-          "end": 52.46,
-          "probability": 0.995
-        },
-        {
-          "text": "and",
-          "start": 52.46,
-          "end": 52.78,
-          "probability": 0.998
-        },
-        {
-          "text": "empty",
-          "start": 52.78,
-          "end": 53.36,
-          "probability": 1.0
-        },
-        {
-          "text": "No",
-          "start": 53.36,
-          "end": 54.28,
-          "probability": 0.148
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 49.7,
-      "nearest_segment_start_end": 53.36,
-      "nearest_segment_start_text": "I look around and see the city's cold and empty",
-      "nearest_segment_end": 53.36,
-      "nearest_segment_end_start": 49.7,
-      "nearest_segment_end_text": "I look around and see the city's cold and empty",
-      "prior_segment_start": 47.42,
-      "prior_segment_end": 47.94,
-      "prior_segment_late_by": 2.78
+      ]
     },
     {
-      "index": 10,
-      "start": 53.53,
-      "end": 56.28,
+      "line_index": 10,
       "text": "No one's around to judge me (oh)",
+      "start": 54.2,
+      "end": 57.0,
       "words": [
         {
+          "word_index": 1,
           "text": "No",
-          "start": 53.53,
-          "end": 54.006
+          "start": 54.2,
+          "end": 54.55
         },
         {
+          "word_index": 2,
           "text": "one's",
-          "start": 54.006,
-          "end": 54.253
+          "start": 54.55,
+          "end": 54.8
         },
         {
+          "word_index": 3,
           "text": "around",
-          "start": 54.253,
-          "end": 54.729
+          "start": 54.8,
+          "end": 55.3
         },
         {
+          "word_index": 4,
           "text": "to",
-          "start": 54.729,
-          "end": 55.11
+          "start": 55.3,
+          "end": 55.65
         },
         {
+          "word_index": 5,
           "text": "judge",
-          "start": 55.11,
-          "end": 55.433
+          "start": 55.65,
+          "end": 56.0
         },
         {
+          "word_index": 6,
           "text": "me",
-          "start": 55.433,
-          "end": 56.212
+          "start": 56.0,
+          "end": 56.55
         },
         {
+          "word_index": 7,
           "text": "(oh)",
-          "start": 56.212,
-          "end": 56.28
+          "start": 56.55,
+          "end": 57.0
         }
-      ],
-      "word_slots": [
-        0.476,
-        0.247,
-        0.476,
-        0.381,
-        0.324,
-        0.779,
-        0.068
-      ],
-      "word_spoken": [
-        0.476,
-        0.247,
-        0.476,
-        0.381,
-        0.324,
-        0.779,
-        0.068
-      ],
-      "whisper_window_start": 52.53,
-      "whisper_window_end": 56.29,
-      "whisper_window_word_count": 8,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.778,
-      "whisper_window_words": [
-        {
-          "text": "empty",
-          "start": 52.78,
-          "end": 53.36,
-          "probability": 1.0
-        },
-        {
-          "text": "No",
-          "start": 53.36,
-          "end": 54.28,
-          "probability": 0.148
-        },
-        {
-          "text": "one's",
-          "start": 54.28,
-          "end": 54.78,
-          "probability": 0.553
-        },
-        {
-          "text": "around",
-          "start": 54.78,
-          "end": 55.04,
-          "probability": 0.969
-        },
-        {
-          "text": "to",
-          "start": 55.04,
-          "end": 55.54,
-          "probability": 0.988
-        },
-        {
-          "text": "judge",
-          "start": 55.54,
-          "end": 55.94,
-          "probability": 0.993
-        },
-        {
-          "text": "me",
-          "start": 55.94,
-          "end": 56.28,
-          "probability": 0.998
-        },
-        {
-          "text": "I",
-          "start": 56.28,
-          "end": 57.12,
-          "probability": 0.575
-        }
-      ],
-      "whisper_line_start_delta": -0.17,
-      "nearest_segment_start": 53.36,
-      "nearest_segment_start_end": 56.28,
-      "nearest_segment_start_text": "No one's around to judge me",
-      "nearest_segment_end": 53.36,
-      "nearest_segment_end_start": 49.7,
-      "nearest_segment_end_text": "I look around and see the city's cold and empty",
-      "prior_segment_start": 49.7,
-      "prior_segment_end": 53.36,
-      "prior_segment_late_by": 0.17
+      ]
     },
     {
-      "index": 11,
-      "start": 56.29,
-      "end": 58.85,
+      "line_index": 11,
       "text": "I can't see clearly when you're gone",
+      "start": 57.0,
+      "end": 61.0,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 56.29,
-          "end": 56.352
+          "start": 57.0,
+          "end": 57.1
         },
         {
+          "word_index": 2,
           "text": "can't",
-          "start": 56.352,
-          "end": 56.675
+          "start": 57.1,
+          "end": 57.4
         },
         {
+          "word_index": 3,
           "text": "see",
-          "start": 56.675,
-          "end": 56.998
+          "start": 57.4,
+          "end": 57.75
         },
         {
+          "word_index": 4,
           "text": "clearly",
-          "start": 56.998,
-          "end": 57.718
+          "start": 57.75,
+          "end": 58.45
         },
         {
+          "word_index": 5,
           "text": "when",
-          "start": 57.718,
-          "end": 58.364
+          "start": 58.45,
+          "end": 59.1
         },
         {
+          "word_index": 6,
           "text": "you're",
-          "start": 58.364,
-          "end": 58.787
+          "start": 59.1,
+          "end": 59.55
         },
         {
+          "word_index": 7,
           "text": "gone",
-          "start": 58.787,
-          "end": 58.85
+          "start": 59.55,
+          "end": 61.0
         }
-      ],
-      "word_slots": [
-        0.062,
-        0.323,
-        0.323,
-        0.72,
-        0.646,
-        0.422,
-        0.063
-      ],
-      "word_spoken": [
-        0.062,
-        0.323,
-        0.323,
-        0.72,
-        0.646,
-        0.422,
-        0.063
-      ],
-      "whisper_window_start": 55.29,
-      "whisper_window_end": 60.78,
-      "whisper_window_word_count": 10,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.826,
-      "whisper_window_words": [
-        {
-          "text": "judge",
-          "start": 55.54,
-          "end": 55.94,
-          "probability": 0.993
-        },
-        {
-          "text": "me",
-          "start": 55.94,
-          "end": 56.28,
-          "probability": 0.998
-        },
-        {
-          "text": "I",
-          "start": 56.28,
-          "end": 57.12,
-          "probability": 0.575
-        },
-        {
-          "text": "can",
-          "start": 57.12,
-          "end": 57.38,
-          "probability": 0.977
-        },
-        {
-          "text": "see",
-          "start": 57.38,
-          "end": 57.64,
-          "probability": 0.517
-        },
-        {
-          "text": "clearly",
-          "start": 57.64,
-          "end": 58.16,
-          "probability": 0.994
-        },
-        {
-          "text": "when",
-          "start": 58.16,
-          "end": 58.74,
-          "probability": 0.839
-        },
-        {
-          "text": "you're",
-          "start": 58.74,
-          "end": 59.08,
-          "probability": 0.983
-        },
-        {
-          "text": "gone",
-          "start": 59.08,
-          "end": 59.68,
-          "probability": 0.787
-        },
-        {
-          "text": "I",
-          "start": 60.22,
-          "end": 61.2,
-          "probability": 0.593
-        }
-      ],
-      "whisper_line_start_delta": -0.01,
-      "nearest_segment_start": 56.28,
-      "nearest_segment_start_end": 59.68,
-      "nearest_segment_start_text": "I can see clearly when you're gone",
-      "nearest_segment_end": 56.28,
-      "nearest_segment_end_start": 53.36,
-      "nearest_segment_end_text": "No one's around to judge me",
-      "prior_segment_start": 53.36,
-      "prior_segment_end": 56.28,
-      "prior_segment_late_by": 0.01
+      ]
     },
     {
-      "index": 12,
-      "start": 60.78,
-      "end": 65.26,
+      "line_index": 12,
       "text": "I said, ooh, I'm blinded by the lights",
+      "start": 61.15,
+      "end": 67.05,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 60.78,
-          "end": 60.833
+          "start": 61.15,
+          "end": 61.55
         },
         {
+          "word_index": 2,
           "text": "said,",
-          "start": 60.833,
-          "end": 61.57
+          "start": 61.55,
+          "end": 62.15
         },
         {
+          "word_index": 3,
           "text": "ooh,",
-          "start": 61.57,
-          "end": 61.623
+          "start": 62.15,
+          "end": 64.8
         },
         {
+          "word_index": 4,
           "text": "I'm",
-          "start": 61.623,
-          "end": 62.655
+          "start": 64.8,
+          "end": 65.0
         },
         {
+          "word_index": 5,
           "text": "blinded",
-          "start": 62.655,
-          "end": 63.182
+          "start": 65.0,
+          "end": 65.55
         },
         {
+          "word_index": 6,
           "text": "by",
-          "start": 63.182,
-          "end": 63.709
+          "start": 65.55,
+          "end": 65.95
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 63.709,
-          "end": 64.235
+          "start": 65.95,
+          "end": 66.35
         },
         {
+          "word_index": 8,
           "text": "lights",
-          "start": 64.235,
-          "end": 65.26
+          "start": 66.35,
+          "end": 67.05
         }
-      ],
-      "word_slots": [
-        0.053,
-        0.737,
-        0.053,
-        1.032,
-        0.527,
-        0.527,
-        0.527,
-        1.025
-      ],
-      "word_spoken": [
-        0.053,
-        0.737,
-        0.053,
-        1.032,
-        0.527,
-        0.527,
-        0.527,
-        1.025
-      ],
-      "whisper_window_start": 59.78,
-      "whisper_window_end": 66.57,
-      "whisper_window_word_count": 3,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.586,
-      "whisper_window_words": [
-        {
-          "text": "I",
-          "start": 60.22,
-          "end": 61.2,
-          "probability": 0.593
-        },
-        {
-          "text": "said",
-          "start": 61.2,
-          "end": 61.9,
-          "probability": 0.98
-        },
-        {
-          "text": "No,",
-          "start": 61.9,
-          "end": 62.7,
-          "probability": 0.186
-        }
-      ],
-      "whisper_line_start_delta": -0.56,
-      "nearest_segment_start": 60.22,
-      "nearest_segment_start_end": 61.9,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 59.68,
-      "nearest_segment_end_start": 56.28,
-      "nearest_segment_end_text": "I can see clearly when you're gone",
-      "prior_segment_start": 56.28,
-      "prior_segment_end": 59.68,
-      "prior_segment_late_by": 1.1
+      ]
     },
     {
-      "index": 13,
-      "start": 66.57,
-      "end": 69.82,
+      "line_index": 13,
       "text": "No, I can't sleep until I feel your touch",
+      "start": 67.35,
+      "end": 71.15,
       "words": [
         {
+          "word_index": 1,
           "text": "No,",
-          "start": 66.57,
-          "end": 67.119
+          "start": 67.35,
+          "end": 67.9
         },
         {
+          "word_index": 2,
           "text": "I",
-          "start": 67.119,
-          "end": 67.174
+          "start": 67.9,
+          "end": 68.0
         },
         {
+          "word_index": 3,
           "text": "can't",
-          "start": 67.174,
-          "end": 67.635
+          "start": 68.0,
+          "end": 68.5
         },
         {
+          "word_index": 4,
           "text": "sleep",
-          "start": 67.635,
-          "end": 67.986
+          "start": 68.5,
+          "end": 68.85
         },
         {
+          "word_index": 5,
           "text": "until",
-          "start": 67.986,
-          "end": 68.25
+          "start": 68.85,
+          "end": 69.1
         },
         {
+          "word_index": 6,
           "text": "I",
-          "start": 68.25,
-          "end": 68.305
+          "start": 69.1,
+          "end": 69.2
         },
         {
+          "word_index": 7,
           "text": "feel",
-          "start": 68.305,
-          "end": 68.832
+          "start": 69.2,
+          "end": 69.75
         },
         {
+          "word_index": 8,
           "text": "your",
-          "start": 68.832,
-          "end": 69.469
+          "start": 69.75,
+          "end": 70.5
         },
         {
+          "word_index": 9,
           "text": "touch",
-          "start": 69.469,
-          "end": 69.82
+          "start": 70.5,
+          "end": 71.15
         }
-      ],
-      "word_slots": [
-        0.549,
-        0.055,
-        0.461,
-        0.351,
-        0.264,
-        0.055,
-        0.527,
-        0.637,
-        0.351
-      ],
-      "word_spoken": [
-        0.549,
-        0.055,
-        0.461,
-        0.351,
-        0.264,
-        0.055,
-        0.527,
-        0.637,
-        0.351
-      ],
-      "whisper_window_start": 65.57,
-      "whisper_window_end": 71.75,
-      "whisper_window_word_count": 8,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.982,
-      "whisper_window_words": [
-        {
-          "text": "I",
-          "start": 67.59,
-          "end": 68.01,
-          "probability": 0.997
-        },
-        {
-          "text": "can't",
-          "start": 68.01,
-          "end": 68.33,
-          "probability": 0.999
-        },
-        {
-          "text": "sleep",
-          "start": 68.33,
-          "end": 68.57,
-          "probability": 0.999
-        },
-        {
-          "text": "until",
-          "start": 68.57,
-          "end": 69.05,
-          "probability": 0.869
-        },
-        {
-          "text": "I",
-          "start": 69.05,
-          "end": 69.63,
-          "probability": 1.0
-        },
-        {
-          "text": "feel",
-          "start": 69.63,
-          "end": 69.95,
-          "probability": 0.997
-        },
-        {
-          "text": "your",
-          "start": 69.95,
-          "end": 70.23,
-          "probability": 0.999
-        },
-        {
-          "text": "touch",
-          "start": 70.23,
-          "end": 71.13,
-          "probability": 0.999
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 61.9,
-      "nearest_segment_start_end": 71.13,
-      "nearest_segment_start_text": "No, I can't sleep until I feel your touch",
-      "nearest_segment_end": 71.13,
-      "nearest_segment_end_start": 61.9,
-      "nearest_segment_end_text": "No, I can't sleep until I feel your touch",
-      "prior_segment_start": 60.22,
-      "prior_segment_end": 61.9,
-      "prior_segment_late_by": 4.67
+      ]
     },
     {
-      "index": 14,
-      "start": 71.75,
-      "end": 75.15,
+      "line_index": 14,
       "text": "I said, ooh, I'm drowning in the night",
+      "start": 71.85,
+      "end": 78.3,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 71.75,
-          "end": 71.802
+          "start": 71.85,
+          "end": 72.15
         },
         {
+          "word_index": 2,
           "text": "said,",
-          "start": 71.802,
-          "end": 72.638
+          "start": 72.15,
+          "end": 73.0
         },
         {
+          "word_index": 3,
           "text": "ooh,",
-          "start": 72.638,
-          "end": 72.691
+          "start": 73.0,
+          "end": 75.5
         },
         {
+          "word_index": 4,
           "text": "I'm",
-          "start": 72.691,
-          "end": 73.318
+          "start": 75.5,
+          "end": 76.1
         },
         {
+          "word_index": 5,
           "text": "drowning",
-          "start": 73.318,
-          "end": 73.84
+          "start": 76.1,
+          "end": 76.65
         },
         {
+          "word_index": 6,
           "text": "in",
-          "start": 73.84,
-          "end": 74.363
+          "start": 76.65,
+          "end": 77.15
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 74.363,
-          "end": 74.886
+          "start": 77.15,
+          "end": 77.7
         },
         {
+          "word_index": 8,
           "text": "night",
-          "start": 74.886,
-          "end": 75.15
+          "start": 77.7,
+          "end": 78.3
         }
-      ],
-      "word_slots": [
-        0.052,
-        0.836,
-        0.052,
-        0.627,
-        0.523,
-        0.523,
-        0.523,
-        0.264
-      ],
-      "word_spoken": [
-        0.052,
-        0.836,
-        0.052,
-        0.627,
-        0.523,
-        0.523,
-        0.523,
-        0.264
-      ],
-      "whisper_window_start": 70.75,
-      "whisper_window_end": 77.9,
-      "whisper_window_word_count": 2,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.996,
-      "whisper_window_words": [
-        {
-          "text": "I",
-          "start": 71.99,
-          "end": 72.79,
-          "probability": 0.992
-        },
-        {
-          "text": "said",
-          "start": 72.79,
-          "end": 73.39,
-          "probability": 0.999
-        }
-      ],
-      "whisper_line_start_delta": 0.24,
-      "nearest_segment_start": 71.99,
-      "nearest_segment_start_end": 73.39,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 71.13,
-      "nearest_segment_end_start": 61.9,
-      "nearest_segment_end_text": "No, I can't sleep until I feel your touch",
-      "prior_segment_start": 61.9,
-      "prior_segment_end": 71.13,
-      "prior_segment_late_by": 0.62
+      ]
     },
     {
-      "index": 15,
-      "start": 77.9,
-      "end": 82.22,
+      "line_index": 15,
       "text": "Oh, when I'm like this, you're the one I trust",
+      "start": 78.3,
+      "end": 82.45,
       "words": [
         {
+          "word_index": 1,
           "text": "Oh,",
-          "start": 77.9,
-          "end": 78.345
+          "start": 78.3,
+          "end": 78.7
         },
         {
+          "word_index": 2,
           "text": "when",
-          "start": 78.345,
-          "end": 79.058
+          "start": 78.7,
+          "end": 79.1
         },
         {
+          "word_index": 3,
           "text": "I'm",
-          "start": 79.058,
-          "end": 79.503
+          "start": 79.1,
+          "end": 79.55
         },
         {
+          "word_index": 4,
           "text": "like",
-          "start": 79.503,
-          "end": 79.949
+          "start": 79.55,
+          "end": 80.0
         },
         {
+          "word_index": 5,
           "text": "this,",
-          "start": 79.949,
-          "end": 80.394
+          "start": 80.0,
+          "end": 80.4
         },
         {
+          "word_index": 6,
           "text": "you're",
-          "start": 80.394,
-          "end": 80.839
+          "start": 80.4,
+          "end": 80.75
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 80.839,
-          "end": 81.285
+          "start": 80.75,
+          "end": 81.05
         },
         {
+          "word_index": 8,
           "text": "one",
-          "start": 81.285,
-          "end": 81.73
+          "start": 81.05,
+          "end": 81.45
         },
         {
+          "word_index": 9,
           "text": "I",
-          "start": 81.73,
-          "end": 81.775
+          "start": 81.45,
+          "end": 82.05
         },
         {
+          "word_index": 10,
           "text": "trust",
-          "start": 81.775,
-          "end": 82.22
+          "start": 82.05,
+          "end": 82.45
         }
-      ],
-      "word_slots": [
-        0.445,
-        0.713,
-        0.445,
-        0.445,
-        0.445,
-        0.445,
-        0.445,
-        0.445,
-        0.045,
-        0.445
-      ],
-      "word_spoken": [
-        0.445,
-        0.713,
-        0.445,
-        0.445,
-        0.445,
-        0.445,
-        0.445,
-        0.445,
-        0.045,
-        0.445
-      ],
-      "whisper_window_start": 76.9,
-      "whisper_window_end": 82.23,
-      "whisper_window_word_count": 1,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.71,
-      "whisper_window_words": [
-        {
-          "text": "I'm",
-          "start": 80.7,
-          "end": 81.5,
-          "probability": 0.71
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 80.7,
-      "nearest_segment_start_end": 96.27,
-      "nearest_segment_start_text": "I'm running out of time",
-      "nearest_segment_end": 73.39,
-      "nearest_segment_end_start": 71.99,
-      "nearest_segment_end_text": "I said",
-      "prior_segment_start": 71.99,
-      "prior_segment_end": 73.39,
-      "prior_segment_late_by": 4.51
+      ]
     },
     {
-      "index": 16,
-      "start": 82.23,
-      "end": 83.47,
+      "line_index": 16,
       "text": "(Hey, hey, hey)",
+      "start": 83.1,
+      "end": 84.7,
       "words": [
         {
+          "word_index": 1,
           "text": "(Hey,",
-          "start": 82.23,
-          "end": 82.744
+          "start": 83.1,
+          "end": 83.6
         },
         {
+          "word_index": 2,
           "text": "hey,",
-          "start": 82.764,
-          "end": 83.348
+          "start": 83.6,
+          "end": 84.2
         },
         {
+          "word_index": 3,
           "text": "hey)",
-          "start": 83.368,
-          "end": 83.468
+          "start": 84.2,
+          "end": 84.7
         }
-      ],
-      "word_slots": [
-        0.534,
-        0.604,
-        0.1
-      ],
-      "word_spoken": [
-        0.514,
-        0.584,
-        0.1
-      ],
-      "whisper_window_start": 81.23,
-      "whisper_window_end": 94.24,
-      "whisper_window_word_count": 0,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": null,
-      "whisper_window_words": [],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 80.7,
-      "nearest_segment_start_end": 96.27,
-      "nearest_segment_start_text": "I'm running out of time",
-      "nearest_segment_end": 73.39,
-      "nearest_segment_end_start": 71.99,
-      "nearest_segment_end_text": "I said",
-      "prior_segment_start": 71.99,
-      "prior_segment_end": 73.39,
-      "prior_segment_late_by": 8.84
+      ]
     },
     {
-      "index": 17,
-      "start": 94.24,
-      "end": 95.76,
+      "line_index": 17,
       "text": "I'm running out of time",
+      "start": 95.15,
+      "end": 96.05,
       "words": [
         {
+          "word_index": 1,
           "text": "I'm",
-          "start": 94.24,
-          "end": 95.0
+          "start": 95.15,
+          "end": 95.3
         },
         {
+          "word_index": 2,
           "text": "running",
-          "start": 95.0,
-          "end": 95.2
+          "start": 95.3,
+          "end": 95.5
         },
         {
+          "word_index": 3,
           "text": "out",
-          "start": 95.2,
-          "end": 95.38
+          "start": 95.5,
+          "end": 95.7
         },
         {
+          "word_index": 4,
           "text": "of",
-          "start": 95.38,
-          "end": 95.6
+          "start": 95.7,
+          "end": 95.9
         },
         {
+          "word_index": 5,
           "text": "time",
-          "start": 95.6,
-          "end": 95.76
+          "start": 95.9,
+          "end": 96.05
         }
-      ],
-      "word_slots": [
-        0.76,
-        0.2,
-        0.18,
-        0.22,
-        0.16
-      ],
-      "word_spoken": [
-        0.76,
-        0.2,
-        0.18,
-        0.22,
-        0.16
-      ],
-      "whisper_window_start": 93.24,
-      "whisper_window_end": 96.96,
-      "whisper_window_word_count": 4,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.998,
-      "whisper_window_words": [
-        {
-          "text": "running",
-          "start": 95.19,
-          "end": 95.39,
-          "probability": 0.999
-        },
-        {
-          "text": "out",
-          "start": 95.39,
-          "end": 95.81,
-          "probability": 0.994
-        },
-        {
-          "text": "of",
-          "start": 95.81,
-          "end": 95.97,
-          "probability": 1.0
-        },
-        {
-          "text": "time",
-          "start": 95.97,
-          "end": 96.27,
-          "probability": 1.0
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 97.19,
-      "nearest_segment_start_end": 99.99,
-      "nearest_segment_start_text": "Cause I can see the sunlight up the sky",
-      "nearest_segment_end": 96.27,
-      "nearest_segment_end_start": 80.7,
-      "nearest_segment_end_text": "I'm running out of time"
+      ]
     },
     {
-      "index": 18,
-      "start": 96.96,
-      "end": 100.38,
+      "line_index": 18,
       "text": "'Cause I can see the sun light up the sky",
+      "start": 97.2,
+      "end": 100.15,
       "words": [
         {
+          "word_index": 1,
           "text": "'Cause",
-          "start": 96.96,
-          "end": 97.177
+          "start": 97.2,
+          "end": 97.6
         },
         {
+          "word_index": 2,
           "text": "I",
-          "start": 97.177,
-          "end": 97.222
+          "start": 97.6,
+          "end": 97.9
         },
         {
+          "word_index": 3,
           "text": "can",
-          "start": 97.222,
-          "end": 97.348
+          "start": 97.9,
+          "end": 98.15
         },
         {
+          "word_index": 4,
           "text": "see",
-          "start": 97.348,
-          "end": 97.492
+          "start": 98.15,
+          "end": 98.3
         },
         {
+          "word_index": 5,
           "text": "the",
-          "start": 97.492,
-          "end": 97.745
+          "start": 98.3,
+          "end": 98.5
         },
         {
+          "word_index": 6,
           "text": "sun",
-          "start": 97.745,
-          "end": 98.034
+          "start": 98.5,
+          "end": 98.8
         },
         {
+          "word_index": 7,
           "text": "light",
-          "start": 98.034,
-          "end": 98.81
+          "start": 98.8,
+          "end": 99.15
         },
         {
+          "word_index": 8,
           "text": "up",
-          "start": 98.81,
-          "end": 99.802
+          "start": 99.15,
+          "end": 99.5
         },
         {
+          "word_index": 9,
           "text": "the",
-          "start": 99.802,
-          "end": 100.091
+          "start": 99.5,
+          "end": 99.85
         },
         {
+          "word_index": 10,
           "text": "sky",
-          "start": 100.091,
-          "end": 100.38
+          "start": 99.85,
+          "end": 100.15
         }
-      ],
-      "word_slots": [
-        0.217,
-        0.045,
-        0.126,
-        0.144,
-        0.253,
-        0.289,
-        0.776,
-        0.993,
-        0.289,
-        0.289
-      ],
-      "word_spoken": [
-        0.217,
-        0.045,
-        0.126,
-        0.144,
-        0.253,
-        0.289,
-        0.776,
-        0.993,
-        0.289,
-        0.289
-      ],
-      "whisper_window_start": 95.96,
-      "whisper_window_end": 100.39,
-      "whisper_window_word_count": 11,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.983,
-      "whisper_window_words": [
-        {
-          "text": "time",
-          "start": 95.97,
-          "end": 96.27,
-          "probability": 1.0
-        },
-        {
-          "text": "Cause",
-          "start": 97.19,
-          "end": 97.99,
-          "probability": 0.944
-        },
-        {
-          "text": "I",
-          "start": 97.99,
-          "end": 98.19,
-          "probability": 0.999
-        },
-        {
-          "text": "can",
-          "start": 98.19,
-          "end": 98.37,
-          "probability": 1.0
-        },
-        {
-          "text": "see",
-          "start": 98.37,
-          "end": 98.59,
-          "probability": 0.997
-        },
-        {
-          "text": "the",
-          "start": 98.59,
-          "end": 98.71,
-          "probability": 1.0
-        },
-        {
-          "text": "sunlight",
-          "start": 98.71,
-          "end": 99.07,
-          "probability": 0.882
-        },
-        {
-          "text": "up",
-          "start": 99.07,
-          "end": 99.53,
-          "probability": 0.998
-        },
-        {
-          "text": "the",
-          "start": 99.53,
-          "end": 99.71,
-          "probability": 0.999
-        },
-        {
-          "text": "sky",
-          "start": 99.71,
-          "end": 99.99,
-          "probability": 1.0
-        },
-        {
-          "text": "So",
-          "start": 99.99,
-          "end": 100.97,
-          "probability": 0.994
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 97.19,
-      "nearest_segment_start_end": 99.99,
-      "nearest_segment_start_text": "Cause I can see the sunlight up the sky",
-      "nearest_segment_end": 96.27,
-      "nearest_segment_end_start": 80.7,
-      "nearest_segment_end_text": "I'm running out of time",
-      "prior_segment_start": 80.7,
-      "prior_segment_end": 96.27,
-      "prior_segment_late_by": 0.69
+      ]
     },
     {
-      "index": 19,
-      "start": 100.39,
-      "end": 105.04,
+      "line_index": 19,
       "text": "So I hit the road in overdrive, baby, oh",
+      "start": 100.15,
+      "end": 107.25,
       "words": [
         {
+          "word_index": 1,
           "text": "So",
-          "start": 100.39,
-          "end": 100.411
+          "start": 100.15,
+          "end": 100.4
         },
         {
+          "word_index": 2,
           "text": "I",
-          "start": 100.411,
-          "end": 100.421
+          "start": 100.4,
+          "end": 100.75
         },
         {
+          "word_index": 3,
           "text": "hit",
-          "start": 100.421,
-          "end": 100.483
+          "start": 100.75,
+          "end": 101.05
         },
         {
+          "word_index": 4,
           "text": "the",
-          "start": 100.483,
-          "end": 100.586
+          "start": 101.05,
+          "end": 101.4
         },
         {
+          "word_index": 5,
           "text": "road",
-          "start": 100.586,
-          "end": 100.69
+          "start": 101.4,
+          "end": 101.9
         },
         {
+          "word_index": 6,
           "text": "in",
-          "start": 100.69,
-          "end": 100.793
+          "start": 101.9,
+          "end": 102.3
         },
         {
+          "word_index": 7,
           "text": "overdrive,",
-          "start": 100.793,
-          "end": 100.897
+          "start": 102.3,
+          "end": 103.0
         },
         {
+          "word_index": 8,
           "text": "baby,",
-          "start": 100.897,
-          "end": 101.0
+          "start": 103.6,
+          "end": 104.9
         },
         {
+          "word_index": 9,
           "text": "oh",
-          "start": 101.0,
-          "end": 105.044
+          "start": 105.35,
+          "end": 107.25
         }
-      ],
-      "word_slots": [
-        0.021,
-        0.01,
-        0.062,
-        0.103,
-        0.103,
-        0.103,
-        0.103,
-        0.103,
-        4.044
-      ],
-      "word_spoken": [
-        0.021,
-        0.01,
-        0.062,
-        0.103,
-        0.103,
-        0.103,
-        0.103,
-        0.103,
-        4.044
-      ],
-      "whisper_window_start": 99.39,
-      "whisper_window_end": 107.08,
-      "whisper_window_word_count": 13,
-      "whisper_window_low_conf_count": 2,
-      "whisper_window_avg_prob": 0.797,
-      "whisper_window_words": [
-        {
-          "text": "the",
-          "start": 99.53,
-          "end": 99.71,
-          "probability": 0.999
-        },
-        {
-          "text": "sky",
-          "start": 99.71,
-          "end": 99.99,
-          "probability": 1.0
-        },
-        {
-          "text": "So",
-          "start": 99.99,
-          "end": 100.97,
-          "probability": 0.994
-        },
-        {
-          "text": "I",
-          "start": 100.97,
-          "end": 101.21,
-          "probability": 0.987
-        },
-        {
-          "text": "hit",
-          "start": 101.21,
-          "end": 101.35,
-          "probability": 0.97
-        },
-        {
-          "text": "the",
-          "start": 101.35,
-          "end": 101.51,
-          "probability": 1.0
-        },
-        {
-          "text": "road",
-          "start": 101.51,
-          "end": 101.79,
-          "probability": 1.0
-        },
-        {
-          "text": "and",
-          "start": 101.79,
-          "end": 102.11,
-          "probability": 0.69
-        },
-        {
-          "text": "overdrive",
-          "start": 102.11,
-          "end": 102.97,
-          "probability": 0.922
-        },
-        {
-          "text": "Baby",
-          "start": 102.97,
-          "end": 104.07,
-          "probability": 0.818
-        },
-        {
-          "text": "Oh",
-          "start": 105.27,
-          "end": 106.07,
-          "probability": 0.665
-        },
-        {
-          "text": "Oh",
-          "start": 106.07,
-          "end": 106.25,
-          "probability": 0.018
-        },
-        {
-          "text": "The",
-          "start": 106.27,
-          "end": 107.61,
-          "probability": 0.299
-        }
-      ],
-      "whisper_line_start_delta": -0.4,
-      "nearest_segment_start": 99.99,
-      "nearest_segment_start_end": 102.97,
-      "nearest_segment_start_text": "So I hit the road and overdrive",
-      "nearest_segment_end": 99.99,
-      "nearest_segment_end_start": 97.19,
-      "nearest_segment_end_text": "Cause I can see the sunlight up the sky",
-      "prior_segment_start": 97.19,
-      "prior_segment_end": 99.99,
-      "prior_segment_late_by": 0.4
+      ]
     },
     {
-      "index": 20,
-      "start": 107.08,
-      "end": 109.49,
+      "line_index": 20,
       "text": "The city's cold and empty (oh)",
+      "start": 107.35,
+      "end": 110.4,
       "words": [
         {
+          "word_index": 1,
           "text": "The",
-          "start": 107.08,
-          "end": 107.13
+          "start": 107.35,
+          "end": 107.7
         },
         {
+          "word_index": 2,
           "text": "city's",
-          "start": 107.13,
-          "end": 107.165
+          "start": 107.7,
+          "end": 108.15
         },
         {
+          "word_index": 3,
           "text": "cold",
-          "start": 107.165,
-          "end": 107.2
+          "start": 108.15,
+          "end": 108.65
         },
         {
+          "word_index": 4,
           "text": "and",
-          "start": 107.2,
-          "end": 107.235
+          "start": 108.65,
+          "end": 108.95
         },
         {
+          "word_index": 5,
           "text": "empty",
-          "start": 107.235,
-          "end": 107.27
+          "start": 108.95,
+          "end": 109.45
         },
         {
+          "word_index": 6,
           "text": "(oh)",
-          "start": 107.27,
-          "end": 109.49
+          "start": 109.45,
+          "end": 110.4
         }
-      ],
-      "word_slots": [
-        0.05,
-        0.035,
-        0.035,
-        0.035,
-        0.035,
-        2.22
-      ],
-      "word_spoken": [
-        0.05,
-        0.035,
-        0.035,
-        0.035,
-        0.035,
-        2.22
-      ],
-      "whisper_window_start": 106.08,
-      "whisper_window_end": 109.5,
-      "whisper_window_word_count": 5,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.84,
-      "whisper_window_words": [
-        {
-          "text": "The",
-          "start": 106.27,
-          "end": 107.61,
-          "probability": 0.299
-        },
-        {
-          "text": "city's",
-          "start": 107.61,
-          "end": 108.31,
-          "probability": 0.924
-        },
-        {
-          "text": "cold",
-          "start": 108.31,
-          "end": 108.57,
-          "probability": 0.991
-        },
-        {
-          "text": "and",
-          "start": 108.57,
-          "end": 108.97,
-          "probability": 0.991
-        },
-        {
-          "text": "empty",
-          "start": 108.97,
-          "end": 109.51,
-          "probability": 0.997
-        }
-      ],
-      "whisper_line_start_delta": -0.81,
-      "nearest_segment_start": 106.27,
-      "nearest_segment_start_end": 109.51,
-      "nearest_segment_start_text": "The city's cold and empty",
-      "nearest_segment_end": 106.25,
-      "nearest_segment_end_start": 106.07,
-      "nearest_segment_end_text": "Oh",
-      "prior_segment_start": 106.07,
-      "prior_segment_end": 106.25,
-      "prior_segment_late_by": 0.83
+      ]
     },
     {
-      "index": 21,
-      "start": 109.5,
-      "end": 110.0,
+      "line_index": 21,
       "text": "No one's around to judge me (oh)",
+      "start": 110.4,
+      "end": 112.85,
       "words": [
         {
+          "word_index": 1,
           "text": "No",
-          "start": 109.5,
-          "end": 109.502
+          "start": 110.4,
+          "end": 110.7
         },
         {
+          "word_index": 2,
           "text": "one's",
-          "start": 109.502,
-          "end": 109.502
+          "start": 110.7,
+          "end": 110.95
         },
         {
+          "word_index": 3,
           "text": "around",
-          "start": 109.502,
-          "end": 109.502
+          "start": 110.95,
+          "end": 111.35
         },
         {
+          "word_index": 4,
           "text": "to",
-          "start": 109.502,
-          "end": 109.502
+          "start": 111.35,
+          "end": 111.65
         },
         {
+          "word_index": 5,
           "text": "judge",
-          "start": 109.502,
-          "end": 109.503
+          "start": 111.65,
+          "end": 112.1
         },
         {
+          "word_index": 6,
           "text": "me",
-          "start": 109.503,
-          "end": 109.503
+          "start": 112.1,
+          "end": 112.35
         },
         {
+          "word_index": 7,
           "text": "(oh)",
-          "start": 109.503,
-          "end": 110.0
+          "start": 112.35,
+          "end": 112.85
         }
-      ],
-      "word_slots": [
-        0.002,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.497
-      ],
-      "word_spoken": [
-        0.002,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.497
-      ],
-      "whisper_window_start": 108.5,
-      "whisper_window_end": 112.69,
-      "whisper_window_word_count": 9,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.952,
-      "whisper_window_words": [
-        {
-          "text": "and",
-          "start": 108.57,
-          "end": 108.97,
-          "probability": 0.991
-        },
-        {
-          "text": "empty",
-          "start": 108.97,
-          "end": 109.51,
-          "probability": 0.997
-        },
-        {
-          "text": "No",
-          "start": 109.51,
-          "end": 110.41,
-          "probability": 0.671
-        },
-        {
-          "text": "one's",
-          "start": 110.41,
-          "end": 110.93,
-          "probability": 0.931
-        },
-        {
-          "text": "around",
-          "start": 110.93,
-          "end": 111.25,
-          "probability": 0.998
-        },
-        {
-          "text": "to",
-          "start": 111.25,
-          "end": 111.63,
-          "probability": 0.997
-        },
-        {
-          "text": "judge",
-          "start": 111.63,
-          "end": 112.09,
-          "probability": 0.996
-        },
-        {
-          "text": "me",
-          "start": 112.09,
-          "end": 112.43,
-          "probability": 1.0
-        },
-        {
-          "text": "I",
-          "start": 112.43,
-          "end": 113.35,
-          "probability": 0.986
-        }
-      ],
-      "whisper_line_start_delta": 0.01,
-      "nearest_segment_start": 109.51,
-      "nearest_segment_start_end": 112.43,
-      "nearest_segment_start_text": "No one's around to judge me",
-      "nearest_segment_end": 109.51,
-      "nearest_segment_end_start": 106.27,
-      "nearest_segment_end_text": "The city's cold and empty",
-      "prior_segment_start": 106.07,
-      "prior_segment_end": 106.25,
-      "prior_segment_late_by": 3.25
+      ]
     },
     {
-      "index": 22,
-      "start": 112.69,
-      "end": 115.19,
+      "line_index": 22,
       "text": "I can't see clearly when you're gone",
+      "start": 112.95,
+      "end": 117.0,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 112.69,
-          "end": 112.738
+          "start": 112.95,
+          "end": 113.05
         },
         {
+          "word_index": 2,
           "text": "can't",
-          "start": 112.738,
-          "end": 113.223
+          "start": 113.05,
+          "end": 113.5
         },
         {
+          "word_index": 3,
           "text": "see",
-          "start": 113.223,
-          "end": 113.708
+          "start": 113.5,
+          "end": 114.0
         },
         {
+          "word_index": 4,
           "text": "clearly",
-          "start": 113.708,
-          "end": 114.192
+          "start": 114.0,
+          "end": 114.5
         },
         {
+          "word_index": 5,
           "text": "when",
-          "start": 114.192,
-          "end": 114.677
+          "start": 114.5,
+          "end": 115.0
         },
         {
+          "word_index": 6,
           "text": "you're",
-          "start": 114.677,
-          "end": 115.14
+          "start": 115.0,
+          "end": 115.45
         },
         {
+          "word_index": 7,
           "text": "gone",
-          "start": 115.14,
-          "end": 115.19
+          "start": 115.45,
+          "end": 117.0
         }
-      ],
-      "word_slots": [
-        0.048,
-        0.485,
-        0.485,
-        0.485,
-        0.485,
-        0.463,
-        0.05
-      ],
-      "word_spoken": [
-        0.048,
-        0.485,
-        0.485,
-        0.485,
-        0.485,
-        0.463,
-        0.05
-      ],
-      "whisper_window_start": 111.69,
-      "whisper_window_end": 116.96,
-      "whisper_window_word_count": 10,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.824,
-      "whisper_window_words": [
-        {
-          "text": "me",
-          "start": 112.09,
-          "end": 112.43,
-          "probability": 1.0
-        },
-        {
-          "text": "I",
-          "start": 112.43,
-          "end": 113.35,
-          "probability": 0.986
-        },
-        {
-          "text": "can",
-          "start": 113.35,
-          "end": 113.49,
-          "probability": 0.924
-        },
-        {
-          "text": "see",
-          "start": 113.49,
-          "end": 113.77,
-          "probability": 0.13
-        },
-        {
-          "text": "clearly",
-          "start": 113.77,
-          "end": 114.15,
-          "probability": 0.978
-        },
-        {
-          "text": "when",
-          "start": 114.15,
-          "end": 114.89,
-          "probability": 0.946
-        },
-        {
-          "text": "you're",
-          "start": 114.89,
-          "end": 115.23,
-          "probability": 0.988
-        },
-        {
-          "text": "gone",
-          "start": 115.23,
-          "end": 115.77,
-          "probability": 0.88
-        },
-        {
-          "text": "I",
-          "start": 116.24,
-          "end": 116.67,
-          "probability": 0.56
-        },
-        {
-          "text": "said",
-          "start": 116.67,
-          "end": 118.01,
-          "probability": 0.852
-        }
-      ],
-      "whisper_line_start_delta": -0.26,
-      "nearest_segment_start": 112.43,
-      "nearest_segment_start_end": 115.77,
-      "nearest_segment_start_text": "I can see clearly when you're gone",
-      "nearest_segment_end": 112.43,
-      "nearest_segment_end_start": 109.51,
-      "nearest_segment_end_text": "No one's around to judge me",
-      "prior_segment_start": 109.51,
-      "prior_segment_end": 112.43,
-      "prior_segment_late_by": 0.26
+      ]
     },
     {
-      "index": 23,
-      "start": 116.96,
-      "end": 119.3,
+      "line_index": 23,
       "text": "I said, ooh, I'm blinded by the lights",
+      "start": 117.0,
+      "end": 122.9,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 116.96,
-          "end": 117.253
+          "start": 117.0,
+          "end": 117.3
         },
         {
+          "word_index": 2,
           "text": "said,",
-          "start": 117.253,
-          "end": 117.546
+          "start": 117.3,
+          "end": 117.8
         },
         {
+          "word_index": 3,
           "text": "ooh,",
-          "start": 117.546,
-          "end": 117.839
+          "start": 117.8,
+          "end": 120.2
         },
         {
+          "word_index": 4,
           "text": "I'm",
-          "start": 117.839,
-          "end": 118.131
+          "start": 120.2,
+          "end": 120.7
         },
         {
+          "word_index": 5,
           "text": "blinded",
-          "start": 118.131,
-          "end": 118.424
+          "start": 120.7,
+          "end": 121.35
         },
         {
+          "word_index": 6,
           "text": "by",
-          "start": 118.424,
-          "end": 118.717
+          "start": 121.35,
+          "end": 121.75
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 118.717,
-          "end": 119.01
+          "start": 121.75,
+          "end": 122.1
         },
         {
+          "word_index": 8,
           "text": "lights",
-          "start": 119.01,
-          "end": 119.303
+          "start": 122.1,
+          "end": 122.9
         }
-      ],
-      "word_slots": [
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293
-      ],
-      "word_spoken": [
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293,
-        0.293
-      ],
-      "whisper_window_start": 115.96,
-      "whisper_window_end": 122.84,
-      "whisper_window_word_count": 3,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.501,
-      "whisper_window_words": [
-        {
-          "text": "I",
-          "start": 116.24,
-          "end": 116.67,
-          "probability": 0.56
-        },
-        {
-          "text": "said",
-          "start": 116.67,
-          "end": 118.01,
-          "probability": 0.852
-        },
-        {
-          "text": "No,",
-          "start": 118.01,
-          "end": 118.81,
-          "probability": 0.091
-        }
-      ],
-      "whisper_line_start_delta": -0.72,
-      "nearest_segment_start": 116.24,
-      "nearest_segment_start_end": 118.01,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 118.01,
-      "nearest_segment_end_start": 116.24,
-      "nearest_segment_end_text": "I said",
-      "prior_segment_start": 112.43,
-      "prior_segment_end": 115.77,
-      "prior_segment_late_by": 1.19
+      ]
     },
     {
-      "index": 24,
-      "start": 122.84,
-      "end": 123.16,
+      "line_index": 24,
       "text": "No, I can't sleep until I feel your touch",
+      "start": 122.9,
+      "end": 127.05,
       "words": [
         {
+          "word_index": 1,
           "text": "No,",
-          "start": 122.84,
-          "end": 122.982
+          "start": 122.9,
+          "end": 123.2
         },
         {
+          "word_index": 2,
           "text": "I",
-          "start": 122.982,
-          "end": 123.004
+          "start": 123.2,
+          "end": 123.45
         },
         {
+          "word_index": 3,
           "text": "can't",
-          "start": 123.004,
-          "end": 123.027
+          "start": 123.45,
+          "end": 123.85
         },
         {
+          "word_index": 4,
           "text": "sleep",
-          "start": 123.027,
-          "end": 123.049
+          "start": 123.85,
+          "end": 124.45
         },
         {
+          "word_index": 5,
           "text": "until",
-          "start": 123.049,
-          "end": 123.07
+          "start": 124.45,
+          "end": 124.85
         },
         {
+          "word_index": 6,
           "text": "I",
-          "start": 123.07,
-          "end": 123.07
+          "start": 124.85,
+          "end": 125.2
         },
         {
+          "word_index": 7,
           "text": "feel",
-          "start": 123.07,
-          "end": 123.07
+          "start": 125.2,
+          "end": 125.65
         },
         {
+          "word_index": 8,
           "text": "your",
-          "start": 123.07,
-          "end": 123.07
+          "start": 125.65,
+          "end": 126.1
         },
         {
+          "word_index": 9,
           "text": "touch",
-          "start": 123.07,
-          "end": 123.16
-        }
-      ],
-      "word_slots": [
-        0.142,
-        0.022,
-        0.022,
-        0.022,
-        0.021,
-        0.0,
-        0.0,
-        0.0,
-        0.09
-      ],
-      "word_spoken": [
-        0.142,
-        0.022,
-        0.022,
-        0.022,
-        0.021,
-        0.0,
-        0.0,
-        0.0,
-        0.09
-      ],
-      "whisper_window_start": 121.84,
-      "whisper_window_end": 128.09,
-      "whisper_window_word_count": 9,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.973,
-      "whisper_window_words": [
-        {
-          "text": "I",
-          "start": 123.74,
-          "end": 124.16,
-          "probability": 0.998
-        },
-        {
-          "text": "can't",
-          "start": 124.16,
-          "end": 124.46,
-          "probability": 0.991
-        },
-        {
-          "text": "sleep",
-          "start": 124.46,
-          "end": 124.66,
-          "probability": 0.999
-        },
-        {
-          "text": "until",
-          "start": 124.66,
-          "end": 125.22,
-          "probability": 0.793
-        },
-        {
-          "text": "I",
-          "start": 125.22,
-          "end": 125.78,
-          "probability": 0.999
-        },
-        {
-          "text": "feel",
-          "start": 125.78,
-          "end": 126.1,
-          "probability": 0.998
-        },
-        {
-          "text": "your",
           "start": 126.1,
-          "end": 126.4,
-          "probability": 0.997
-        },
-        {
-          "text": "touch",
-          "start": 126.4,
-          "end": 127.3,
-          "probability": 0.994
-        },
-        {
-          "text": "I",
-          "start": 127.3,
-          "end": 128.84,
-          "probability": 0.991
+          "end": 127.05
         }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 127.3,
-      "nearest_segment_start_end": 129.32,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 127.3,
-      "nearest_segment_end_start": 118.01,
-      "nearest_segment_end_text": "No, I can't sleep until I feel your touch",
-      "prior_segment_start": 116.24,
-      "prior_segment_end": 118.01,
-      "prior_segment_late_by": 4.83
+      ]
     },
     {
-      "index": 25,
-      "start": 128.09,
-      "end": 131.57,
+      "line_index": 25,
       "text": "I said, ooh, I'm drowning in the night",
+      "start": 127.05,
+      "end": 133.9,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 128.09,
-          "end": 128.146
+          "start": 127.05,
+          "end": 127.35
         },
         {
+          "word_index": 2,
           "text": "said,",
-          "start": 128.146,
-          "end": 128.679
+          "start": 127.35,
+          "end": 127.9
         },
         {
+          "word_index": 3,
           "text": "ooh,",
-          "start": 128.679,
-          "end": 128.735
+          "start": 127.9,
+          "end": 129.95
         },
         {
+          "word_index": 4,
           "text": "I'm",
-          "start": 128.735,
-          "end": 129.846
+          "start": 129.95,
+          "end": 130.85
         },
         {
+          "word_index": 5,
           "text": "drowning",
-          "start": 129.846,
-          "end": 130.402
+          "start": 130.85,
+          "end": 131.5
         },
         {
+          "word_index": 6,
           "text": "in",
-          "start": 130.402,
-          "end": 130.957
+          "start": 131.5,
+          "end": 132.05
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 130.957,
-          "end": 131.513
+          "start": 132.05,
+          "end": 132.6
         },
         {
+          "word_index": 8,
           "text": "night",
-          "start": 131.513,
-          "end": 131.57
+          "start": 132.6,
+          "end": 133.9
         }
-      ],
-      "word_slots": [
-        0.056,
-        0.533,
-        0.056,
-        1.111,
-        0.556,
-        0.556,
-        0.556,
-        0.057
-      ],
-      "word_spoken": [
-        0.056,
-        0.533,
-        0.056,
-        1.111,
-        0.556,
-        0.556,
-        0.556,
-        0.057
-      ],
-      "whisper_window_start": 127.09,
-      "whisper_window_end": 133.99,
-      "whisper_window_word_count": 3,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.937,
-      "whisper_window_words": [
-        {
-          "text": "I",
-          "start": 127.3,
-          "end": 128.84,
-          "probability": 0.991
-        },
-        {
-          "text": "said",
-          "start": 128.84,
-          "end": 129.32,
-          "probability": 0.998
-        },
-        {
-          "text": "I",
-          "start": 129.32,
-          "end": 130.32,
-          "probability": 0.823
-        }
-      ],
-      "whisper_line_start_delta": -0.79,
-      "nearest_segment_start": 127.3,
-      "nearest_segment_start_end": 129.32,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 127.3,
-      "nearest_segment_end_start": 118.01,
-      "nearest_segment_end_text": "No, I can't sleep until I feel your touch",
-      "prior_segment_start": 118.01,
-      "prior_segment_end": 127.3,
-      "prior_segment_late_by": 0.79
+      ]
     },
     {
-      "index": 26,
-      "start": 133.99,
-      "end": 138.28,
+      "line_index": 26,
       "text": "Oh, when I'm like this, you're the one I trust",
+      "start": 134.15,
+      "end": 138.85,
       "words": [
         {
+          "word_index": 1,
           "text": "Oh,",
-          "start": 133.99,
-          "end": 134.049
+          "start": 134.15,
+          "end": 134.65
         },
         {
+          "word_index": 2,
           "text": "when",
-          "start": 134.049,
-          "end": 134.642
+          "start": 134.65,
+          "end": 135.1
         },
         {
+          "word_index": 3,
           "text": "I'm",
-          "start": 134.642,
-          "end": 135.235
+          "start": 135.1,
+          "end": 135.6
         },
         {
+          "word_index": 4,
           "text": "like",
-          "start": 135.235,
-          "end": 135.828
+          "start": 135.6,
+          "end": 135.95
         },
         {
+          "word_index": 5,
           "text": "this,",
-          "start": 135.828,
-          "end": 136.42
+          "start": 135.95,
+          "end": 136.4
         },
         {
+          "word_index": 6,
           "text": "you're",
-          "start": 136.42,
-          "end": 137.013
+          "start": 136.4,
+          "end": 136.8
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 137.013,
-          "end": 137.606
+          "start": 136.8,
+          "end": 137.2
         },
         {
+          "word_index": 8,
           "text": "one",
-          "start": 137.606,
-          "end": 138.199
+          "start": 137.2,
+          "end": 137.7
         },
         {
+          "word_index": 9,
           "text": "I",
-          "start": 138.199,
-          "end": 138.258
+          "start": 137.7,
+          "end": 137.85
         },
         {
+          "word_index": 10,
           "text": "trust",
-          "start": 138.258,
-          "end": 138.28
+          "start": 137.85,
+          "end": 138.85
         }
-      ],
-      "word_slots": [
-        0.059,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.059,
-        0.022
-      ],
-      "word_spoken": [
-        0.059,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.593,
-        0.059,
-        0.022
-      ],
-      "whisper_window_start": 132.99,
-      "whisper_window_end": 139.33,
-      "whisper_window_word_count": 2,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.86,
-      "whisper_window_words": [
-        {
-          "text": "just",
-          "start": 138.29,
-          "end": 138.61,
-          "probability": 0.775
-        },
-        {
-          "text": "let",
-          "start": 138.61,
-          "end": 139.21,
-          "probability": 0.946
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 129.32,
-      "nearest_segment_start_end": 142.13,
-      "nearest_segment_start_text": "I just let you know",
-      "nearest_segment_end": 129.32,
-      "nearest_segment_end_start": 127.3,
-      "nearest_segment_end_text": "I said",
-      "prior_segment_start": 127.3,
-      "prior_segment_end": 129.32,
-      "prior_segment_late_by": 4.67
+      ]
     },
     {
-      "index": 27,
-      "start": 139.33,
-      "end": 142.19,
+      "line_index": 27,
       "text": "I'm just walking by to let you know (by to let you know)",
+      "start": 139.95,
+      "end": 142.8,
       "words": [
         {
+          "word_index": 1,
           "text": "I'm",
-          "start": 139.33,
-          "end": 139.55
+          "start": 139.95,
+          "end": 140.15
         },
         {
+          "word_index": 2,
           "text": "just",
-          "start": 139.55,
-          "end": 139.77
+          "start": 140.15,
+          "end": 140.35
         },
         {
+          "word_index": 3,
           "text": "walking",
-          "start": 139.77,
-          "end": 139.99
+          "start": 140.35,
+          "end": 140.6
         },
         {
+          "word_index": 4,
           "text": "by",
-          "start": 139.99,
-          "end": 140.21
+          "start": 140.6,
+          "end": 140.8
         },
         {
+          "word_index": 5,
           "text": "to",
-          "start": 140.21,
-          "end": 140.43
+          "start": 140.8,
+          "end": 141.05
         },
         {
+          "word_index": 6,
           "text": "let",
-          "start": 140.43,
-          "end": 140.65
+          "start": 141.05,
+          "end": 141.25
         },
         {
+          "word_index": 7,
           "text": "you",
-          "start": 140.65,
-          "end": 140.87
+          "start": 141.25,
+          "end": 141.45
         },
         {
+          "word_index": 8,
           "text": "know",
-          "start": 140.87,
-          "end": 141.09
+          "start": 141.45,
+          "end": 141.7
         },
         {
+          "word_index": 9,
           "text": "(by",
-          "start": 141.09,
-          "end": 141.31
+          "start": 141.7,
+          "end": 141.9
         },
         {
+          "word_index": 10,
           "text": "to",
-          "start": 141.31,
-          "end": 141.53
+          "start": 141.9,
+          "end": 142.15
         },
         {
+          "word_index": 11,
           "text": "let",
-          "start": 141.53,
-          "end": 141.75
+          "start": 142.15,
+          "end": 142.35
         },
         {
+          "word_index": 12,
           "text": "you",
-          "start": 141.75,
-          "end": 141.97
+          "start": 142.35,
+          "end": 142.55
         },
         {
+          "word_index": 13,
           "text": "know)",
-          "start": 141.97,
-          "end": 142.19
+          "start": 142.55,
+          "end": 142.8
         }
-      ],
-      "word_slots": [
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22
-      ],
-      "word_spoken": [
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22,
-        0.22
-      ],
-      "whisper_window_start": 138.33,
-      "whisper_window_end": 142.2,
-      "whisper_window_word_count": 4,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.984,
-      "whisper_window_words": [
-        {
-          "text": "let",
-          "start": 138.61,
-          "end": 139.21,
-          "probability": 0.946
-        },
-        {
-          "text": "you",
-          "start": 141.45,
-          "end": 141.89,
-          "probability": 0.999
-        },
-        {
-          "text": "know",
-          "start": 141.89,
-          "end": 142.13,
-          "probability": 1.0
-        },
-        {
-          "text": "I",
-          "start": 142.13,
-          "end": 143.13,
-          "probability": 0.99
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 142.13,
-      "nearest_segment_start_end": 144.17,
-      "nearest_segment_start_text": "I can never say it",
-      "nearest_segment_end": 142.13,
-      "nearest_segment_end_start": 129.32,
-      "nearest_segment_end_text": "I just let you know",
-      "prior_segment_start": 127.3,
-      "prior_segment_end": 129.32,
-      "prior_segment_late_by": 10.01
+      ]
     },
     {
-      "index": 28,
-      "start": 142.2,
-      "end": 143.33,
+      "line_index": 28,
       "text": "I can never say it on the phone (say it on the phone)",
+      "start": 142.8,
+      "end": 145.15,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 142.2,
-          "end": 142.279
+          "start": 142.8,
+          "end": 143.05
         },
         {
+          "word_index": 2,
           "text": "can",
-          "start": 142.288,
-          "end": 142.367
+          "start": 143.05,
+          "end": 143.25
         },
         {
+          "word_index": 3,
           "text": "never",
-          "start": 142.375,
-          "end": 142.454
+          "start": 143.25,
+          "end": 143.55
         },
         {
+          "word_index": 4,
           "text": "say",
-          "start": 142.463,
-          "end": 142.542
+          "start": 143.55,
+          "end": 143.8
         },
         {
+          "word_index": 5,
           "text": "it",
-          "start": 142.551,
-          "end": 142.63
+          "start": 143.8,
+          "end": 144.0
         },
         {
+          "word_index": 6,
           "text": "on",
-          "start": 142.638,
-          "end": 142.717
+          "start": 144.0,
+          "end": 144.15
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 142.726,
-          "end": 142.805
+          "start": 144.15,
+          "end": 144.3
         },
         {
+          "word_index": 8,
           "text": "phone",
-          "start": 142.814,
-          "end": 142.893
+          "start": 144.3,
+          "end": 144.5
         },
         {
+          "word_index": 9,
           "text": "(say",
-          "start": 142.902,
-          "end": 142.98
+          "start": 144.5,
+          "end": 144.6
         },
         {
+          "word_index": 10,
           "text": "it",
-          "start": 142.989,
-          "end": 143.068
+          "start": 144.6,
+          "end": 144.7
         },
         {
+          "word_index": 11,
           "text": "on",
-          "start": 143.077,
-          "end": 143.156
+          "start": 144.7,
+          "end": 144.8
         },
         {
+          "word_index": 12,
           "text": "the",
-          "start": 143.165,
-          "end": 143.244
+          "start": 144.8,
+          "end": 144.9
         },
         {
+          "word_index": 13,
           "text": "phone)",
-          "start": 143.252,
-          "end": 143.331
+          "start": 144.9,
+          "end": 145.15
         }
-      ],
-      "word_slots": [
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.088,
-        0.079
-      ],
-      "word_spoken": [
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079,
-        0.079
-      ],
-      "whisper_window_start": 141.2,
-      "whisper_window_end": 145.46,
-      "whisper_window_word_count": 8,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.836,
-      "whisper_window_words": [
-        {
-          "text": "you",
-          "start": 141.45,
-          "end": 141.89,
-          "probability": 0.999
-        },
-        {
-          "text": "know",
-          "start": 141.89,
-          "end": 142.13,
-          "probability": 1.0
-        },
-        {
-          "text": "I",
-          "start": 142.13,
-          "end": 143.13,
-          "probability": 0.99
-        },
-        {
-          "text": "can",
-          "start": 143.13,
-          "end": 143.23,
-          "probability": 0.981
-        },
-        {
-          "text": "never",
-          "start": 143.23,
-          "end": 143.53,
-          "probability": 0.99
-        },
-        {
-          "text": "say",
-          "start": 143.53,
-          "end": 143.85,
-          "probability": 0.755
-        },
-        {
-          "text": "it",
-          "start": 143.85,
-          "end": 144.17,
-          "probability": 0.806
-        },
-        {
-          "text": "I",
-          "start": 144.17,
-          "end": 144.29,
-          "probability": 0.167
-        }
-      ],
-      "whisper_line_start_delta": -0.07,
-      "nearest_segment_start": 142.13,
-      "nearest_segment_start_end": 144.17,
-      "nearest_segment_start_text": "I can never say it",
-      "nearest_segment_end": 142.13,
-      "nearest_segment_end_start": 129.32,
-      "nearest_segment_end_text": "I just let you know",
-      "prior_segment_start": 129.32,
-      "prior_segment_end": 142.13,
-      "prior_segment_late_by": 0.07
+      ]
     },
     {
-      "index": 29,
-      "start": 145.46,
-      "end": 147.8,
+      "line_index": 29,
       "text": "Will never let you go this time (ooh)",
+      "start": 145.65,
+      "end": 150.0,
       "words": [
         {
+          "word_index": 1,
           "text": "Will",
-          "start": 145.46,
-          "end": 145.671
+          "start": 145.65,
+          "end": 145.95
         },
         {
+          "word_index": 2,
           "text": "never",
-          "start": 145.671,
-          "end": 145.959
+          "start": 145.95,
+          "end": 146.45
         },
         {
+          "word_index": 3,
           "text": "let",
-          "start": 145.959,
-          "end": 146.15
+          "start": 146.45,
+          "end": 146.8
         },
         {
+          "word_index": 4,
           "text": "you",
-          "start": 146.15,
-          "end": 146.745
+          "start": 146.8,
+          "end": 147.25
         },
         {
+          "word_index": 5,
           "text": "go",
-          "start": 146.745,
-          "end": 147.225
+          "start": 147.25,
+          "end": 148.2
         },
         {
+          "word_index": 6,
           "text": "this",
-          "start": 147.225,
-          "end": 147.704
+          "start": 148.2,
+          "end": 148.7
         },
         {
+          "word_index": 7,
           "text": "time",
-          "start": 147.704,
-          "end": 147.72
+          "start": 148.7,
+          "end": 149.75
         },
         {
+          "word_index": 8,
           "text": "(ooh)",
-          "start": 147.72,
-          "end": 147.8
+          "start": 149.75,
+          "end": 150.0
         }
-      ],
-      "word_slots": [
-        0.211,
-        0.288,
-        0.192,
-        0.595,
-        0.48,
-        0.48,
-        0.016,
-        0.08
-      ],
-      "word_spoken": [
-        0.211,
-        0.288,
-        0.192,
-        0.595,
-        0.48,
-        0.48,
-        0.016,
-        0.08
-      ],
-      "whisper_window_start": 144.46,
-      "whisper_window_end": 150.59,
-      "whisper_window_word_count": 4,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.8,
-      "whisper_window_words": [
-        {
-          "text": "let",
-          "start": 147.01,
-          "end": 147.23,
-          "probability": 0.605
-        },
-        {
-          "text": "you",
-          "start": 147.23,
-          "end": 147.53,
-          "probability": 0.999
-        },
-        {
-          "text": "go",
-          "start": 147.53,
-          "end": 147.73,
-          "probability": 0.969
-        },
-        {
-          "text": "I",
-          "start": 147.73,
-          "end": 148.35,
-          "probability": 0.625
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 144.17,
-      "nearest_segment_start_end": 147.73,
-      "nearest_segment_start_text": "I let you go",
-      "nearest_segment_end": 144.17,
-      "nearest_segment_end_start": 142.13,
-      "nearest_segment_end_text": "I can never say it",
-      "prior_segment_start": 142.13,
-      "prior_segment_end": 144.17,
-      "prior_segment_late_by": 1.29
+      ]
     },
     {
-      "index": 30,
-      "start": 150.59,
-      "end": 154.09,
+      "line_index": 30,
       "text": "I said, ooh, I'm blinded by the lights",
+      "start": 150.35,
+      "end": 157.3,
       "words": [
         {
+          "word_index": 1,
           "text": "I",
-          "start": 150.59,
-          "end": 150.643
+          "start": 150.35,
+          "end": 150.6
         },
         {
+          "word_index": 2,
           "text": "said,",
-          "start": 150.643,
-          "end": 151.176
+          "start": 150.6,
+          "end": 151.15
         },
         {
+          "word_index": 3,
           "text": "ooh,",
-          "start": 151.176,
-          "end": 151.708
+          "start": 151.15,
+          "end": 153.8
         },
         {
+          "word_index": 4,
           "text": "I'm",
-          "start": 151.708,
-          "end": 152.241
+          "start": 153.8,
+          "end": 154.4
         },
         {
+          "word_index": 5,
           "text": "blinded",
-          "start": 152.241,
-          "end": 152.773
+          "start": 154.4,
+          "end": 155.0
         },
         {
+          "word_index": 6,
           "text": "by",
-          "start": 152.773,
-          "end": 153.306
+          "start": 155.0,
+          "end": 155.45
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 153.306,
-          "end": 153.838
+          "start": 155.45,
+          "end": 156.0
         },
         {
+          "word_index": 8,
           "text": "lights",
-          "start": 153.838,
-          "end": 154.09
+          "start": 156.0,
+          "end": 157.3
         }
-      ],
-      "word_slots": [
-        0.053,
-        0.533,
-        0.533,
-        0.533,
-        0.533,
-        0.533,
-        0.533,
-        0.252
-      ],
-      "word_spoken": [
-        0.053,
-        0.533,
-        0.533,
-        0.533,
-        0.533,
-        0.533,
-        0.533,
-        0.252
-      ],
-      "whisper_window_start": 149.59,
-      "whisper_window_end": 156.57,
-      "whisper_window_word_count": 0,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": null,
-      "whisper_window_words": [],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 147.73,
-      "nearest_segment_start_end": 162.18,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 147.73,
-      "nearest_segment_end_start": 144.17,
-      "nearest_segment_end_text": "I let you go",
-      "prior_segment_start": 144.17,
-      "prior_segment_end": 147.73,
-      "prior_segment_late_by": 2.86
+      ]
     },
     {
-      "index": 31,
-      "start": 156.57,
-      "end": 160.07,
+      "line_index": 31,
       "text": "No, I can't sleep until I feel your touch",
+      "start": 157.3,
+      "end": 161.1,
       "words": [
         {
+          "word_index": 1,
           "text": "No,",
-          "start": 156.57,
-          "end": 157.056
+          "start": 157.3,
+          "end": 157.8
         },
         {
+          "word_index": 2,
           "text": "I",
-          "start": 157.056,
-          "end": 157.105
+          "start": 157.8,
+          "end": 157.9
         },
         {
+          "word_index": 3,
           "text": "can't",
-          "start": 157.105,
-          "end": 157.591
+          "start": 157.9,
+          "end": 158.4
         },
         {
+          "word_index": 4,
           "text": "sleep",
-          "start": 157.591,
-          "end": 158.077
+          "start": 158.4,
+          "end": 158.9
         },
         {
+          "word_index": 5,
           "text": "until",
-          "start": 158.077,
-          "end": 158.563
+          "start": 158.9,
+          "end": 159.35
         },
         {
+          "word_index": 6,
           "text": "I",
-          "start": 158.563,
-          "end": 158.612
+          "start": 159.35,
+          "end": 159.55
         },
         {
+          "word_index": 7,
           "text": "feel",
-          "start": 158.612,
-          "end": 159.098
+          "start": 159.55,
+          "end": 160.05
         },
         {
+          "word_index": 8,
           "text": "your",
-          "start": 159.098,
-          "end": 159.584
+          "start": 160.05,
+          "end": 160.55
         },
         {
+          "word_index": 9,
           "text": "touch",
-          "start": 159.584,
-          "end": 160.07
+          "start": 160.55,
+          "end": 161.1
         }
-      ],
-      "word_slots": [
-        0.486,
-        0.049,
-        0.486,
-        0.486,
-        0.486,
-        0.049,
-        0.486,
-        0.486,
-        0.486
-      ],
-      "word_spoken": [
-        0.486,
-        0.049,
-        0.486,
-        0.486,
-        0.486,
-        0.049,
-        0.486,
-        0.486,
-        0.486
-      ],
-      "whisper_window_start": 155.57,
-      "whisper_window_end": 160.79,
-      "whisper_window_word_count": 0,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": null,
-      "whisper_window_words": [],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 147.73,
-      "nearest_segment_start_end": 162.18,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 162.18,
-      "nearest_segment_end_start": 147.73,
-      "nearest_segment_end_text": "I said",
-      "prior_segment_start": 144.17,
-      "prior_segment_end": 147.73,
-      "prior_segment_late_by": 8.84
+      ]
     },
     {
-      "index": 32,
-      "start": 160.79,
-      "end": 161.95,
+      "line_index": 32,
       "text": "(Hey, hey, hey)",
+      "start": 161.4,
+      "end": 163.05,
       "words": [
         {
+          "word_index": 1,
           "text": "(Hey,",
-          "start": 160.79,
-          "end": 161.37
-        },
-        {
-          "text": "hey,",
-          "start": 161.37,
-          "end": 161.416
-        },
-        {
-          "text": "hey)",
-          "start": 161.416,
+          "start": 161.4,
           "end": 161.95
-        }
-      ],
-      "word_slots": [
-        0.58,
-        0.046,
-        0.534
-      ],
-      "word_spoken": [
-        0.58,
-        0.046,
-        0.534
-      ],
-      "whisper_window_start": 159.79,
-      "whisper_window_end": 171.94,
-      "whisper_window_word_count": 1,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.998,
-      "whisper_window_words": [
-        {
-          "text": "said",
-          "start": 161.02,
-          "end": 162.18,
-          "probability": 0.998
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 147.73,
-      "nearest_segment_start_end": 162.18,
-      "nearest_segment_start_text": "I said",
-      "nearest_segment_end": 162.18,
-      "nearest_segment_end_start": 147.73,
-      "nearest_segment_end_text": "I said",
-      "prior_segment_start": 144.17,
-      "prior_segment_end": 147.73,
-      "prior_segment_late_by": 13.06
-    },
-    {
-      "index": 33,
-      "start": 171.94,
-      "end": 172.94,
-      "text": "(Hey, hey, hey)",
-      "words": [
-        {
-          "text": "(Hey,",
-          "start": 171.94,
-          "end": 172.416
         },
         {
+          "word_index": 2,
           "text": "hey,",
-          "start": 172.416,
-          "end": 172.892
+          "start": 161.95,
+          "end": 162.5
         },
         {
+          "word_index": 3,
           "text": "hey)",
-          "start": 172.892,
-          "end": 172.94
+          "start": 162.5,
+          "end": 163.05
         }
-      ],
-      "word_slots": [
-        0.476,
-        0.476,
-        0.048
-      ],
-      "word_spoken": [
-        0.476,
-        0.476,
-        0.048
-      ],
-      "whisper_window_start": 170.94,
-      "whisper_window_end": 184.0,
-      "whisper_window_word_count": 0,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": null,
-      "whisper_window_words": [],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 185.41,
-      "nearest_segment_start_end": 192.42,
-      "nearest_segment_start_text": "Sleep in",
-      "nearest_segment_end": 162.18,
-      "nearest_segment_end_start": 147.73,
-      "nearest_segment_end_text": "I said",
-      "prior_segment_start": 147.73,
-      "prior_segment_end": 162.18,
-      "prior_segment_late_by": 9.76
+      ]
     },
     {
-      "index": 34,
-      "start": 184.0,
-      "end": 185.5,
-      "text": "I said, ooh, I'm blinded by the lights",
+      "line_index": 33,
+      "text": "(Hey, hey, hey)",
+      "start": 172.9,
+      "end": 174.55,
       "words": [
         {
-          "text": "I",
-          "start": 184.0,
-          "end": 184.044
+          "word_index": 1,
+          "text": "(Hey,",
+          "start": 172.9,
+          "end": 173.4
         },
         {
+          "word_index": 2,
+          "text": "hey,",
+          "start": 173.4,
+          "end": 173.95
+        },
+        {
+          "word_index": 3,
+          "text": "hey)",
+          "start": 173.95,
+          "end": 174.55
+        }
+      ]
+    },
+    {
+      "line_index": 34,
+      "text": "I said, ooh, I'm blinded by the lights",
+      "start": 184.45,
+      "end": 190.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 184.45,
+          "end": 184.75
+        },
+        {
+          "word_index": 2,
           "text": "said,",
-          "start": 184.044,
-          "end": 184.481
+          "start": 184.75,
+          "end": 185.15
         },
         {
+          "word_index": 3,
           "text": "ooh,",
-          "start": 184.481,
-          "end": 184.525
+          "start": 185.15,
+          "end": 187.6
         },
         {
+          "word_index": 4,
           "text": "I'm",
-          "start": 184.525,
-          "end": 184.962
+          "start": 187.6,
+          "end": 188.2
         },
         {
+          "word_index": 5,
           "text": "blinded",
-          "start": 184.962,
-          "end": 185.399
+          "start": 188.2,
+          "end": 188.8
         },
         {
+          "word_index": 6,
           "text": "by",
-          "start": 185.399,
-          "end": 185.443
+          "start": 188.8,
+          "end": 189.05
         },
         {
+          "word_index": 7,
           "text": "the",
-          "start": 185.443,
-          "end": 185.449
+          "start": 189.05,
+          "end": 189.45
         },
         {
+          "word_index": 8,
           "text": "lights",
-          "start": 185.449,
-          "end": 185.5
+          "start": 189.45,
+          "end": 190.45
         }
-      ],
-      "word_slots": [
-        0.044,
-        0.437,
-        0.044,
-        0.437,
-        0.437,
-        0.044,
-        0.006,
-        0.051
-      ],
-      "word_spoken": [
-        0.044,
-        0.437,
-        0.044,
-        0.437,
-        0.437,
-        0.044,
-        0.006,
-        0.051
-      ],
-      "whisper_window_start": 183.0,
-      "whisper_window_end": 190.01,
-      "whisper_window_word_count": 1,
-      "whisper_window_low_conf_count": 1,
-      "whisper_window_avg_prob": 0.447,
-      "whisper_window_words": [
-        {
-          "text": "Sleep",
-          "start": 185.41,
-          "end": 186.13,
-          "probability": 0.447
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 185.41,
-      "nearest_segment_start_end": 192.42,
-      "nearest_segment_start_text": "Sleep in",
-      "nearest_segment_end": 192.42,
-      "nearest_segment_end_start": 185.41,
-      "nearest_segment_end_text": "Sleep in"
+      ]
     },
     {
-      "index": 35,
-      "start": 190.01,
-      "end": 191.8,
+      "line_index": 35,
       "text": "No, I can't sleep until I feel your touch",
+      "start": 190.9,
+      "end": 195.0,
       "words": [
         {
+          "word_index": 1,
           "text": "No,",
-          "start": 190.01,
-          "end": 190.293
+          "start": 190.9,
+          "end": 191.2
         },
         {
+          "word_index": 2,
           "text": "I",
-          "start": 190.293,
-          "end": 190.334
+          "start": 191.2,
+          "end": 191.5
         },
         {
+          "word_index": 3,
           "text": "can't",
-          "start": 190.334,
-          "end": 190.75
+          "start": 191.5,
+          "end": 191.95
         },
         {
+          "word_index": 4,
           "text": "sleep",
-          "start": 190.75,
-          "end": 190.791
+          "start": 191.95,
+          "end": 192.4
         },
         {
+          "word_index": 5,
           "text": "until",
-          "start": 190.791,
-          "end": 190.833
+          "start": 192.4,
+          "end": 192.8
         },
         {
+          "word_index": 6,
           "text": "I",
-          "start": 190.833,
-          "end": 190.874
+          "start": 192.8,
+          "end": 193.1
         },
         {
+          "word_index": 7,
           "text": "feel",
-          "start": 190.874,
-          "end": 190.916
+          "start": 193.1,
+          "end": 193.55
         },
         {
+          "word_index": 8,
           "text": "your",
-          "start": 190.916,
-          "end": 190.949
+          "start": 193.55,
+          "end": 194.15
         },
         {
+          "word_index": 9,
           "text": "touch",
-          "start": 190.949,
-          "end": 191.8
+          "start": 194.15,
+          "end": 195.0
         }
-      ],
-      "word_slots": [
-        0.283,
-        0.042,
-        0.416,
-        0.042,
-        0.042,
-        0.042,
-        0.042,
-        0.033,
-        0.851
-      ],
-      "word_spoken": [
-        0.283,
-        0.042,
-        0.416,
-        0.042,
-        0.042,
-        0.042,
-        0.042,
-        0.033,
-        0.851
-      ],
-      "whisper_window_start": 189.01,
-      "whisper_window_end": 193.8,
-      "whisper_window_word_count": 1,
-      "whisper_window_low_conf_count": 0,
-      "whisper_window_avg_prob": 0.597,
-      "whisper_window_words": [
-        {
-          "text": "in",
-          "start": 192.08,
-          "end": 192.42,
-          "probability": 0.597
-        }
-      ],
-      "whisper_line_start_delta": null,
-      "nearest_segment_start": 185.41,
-      "nearest_segment_start_end": 192.42,
-      "nearest_segment_start_text": "Sleep in",
-      "nearest_segment_end": 192.42,
-      "nearest_segment_end_start": 185.41,
-      "nearest_segment_end_text": "Sleep in"
-    }
-  ],
-  "dtw_word_coverage": 0.822,
-  "dtw_line_coverage": 0.943,
-  "dtw_phonetic_similarity_coverage": 0.595,
-  "dtw_high_similarity_ratio": 0.723,
-  "dtw_exact_match_ratio": 0.0,
-  "dtw_unmatched_ratio": 0.178,
-  "whisper_segments": [
-    {
-      "start": 27.56,
-      "end": 28.78,
-      "text": "I've been trying to call"
-    },
-    {
-      "start": 30.36,
-      "end": 32.6,
-      "text": "I've been on my own for long enough"
-    },
-    {
-      "start": 32.6,
-      "end": 35.46,
-      "text": "Maybe you can show me how to love"
-    },
-    {
-      "start": 36.1,
-      "end": 36.62,
-      "text": "Maybe"
-    },
-    {
-      "start": 38.58,
-      "end": 40.04,
-      "text": "I'm going through a drought"
-    },
-    {
-      "start": 41.24,
-      "end": 43.94,
-      "text": "You don't even have to do too much"
-    },
-    {
-      "start": 43.94,
-      "end": 46.72,
-      "text": "You can turn me on with just a touch"
-    },
-    {
-      "start": 47.42,
-      "end": 47.94,
-      "text": "Baby"
-    },
-    {
-      "start": 49.7,
-      "end": 53.36,
-      "text": "I look around and see the city's cold and empty"
-    },
-    {
-      "start": 53.36,
-      "end": 56.28,
-      "text": "No one's around to judge me"
-    },
-    {
-      "start": 56.28,
-      "end": 59.68,
-      "text": "I can see clearly when you're gone"
-    },
-    {
-      "start": 60.22,
-      "end": 61.9,
-      "text": "I said"
-    },
-    {
-      "start": 61.9,
-      "end": 71.13,
-      "text": "No, I can't sleep until I feel your touch"
-    },
-    {
-      "start": 71.99,
-      "end": 73.39,
-      "text": "I said"
-    },
-    {
-      "start": 80.7,
-      "end": 96.27,
-      "text": "I'm running out of time"
-    },
-    {
-      "start": 97.19,
-      "end": 99.99,
-      "text": "Cause I can see the sunlight up the sky"
-    },
-    {
-      "start": 99.99,
-      "end": 102.97,
-      "text": "So I hit the road and overdrive"
-    },
-    {
-      "start": 102.97,
-      "end": 104.07,
-      "text": "Baby"
-    },
-    {
-      "start": 105.27,
-      "end": 106.07,
-      "text": "Oh"
-    },
-    {
-      "start": 106.07,
-      "end": 106.25,
-      "text": "Oh"
-    },
-    {
-      "start": 106.27,
-      "end": 109.51,
-      "text": "The city's cold and empty"
-    },
-    {
-      "start": 109.51,
-      "end": 112.43,
-      "text": "No one's around to judge me"
-    },
-    {
-      "start": 112.43,
-      "end": 115.77,
-      "text": "I can see clearly when you're gone"
-    },
-    {
-      "start": 116.24,
-      "end": 118.01,
-      "text": "I said"
-    },
-    {
-      "start": 118.01,
-      "end": 127.3,
-      "text": "No, I can't sleep until I feel your touch"
-    },
-    {
-      "start": 127.3,
-      "end": 129.32,
-      "text": "I said"
-    },
-    {
-      "start": 129.32,
-      "end": 142.13,
-      "text": "I just let you know"
-    },
-    {
-      "start": 142.13,
-      "end": 144.17,
-      "text": "I can never say it"
-    },
-    {
-      "start": 144.17,
-      "end": 147.73,
-      "text": "I let you go"
-    },
-    {
-      "start": 147.73,
-      "end": 162.18,
-      "text": "I said"
-    },
-    {
-      "start": 185.41,
-      "end": 192.42,
-      "text": "Sleep in"
-    }
-  ],
-  "whisper_word_count": 154,
-  "whisper_window_low_conf_threshold": 0.5,
-  "low_confidence_lines": [
-    {
-      "index": 34,
-      "text": "I said, ooh, I'm blinded by the lights",
-      "whisper_window_avg_prob": 0.447,
-      "low_conf_ratio": 1.0
+      ]
     }
   ]
 }
