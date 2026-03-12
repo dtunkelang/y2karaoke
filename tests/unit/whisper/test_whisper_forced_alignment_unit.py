@@ -48,7 +48,9 @@ def test_align_lines_with_whisperx_accepts_segments_without_ids(monkeypatch):
             return object(), {}
 
         @staticmethod
-        def align(_segs, _align_model, _metadata, _audio, *, device, return_char_alignments):
+        def align(
+            _segs, _align_model, _metadata, _audio, *, device, return_char_alignments
+        ):
             assert device == "cpu"
             assert return_char_alignments is False
             return {
