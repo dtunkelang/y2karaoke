@@ -791,6 +791,52 @@ def test_gold_path_for_song_uses_clip_gold_root_for_clip_entries(tmp_path):
     assert found == clip_gold
 
 
+def test_shift_report_to_clip_window_shifts_whisper_window_words():
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="Bruno Mars",
+        title="Uptown Funk",
+        youtube_id="OPf0YbXqDm0",
+        youtube_url="https://www.youtube.com/watch?v=OPf0YbXqDm0",
+        clip_id="first-chorus",
+        audio_start_sec=50.1,
+    )
+    report = {
+        "lines": [
+            {
+                "text": "Girls hit your hallelujah (whoo)",
+                "start": 52.27,
+                "end": 54.48,
+                "whisper_window_start": 51.27,
+                "whisper_window_end": 54.53,
+                "whisper_window_words": [
+                    {"text": "girls", "start": 51.75, "end": 52.1},
+                    {"text": "hit", "start": 52.73, "end": 52.95},
+                ],
+            }
+        ]
+    }
+    gold_doc = {
+        "lines": [
+            {
+                "text": "Girls hit your hallelujah (whoo)",
+                "start": 0.2,
+                "end": 1.8,
+            }
+        ]
+    }
+
+    shifted = module._shift_report_to_clip_window(report, song=song, gold_doc=gold_doc)
+
+    assert shifted is not None
+    line = shifted["lines"][0]
+    assert line["whisper_window_start"] == 1.17
+    assert line["whisper_window_end"] == 2.8
+    assert line["whisper_window_words"][0]["start"] == 1.65
+    assert line["whisper_window_words"][1]["start"] == 2.63
+
+
 def test_aggregate_results():
     module = _load_module()
     results = [

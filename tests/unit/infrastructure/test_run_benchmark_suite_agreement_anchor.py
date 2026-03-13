@@ -257,6 +257,30 @@ def test_select_agreement_anchor_start_prefers_token_sequence_match_with_split_t
     assert module._select_agreement_anchor_start(line) == 192.44
 
 
+def test_select_agreement_anchor_start_prefers_closest_repeated_exact_window_match() -> (
+    None
+):
+    module = _load_module()
+    line = {
+        "start": 2.17,
+        "text": "Girls hit your hallelujah (whoo)",
+        "nearest_segment_start": 4.05,
+        "nearest_segment_end": 4.05,
+        "nearest_segment_start_text": "Girls hit your hallelujah",
+        "whisper_window_words": [
+            {"text": "girls", "start": 1.65},
+            {"text": "hit", "start": 2.63},
+            {"text": "your", "start": 2.89},
+            {"text": "hallelujah", "start": 3.05},
+            {"text": "girls", "start": 4.05},
+            {"text": "hit", "start": 4.77},
+            {"text": "your", "start": 5.05},
+            {"text": "hallelujah", "start": 5.23},
+        ],
+    }
+    assert module._select_agreement_anchor_start(line) == 1.65
+
+
 def test_select_agreement_anchor_start_keeps_base_when_no_lead_in_token() -> None:
     module = _load_module()
     line = {

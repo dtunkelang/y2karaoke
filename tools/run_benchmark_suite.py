@@ -208,9 +208,7 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
     return songs
 
 
-def _resolve_manifest_optional_path(
-    manifest_dir: Path, value: Any
-) -> str | None:
+def _resolve_manifest_optional_path(manifest_dir: Path, value: Any) -> str | None:
     if value is None:
         return None
     text = str(value).strip()
@@ -1389,6 +1387,61 @@ def _select_agreement_token_sequence_anchor_start(
     return candidate_start
 
 
+def _select_agreement_repeated_exact_window_anchor_start(
+    line: dict[str, Any],
+    *,
+    anchor_start: float,
+    target_text: Any | None = None,
+    normalize_fn: Callable[[Any], str] = _normalize_agreement_text,
+) -> float:
+    if target_text is None:
+        target_text = line.get("nearest_segment_start_text")
+    line_tokens = normalize_fn(target_text).split()
+    window_tokens = _iter_agreement_window_tokens(line, normalize_fn=normalize_fn)
+    if len(line_tokens) < 3 or len(window_tokens) < len(line_tokens):
+        return anchor_start
+
+    line_start_raw = line.get("start")
+    if not isinstance(line_start_raw, (int, float)):
+        return anchor_start
+    line_start = float(line_start_raw)
+
+    candidates: list[float] = []
+    for start_idx in range(len(window_tokens)):
+        cursor = start_idx
+        candidate_start: float | None = None
+        matched_all = True
+        for target_token in line_tokens:
+            matched = _match_agreement_window_token_sequence(
+                window_tokens,
+                cursor,
+                target_token,
+            )
+            if matched is None:
+                matched_all = False
+                break
+            cursor, token_start = matched
+            if candidate_start is None:
+                candidate_start = token_start
+        if matched_all and candidate_start is not None:
+            candidates.append(candidate_start)
+
+    if not candidates:
+        return anchor_start
+
+    best_candidate = min(
+        candidates,
+        key=lambda candidate: (
+            abs(line_start - candidate),
+            abs(anchor_start - candidate),
+            candidate,
+        ),
+    )
+    if abs(line_start - best_candidate) + 0.12 >= abs(line_start - anchor_start):
+        return anchor_start
+    return best_candidate
+
+
 def _select_agreement_lead_in_anchor_start(
     line: dict[str, Any],
     *,
@@ -1505,7 +1558,12 @@ def _select_agreement_anchor_start(
         if line_text != anchor_text:
             return _select_agreement_window_sequence_anchor_start(
                 line,
-                anchor_start=anchor_start,
+                anchor_start=_select_agreement_repeated_exact_window_anchor_start(
+                    line,
+                    anchor_start=anchor_start,
+                    target_text=line.get("nearest_segment_start_text"),
+                    normalize_fn=normalize_fn,
+                ),
                 normalize_fn=normalize_fn,
             )
         word_count = len(line_text.split())
@@ -1568,6 +1626,12 @@ def _select_agreement_anchor_start(
         )
     if line_text == anchor_text:
         word_count = len(line_text.split())
+        anchor_start = _select_agreement_repeated_exact_window_anchor_start(
+            line,
+            anchor_start=anchor_start,
+            target_text=line.get("nearest_segment_start_text"),
+            normalize_fn=normalize_fn,
+        )
         if word_count < 1 or word_count > 4:
             return _select_agreement_token_sequence_anchor_start(
                 line,
@@ -5946,6 +6010,22 @@ def _shift_report_to_clip_window(
             words_out.append(shifted_word)
         if words_out:
             shifted["words"] = words_out
+        window_words_out: list[dict[str, Any]] = []
+        for word in line.get("whisper_window_words", []):
+            if not isinstance(word, dict):
+                continue
+            shifted_word = dict(word)
+            ws = word.get("start")
+            we = word.get("end")
+            if isinstance(ws, (int, float)):
+                clamped_ws = min(max(float(ws), absolute_start), absolute_end)
+                shifted_word["start"] = round(clamped_ws - absolute_start, 3)
+            if isinstance(we, (int, float)):
+                clamped_we = min(max(float(we), absolute_start), absolute_end)
+                shifted_word["end"] = round(clamped_we - absolute_start, 3)
+            window_words_out.append(shifted_word)
+        if window_words_out:
+            shifted["whisper_window_words"] = window_words_out
         shifted_lines.append(shifted)
     shifted_report = dict(report)
     shifted_report["lines"] = shifted_lines
@@ -6004,10 +6084,14 @@ def _load_aggregate_only_results(
                 report_path = Path(report_raw)
                 if report_path.exists():
                     try:
-                        loaded_report = json.loads(report_path.read_text(encoding="utf-8"))
+                        loaded_report = json.loads(
+                            report_path.read_text(encoding="utf-8")
+                        )
                     except Exception:
                         loaded_report = None
-                    gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+                    gold_doc = _load_gold_doc(
+                        index=index, song=song, gold_root=gold_root
+                    )
                     if isinstance(loaded_report, dict):
                         report_doc = _shift_report_to_clip_window(
                             loaded_report, song=song, gold_doc=gold_doc
