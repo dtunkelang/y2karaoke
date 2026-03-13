@@ -126,6 +126,17 @@ songs:
     lrc_duration_tolerance_sec: 8
     notes: "Clean rhythmic English control clip around the first tough-guy block."
 
+  - artist: "Imagine Dragons"
+    title: "Believer"
+    clip_id: "first-chorus"
+    audio_start_sec: 54.8
+    youtube_id: "7wtfhZwyrcc"
+    youtube_url: "https://www.youtube.com/watch?v=7wtfhZwyrcc"
+    preferred_lyrics_provider: "syncedlyrics"
+    fallback_lyrics_provider: "lyriq"
+    lrc_duration_tolerance_sec: 20
+    notes: "Clean first-chorus English clip before the later rap/version divergence."
+
   - artist: "The Weepies"
     title: "Take It From Me"
     clip_id: "source-text-stress"
