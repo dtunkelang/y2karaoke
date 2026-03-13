@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "title": "DESPECHA",
+  "artist": "ROSALIA",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/rosalia-despecha-adlib-outro-140s-170s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Jeje",
+      "start": 1.15,
+      "end": 1.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Jeje",
+          "start": 1.15,
+          "end": 1.35
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Ey",
+      "start": 4.15,
+      "end": 4.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ey",
+          "start": 4.15,
+          "end": 4.4
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Uh, uh, uh, uh",
+      "start": 7.2,
+      "end": 8.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Uh,",
+          "start": 7.2,
+          "end": 7.35
+        },
+        {
+          "word_index": 2,
+          "text": "uh,",
+          "start": 7.55,
+          "end": 7.7
+        },
+        {
+          "word_index": 3,
+          "text": "uh,",
+          "start": 7.9,
+          "end": 8.05
+        },
+        {
+          "word_index": 4,
+          "text": "uh",
+          "start": 8.25,
+          "end": 8.4
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Omega",
+      "start": 10.4,
+      "end": 10.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Omega",
+          "start": 10.4,
+          "end": 10.75
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Ey, ey, ey",
+      "start": 11.2,
+      "end": 12.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ey,",
+          "start": 11.2,
+          "end": 11.6
+        },
+        {
+          "word_index": 2,
+          "text": "ey,",
+          "start": 11.6,
+          "end": 11.95
+        },
+        {
+          "word_index": 3,
+          "text": "ey",
+          "start": 11.95,
+          "end": 12.3
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Uh, uh, uh, uh",
+      "start": 14.2,
+      "end": 15.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Uh,",
+          "start": 14.2,
+          "end": 14.5
+        },
+        {
+          "word_index": 2,
+          "text": "uh,",
+          "start": 14.6,
+          "end": 14.9
+        },
+        {
+          "word_index": 3,
+          "text": "uh,",
+          "start": 15.0,
+          "end": 15.3
+        },
+        {
+          "word_index": 4,
+          "text": "uh",
+          "start": 15.4,
+          "end": 15.7
+        }
+      ]
+    }
+  ]
+}
