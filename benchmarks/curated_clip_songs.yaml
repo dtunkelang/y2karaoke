@@ -93,6 +93,17 @@ songs:
     lrc_duration_tolerance_sec: 8
     notes: "Clean second-verse English control clip from lyric-video source."
 
+  - artist: "OneRepublic"
+    title: "Counting Stars"
+    clip_id: "first-chorus"
+    audio_start_sec: 76
+    youtube_id: "hT_nvWreIhg"
+    youtube_url: "https://www.youtube.com/watch?v=hT_nvWreIhg"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 35
+    notes: "Clean repeated-chorus English clip with known agreement drift."
+
   - artist: "The Weepies"
     title: "Take It From Me"
     clip_id: "source-text-stress"
