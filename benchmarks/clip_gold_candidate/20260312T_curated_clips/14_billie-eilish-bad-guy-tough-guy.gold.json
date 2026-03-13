@@ -1,0 +1,376 @@
+{
+  "schema_version": "1.0",
+  "title": "bad guy",
+  "artist": "Billie Eilish",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/billie-eilish-bad-guy-tough-guy-42s-72s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "So you're a tough guy",
+      "start": 0.0,
+      "end": 1.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "So",
+          "start": 0.0,
+          "end": 0.3
+        },
+        {
+          "word_index": 2,
+          "text": "you're",
+          "start": 0.3,
+          "end": 0.6
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 0.6,
+          "end": 0.7
+        },
+        {
+          "word_index": 4,
+          "text": "tough",
+          "start": 0.7,
+          "end": 1.05
+        },
+        {
+          "word_index": 5,
+          "text": "guy",
+          "start": 1.05,
+          "end": 1.5
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Like it really rough guy",
+      "start": 1.5,
+      "end": 3.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Like",
+          "start": 1.5,
+          "end": 1.7
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 1.7,
+          "end": 2.05
+        },
+        {
+          "word_index": 3,
+          "text": "really",
+          "start": 2.05,
+          "end": 2.4
+        },
+        {
+          "word_index": 4,
+          "text": "rough",
+          "start": 2.4,
+          "end": 2.7
+        },
+        {
+          "word_index": 5,
+          "text": "guy",
+          "start": 2.7,
+          "end": 3.15
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Just can't get enough guy",
+      "start": 3.15,
+      "end": 5.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Just",
+          "start": 3.15,
+          "end": 3.55
+        },
+        {
+          "word_index": 2,
+          "text": "can't",
+          "start": 3.55,
+          "end": 3.9
+        },
+        {
+          "word_index": 3,
+          "text": "get",
+          "start": 3.9,
+          "end": 4.2
+        },
+        {
+          "word_index": 4,
+          "text": "enough",
+          "start": 4.2,
+          "end": 4.65
+        },
+        {
+          "word_index": 5,
+          "text": "guy",
+          "start": 4.65,
+          "end": 5.05
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Chest always so puffed guy",
+      "start": 5.1,
+      "end": 6.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Chest",
+          "start": 5.1,
+          "end": 5.5
+        },
+        {
+          "word_index": 2,
+          "text": "always",
+          "start": 5.5,
+          "end": 5.9
+        },
+        {
+          "word_index": 3,
+          "text": "so",
+          "start": 5.9,
+          "end": 6.1
+        },
+        {
+          "word_index": 4,
+          "text": "puffed",
+          "start": 6.1,
+          "end": 6.65
+        },
+        {
+          "word_index": 5,
+          "text": "guy",
+          "start": 6.65,
+          "end": 6.9
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "I'm that bad type",
+      "start": 7.1,
+      "end": 8.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 7.1,
+          "end": 7.45
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 7.45,
+          "end": 7.8
+        },
+        {
+          "word_index": 3,
+          "text": "bad",
+          "start": 7.8,
+          "end": 8.25
+        },
+        {
+          "word_index": 4,
+          "text": "type",
+          "start": 8.25,
+          "end": 8.65
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Make your mama sad type",
+      "start": 8.65,
+      "end": 10.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Make",
+          "start": 8.65,
+          "end": 8.9
+        },
+        {
+          "word_index": 2,
+          "text": "your",
+          "start": 8.9,
+          "end": 9.15
+        },
+        {
+          "word_index": 3,
+          "text": "mama",
+          "start": 9.15,
+          "end": 9.55
+        },
+        {
+          "word_index": 4,
+          "text": "sad",
+          "start": 9.55,
+          "end": 9.9
+        },
+        {
+          "word_index": 5,
+          "text": "type",
+          "start": 9.9,
+          "end": 10.45
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Make your girlfriend mad tight",
+      "start": 10.45,
+      "end": 12.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Make",
+          "start": 10.45,
+          "end": 10.7
+        },
+        {
+          "word_index": 2,
+          "text": "your",
+          "start": 10.7,
+          "end": 10.9
+        },
+        {
+          "word_index": 3,
+          "text": "girlfriend",
+          "start": 10.9,
+          "end": 11.35
+        },
+        {
+          "word_index": 4,
+          "text": "mad",
+          "start": 11.35,
+          "end": 11.65
+        },
+        {
+          "word_index": 5,
+          "text": "tight",
+          "start": 11.65,
+          "end": 12.3
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Might seduce your dad type",
+      "start": 12.3,
+      "end": 14.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Might",
+          "start": 12.3,
+          "end": 12.6
+        },
+        {
+          "word_index": 2,
+          "text": "seduce",
+          "start": 12.6,
+          "end": 12.85
+        },
+        {
+          "word_index": 3,
+          "text": "your",
+          "start": 12.85,
+          "end": 13.05
+        },
+        {
+          "word_index": 4,
+          "text": "dad",
+          "start": 13.05,
+          "end": 13.7
+        },
+        {
+          "word_index": 5,
+          "text": "type",
+          "start": 13.7,
+          "end": 14.3
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "I'm the bad guy, duh",
+      "start": 14.45,
+      "end": 18.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 14.45,
+          "end": 14.7
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 14.7,
+          "end": 15.1
+        },
+        {
+          "word_index": 3,
+          "text": "bad",
+          "start": 15.1,
+          "end": 16.35
+        },
+        {
+          "word_index": 4,
+          "text": "guy,",
+          "start": 16.35,
+          "end": 17.55
+        },
+        {
+          "word_index": 5,
+          "text": "duh",
+          "start": 18.05,
+          "end": 18.9
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "I'm the bad guy",
+      "start": 25.15,
+      "end": 27.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 25.15,
+          "end": 25.65
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 25.65,
+          "end": 26.15
+        },
+        {
+          "word_index": 3,
+          "text": "bad",
+          "start": 26.15,
+          "end": 27.0
+        },
+        {
+          "word_index": 4,
+          "text": "guy",
+          "start": 27.0,
+          "end": 27.5
+        }
+      ]
+    }
+  ]
+}

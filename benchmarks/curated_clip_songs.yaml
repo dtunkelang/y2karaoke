@@ -104,6 +104,17 @@ songs:
     lrc_duration_tolerance_sec: 35
     notes: "Clean repeated-chorus English clip with known agreement drift."
 
+  - artist: "Billie Eilish"
+    title: "bad guy"
+    clip_id: "tough-guy"
+    audio_start_sec: 42
+    youtube_id: "ayxYgDgBD3g"
+    youtube_url: "https://www.youtube.com/watch?v=ayxYgDgBD3g"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 8
+    notes: "Clean rhythmic English control clip around the first tough-guy block."
+
   - artist: "The Weepies"
     title: "Take It From Me"
     clip_id: "source-text-stress"
