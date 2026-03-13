@@ -271,6 +271,55 @@ def test_detect_offset_with_issues_skips_scaling_outside_window(monkeypatch):
     assert updated[0][0] == pytest.approx(2.0)
 
 
+def test_detect_offset_with_issues_scales_large_negative_offset_when_enabled(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: -0.62,
+    )
+
+    issues = []
+    line_timings = [(1.0, "Line")]
+    updated, offset = lw._detect_offset_with_issues(
+        "vocals.wav",
+        line_timings,
+        lyrics_offset=None,
+        issues=issues,
+        auto_offset_scale=0.6,
+        scaled_offset_min_abs_sec=0.9,
+        scaled_offset_max_abs_sec=1.4,
+        scale_large_negative_offsets=True,
+    )
+
+    assert offset == pytest.approx(-0.972)
+    assert updated[0][0] == pytest.approx(0.028)
+
+
+def test_detect_offset_with_issues_does_not_scale_large_negative_offset_by_default(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: -0.62,
+    )
+
+    issues = []
+    line_timings = [(1.0, "Line")]
+    updated, offset = lw._detect_offset_with_issues(
+        "vocals.wav",
+        line_timings,
+        lyrics_offset=None,
+        issues=issues,
+        auto_offset_scale=0.6,
+        scaled_offset_min_abs_sec=0.9,
+        scaled_offset_max_abs_sec=1.4,
+    )
+
+    assert offset == pytest.approx(-1.62)
+    assert updated[0][0] == pytest.approx(-0.62)
+
+
 def test_detect_offset_with_issues_uses_second_line_after_long_interjection_gap(
     monkeypatch,
 ):
