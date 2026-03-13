@@ -32,15 +32,6 @@ songs:
     lrc_duration_tolerance_sec: 8
     notes: "Uses lyric video source for cleaner alignment target."
 
-  - artist: "Dua Lipa"
-    title: "Levitating"
-    youtube_id: "TUVcZfQe-Kw"
-    youtube_url: "https://www.youtube.com/watch?v=TUVcZfQe-Kw"
-    preferred_lyrics_provider: "lyriq"
-    fallback_lyrics_provider: "syncedlyrics"
-    lrc_duration_tolerance_sec: 30
-    notes: "Uses official audio for benchmark alignment."
-
   - artist: "Bruno Mars"
     title: "Uptown Funk"
     youtube_id: "OPf0YbXqDm0"
