@@ -93,6 +93,17 @@ songs:
     lrc_duration_tolerance_sec: 8
     notes: "Clean second-verse English control clip from lyric-video source."
 
+  - artist: "Coldplay"
+    title: "Viva La Vida"
+    clip_id: "second-verse"
+    audio_start_sec: 110.4
+    youtube_id: "dvgZkm1xWPE"
+    youtube_url: "https://www.youtube.com/watch?v=dvgZkm1xWPE"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Clean second-verse English control clip from official-audio source."
+
   - artist: "OneRepublic"
     title: "Counting Stars"
     clip_id: "first-chorus"

@@ -1,0 +1,422 @@
+{
+  "schema_version": "1.0",
+  "title": "Viva La Vida",
+  "artist": "Coldplay",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/coldplay-viva-la-vida-second-verse-110_4s-140_4s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "It was a wicked and wild wind",
+      "start": 0.0,
+      "end": 3.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "It",
+          "start": 0.0,
+          "end": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "was",
+          "start": 0.25,
+          "end": 0.55
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 0.55,
+          "end": 0.7
+        },
+        {
+          "word_index": 4,
+          "text": "wicked",
+          "start": 0.7,
+          "end": 1.2
+        },
+        {
+          "word_index": 5,
+          "text": "and",
+          "start": 1.2,
+          "end": 1.5
+        },
+        {
+          "word_index": 6,
+          "text": "wild",
+          "start": 1.5,
+          "end": 3.15
+        },
+        {
+          "word_index": 7,
+          "text": "wind",
+          "start": 3.15,
+          "end": 3.85
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Blew down the doors to let me in",
+      "start": 4.1,
+      "end": 6.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Blew",
+          "start": 4.1,
+          "end": 4.35
+        },
+        {
+          "word_index": 2,
+          "text": "down",
+          "start": 4.35,
+          "end": 4.65
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 4.65,
+          "end": 4.85
+        },
+        {
+          "word_index": 4,
+          "text": "doors",
+          "start": 4.85,
+          "end": 5.4
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 5.4,
+          "end": 5.65
+        },
+        {
+          "word_index": 6,
+          "text": "let",
+          "start": 5.65,
+          "end": 6.0
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 6.0,
+          "end": 6.4
+        },
+        {
+          "word_index": 8,
+          "text": "in",
+          "start": 6.4,
+          "end": 6.8
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Shattered windows and the sound of drums",
+      "start": 6.95,
+      "end": 10.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Shattered",
+          "start": 6.95,
+          "end": 7.55
+        },
+        {
+          "word_index": 2,
+          "text": "windows",
+          "start": 7.55,
+          "end": 7.9
+        },
+        {
+          "word_index": 3,
+          "text": "and",
+          "start": 7.9,
+          "end": 8.05
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 8.05,
+          "end": 8.25
+        },
+        {
+          "word_index": 5,
+          "text": "sound",
+          "start": 8.25,
+          "end": 9.6
+        },
+        {
+          "word_index": 6,
+          "text": "of",
+          "start": 9.6,
+          "end": 9.95
+        },
+        {
+          "word_index": 7,
+          "text": "drums",
+          "start": 9.95,
+          "end": 10.6
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "People couldn't believe what I'd become",
+      "start": 11.15,
+      "end": 14.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "People",
+          "start": 11.15,
+          "end": 11.95
+        },
+        {
+          "word_index": 2,
+          "text": "couldn't",
+          "start": 11.95,
+          "end": 12.35
+        },
+        {
+          "word_index": 3,
+          "text": "believe",
+          "start": 12.35,
+          "end": 12.75
+        },
+        {
+          "word_index": 4,
+          "text": "what",
+          "start": 12.75,
+          "end": 13.35
+        },
+        {
+          "word_index": 5,
+          "text": "I'd",
+          "start": 13.35,
+          "end": 13.8
+        },
+        {
+          "word_index": 6,
+          "text": "become",
+          "start": 13.8,
+          "end": 14.4
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Revolutionaries wait",
+      "start": 14.6,
+      "end": 18.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Revolutionaries",
+          "start": 14.6,
+          "end": 17.2
+        },
+        {
+          "word_index": 2,
+          "text": "wait",
+          "start": 17.2,
+          "end": 18.05
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "For my head on a silver plate",
+      "start": 18.2,
+      "end": 20.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "For",
+          "start": 18.2,
+          "end": 18.45
+        },
+        {
+          "word_index": 2,
+          "text": "my",
+          "start": 18.45,
+          "end": 18.75
+        },
+        {
+          "word_index": 3,
+          "text": "head",
+          "start": 18.75,
+          "end": 19.15
+        },
+        {
+          "word_index": 4,
+          "text": "on",
+          "start": 19.15,
+          "end": 19.35
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 19.35,
+          "end": 19.5
+        },
+        {
+          "word_index": 6,
+          "text": "silver",
+          "start": 19.5,
+          "end": 20.05
+        },
+        {
+          "word_index": 7,
+          "text": "plate",
+          "start": 20.05,
+          "end": 20.25
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Just a puppet on a lonely string",
+      "start": 20.8,
+      "end": 24.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Just",
+          "start": 20.8,
+          "end": 21.05
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 21.05,
+          "end": 21.25
+        },
+        {
+          "word_index": 3,
+          "text": "puppet",
+          "start": 21.25,
+          "end": 21.95
+        },
+        {
+          "word_index": 4,
+          "text": "on",
+          "start": 21.95,
+          "end": 22.1
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 22.1,
+          "end": 22.2
+        },
+        {
+          "word_index": 6,
+          "text": "lonely",
+          "start": 22.2,
+          "end": 23.65
+        },
+        {
+          "word_index": 7,
+          "text": "string",
+          "start": 23.65,
+          "end": 24.85
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Oh, who would ever want to be king?",
+      "start": 25.45,
+      "end": 27.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh,",
+          "start": 25.45,
+          "end": 25.7
+        },
+        {
+          "word_index": 2,
+          "text": "who",
+          "start": 25.7,
+          "end": 26.0
+        },
+        {
+          "word_index": 3,
+          "text": "would",
+          "start": 26.0,
+          "end": 26.3
+        },
+        {
+          "word_index": 4,
+          "text": "ever",
+          "start": 26.3,
+          "end": 26.65
+        },
+        {
+          "word_index": 5,
+          "text": "want",
+          "start": 26.65,
+          "end": 27.05
+        },
+        {
+          "word_index": 6,
+          "text": "to",
+          "start": 27.05,
+          "end": 27.25
+        },
+        {
+          "word_index": 7,
+          "text": "be",
+          "start": 27.25,
+          "end": 27.4
+        },
+        {
+          "word_index": 8,
+          "text": "king?",
+          "start": 27.4,
+          "end": 27.8
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "I hear Jerusalem bells a-ringing",
+      "start": 28.9,
+      "end": 33.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 28.9,
+          "end": 29.0
+        },
+        {
+          "word_index": 2,
+          "text": "hear",
+          "start": 29.0,
+          "end": 29.75
+        },
+        {
+          "word_index": 3,
+          "text": "Jerusalem",
+          "start": 29.75,
+          "end": 30.95
+        },
+        {
+          "word_index": 4,
+          "text": "bells",
+          "start": 30.95,
+          "end": 32.15
+        },
+        {
+          "word_index": 5,
+          "text": "a-ringing",
+          "start": 32.15,
+          "end": 33.0
+        }
+      ]
+    }
+  ]
+}
