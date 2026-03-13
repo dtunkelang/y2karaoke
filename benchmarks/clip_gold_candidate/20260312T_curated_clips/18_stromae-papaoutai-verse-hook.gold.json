@@ -1,0 +1,478 @@
+{
+  "schema_version": "1.0",
+  "title": "Papaoutai",
+  "artist": "Stromae",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/stromae-papaoutai-verse-hook-31_8s-61_8s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "O\u00f9 est ton papa?",
+      "start": 0.15,
+      "end": 1.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O\u00f9",
+          "start": 0.15,
+          "end": 0.35
+        },
+        {
+          "word_index": 2,
+          "text": "est",
+          "start": 0.35,
+          "end": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "ton",
+          "start": 0.5,
+          "end": 0.7
+        },
+        {
+          "word_index": 4,
+          "text": "papa?",
+          "start": 0.7,
+          "end": 1.15
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Dis-moi o\u00f9 est ton papa?",
+      "start": 1.55,
+      "end": 3.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dis-moi",
+          "start": 1.55,
+          "end": 1.95
+        },
+        {
+          "word_index": 2,
+          "text": "o\u00f9",
+          "start": 1.95,
+          "end": 2.25
+        },
+        {
+          "word_index": 3,
+          "text": "est",
+          "start": 2.25,
+          "end": 2.45
+        },
+        {
+          "word_index": 4,
+          "text": "ton",
+          "start": 2.45,
+          "end": 2.85
+        },
+        {
+          "word_index": 5,
+          "text": "papa?",
+          "start": 2.85,
+          "end": 3.25
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Sans m\u00eame devoir lui parler",
+      "start": 3.9,
+      "end": 5.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sans",
+          "start": 3.9,
+          "end": 4.3
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00eame",
+          "start": 4.3,
+          "end": 4.7
+        },
+        {
+          "word_index": 3,
+          "text": "devoir",
+          "start": 4.7,
+          "end": 5.1
+        },
+        {
+          "word_index": 4,
+          "text": "lui",
+          "start": 5.1,
+          "end": 5.5
+        },
+        {
+          "word_index": 5,
+          "text": "parler",
+          "start": 5.5,
+          "end": 5.9
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Il sait ce qui ne va pas",
+      "start": 6.0,
+      "end": 7.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Il",
+          "start": 6.0,
+          "end": 6.15
+        },
+        {
+          "word_index": 2,
+          "text": "sait",
+          "start": 6.15,
+          "end": 6.35
+        },
+        {
+          "word_index": 3,
+          "text": "ce",
+          "start": 6.35,
+          "end": 6.55
+        },
+        {
+          "word_index": 4,
+          "text": "qui",
+          "start": 6.55,
+          "end": 6.75
+        },
+        {
+          "word_index": 5,
+          "text": "ne",
+          "start": 6.75,
+          "end": 7.0
+        },
+        {
+          "word_index": 6,
+          "text": "va",
+          "start": 7.0,
+          "end": 7.25
+        },
+        {
+          "word_index": 7,
+          "text": "pas",
+          "start": 7.25,
+          "end": 7.55
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Ah sacr\u00e9 papa",
+      "start": 8.35,
+      "end": 9.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ah",
+          "start": 8.35,
+          "end": 8.6
+        },
+        {
+          "word_index": 2,
+          "text": "sacr\u00e9",
+          "start": 8.6,
+          "end": 9.05
+        },
+        {
+          "word_index": 3,
+          "text": "papa",
+          "start": 9.05,
+          "end": 9.65
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Dis-moi o\u00f9 es-tu cach\u00e9?",
+      "start": 9.9,
+      "end": 11.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Dis-moi",
+          "start": 9.9,
+          "end": 10.2
+        },
+        {
+          "word_index": 2,
+          "text": "o\u00f9",
+          "start": 10.2,
+          "end": 10.5
+        },
+        {
+          "word_index": 3,
+          "text": "es-tu",
+          "start": 10.5,
+          "end": 10.9
+        },
+        {
+          "word_index": 4,
+          "text": "cach\u00e9?",
+          "start": 10.9,
+          "end": 11.4
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "\u00c7a doit, faire au moins mille fois que j'ai compt\u00e9 mes doigts",
+      "start": 11.4,
+      "end": 16.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "\u00c7a",
+          "start": 11.4,
+          "end": 11.85
+        },
+        {
+          "word_index": 2,
+          "text": "doit,",
+          "start": 11.85,
+          "end": 12.3
+        },
+        {
+          "word_index": 3,
+          "text": "faire",
+          "start": 12.3,
+          "end": 12.6
+        },
+        {
+          "word_index": 4,
+          "text": "au",
+          "start": 12.6,
+          "end": 12.9
+        },
+        {
+          "word_index": 5,
+          "text": "moins",
+          "start": 12.9,
+          "end": 13.15
+        },
+        {
+          "word_index": 6,
+          "text": "mille",
+          "start": 13.15,
+          "end": 13.45
+        },
+        {
+          "word_index": 7,
+          "text": "fois",
+          "start": 13.45,
+          "end": 13.75
+        },
+        {
+          "word_index": 8,
+          "text": "que",
+          "start": 13.75,
+          "end": 14.1
+        },
+        {
+          "word_index": 9,
+          "text": "j'ai",
+          "start": 14.1,
+          "end": 14.5
+        },
+        {
+          "word_index": 10,
+          "text": "compt\u00e9",
+          "start": 14.5,
+          "end": 14.9
+        },
+        {
+          "word_index": 11,
+          "text": "mes",
+          "start": 14.9,
+          "end": 15.35
+        },
+        {
+          "word_index": 12,
+          "text": "doigts",
+          "start": 15.35,
+          "end": 16.2
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "O\u00f9 t'es, papaoutai?",
+      "start": 16.65,
+      "end": 18.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O\u00f9",
+          "start": 16.65,
+          "end": 17.0
+        },
+        {
+          "word_index": 2,
+          "text": "t'es,",
+          "start": 17.0,
+          "end": 17.35
+        },
+        {
+          "word_index": 3,
+          "text": "papaoutai?",
+          "start": 17.35,
+          "end": 18.65
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "O\u00f9 t'es, papaoutai?",
+      "start": 18.75,
+      "end": 20.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O\u00f9",
+          "start": 18.75,
+          "end": 19.1
+        },
+        {
+          "word_index": 2,
+          "text": "t'es,",
+          "start": 19.1,
+          "end": 19.45
+        },
+        {
+          "word_index": 3,
+          "text": "papaoutai?",
+          "start": 19.45,
+          "end": 20.65
+        }
+      ]
+    },
+    {
+      "line_index": 10,
+      "text": "O\u00f9 t'es, papaoutai?",
+      "start": 20.95,
+      "end": 22.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O\u00f9",
+          "start": 20.95,
+          "end": 21.3
+        },
+        {
+          "word_index": 2,
+          "text": "t'es,",
+          "start": 21.3,
+          "end": 21.65
+        },
+        {
+          "word_index": 3,
+          "text": "papaoutai?",
+          "start": 21.65,
+          "end": 22.7
+        }
+      ]
+    },
+    {
+      "line_index": 11,
+      "text": "O\u00f9 t'es, o\u00f9 t'es o\u00f9, papaoutai?",
+      "start": 22.75,
+      "end": 24.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O\u00f9",
+          "start": 22.75,
+          "end": 22.9
+        },
+        {
+          "word_index": 2,
+          "text": "t'es,",
+          "start": 22.9,
+          "end": 23.05
+        },
+        {
+          "word_index": 3,
+          "text": "o\u00f9",
+          "start": 23.05,
+          "end": 23.15
+        },
+        {
+          "word_index": 4,
+          "text": "t'es",
+          "start": 23.15,
+          "end": 23.3
+        },
+        {
+          "word_index": 5,
+          "text": "o\u00f9,",
+          "start": 23.3,
+          "end": 23.5
+        },
+        {
+          "word_index": 6,
+          "text": "papaoutai?",
+          "start": 23.5,
+          "end": 24.5
+        }
+      ]
+    },
+    {
+      "line_index": 12,
+      "text": "O\u00f9 t'es, papaoutai?",
+      "start": 25.1,
+      "end": 27.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O\u00f9",
+          "start": 25.1,
+          "end": 25.4
+        },
+        {
+          "word_index": 2,
+          "text": "t'es,",
+          "start": 25.4,
+          "end": 25.75
+        },
+        {
+          "word_index": 3,
+          "text": "papaoutai?",
+          "start": 25.75,
+          "end": 27.0
+        }
+      ]
+    },
+    {
+      "line_index": 13,
+      "text": "O\u00f9 t'es, papaoutai?",
+      "start": 27.05,
+      "end": 29.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "O\u00f9",
+          "start": 27.05,
+          "end": 27.3
+        },
+        {
+          "word_index": 2,
+          "text": "t'es,",
+          "start": 27.3,
+          "end": 28.05
+        },
+        {
+          "word_index": 3,
+          "text": "papaoutai?",
+          "start": 28.05,
+          "end": 29.15
+        }
+      ]
+    }
+  ]
+}
