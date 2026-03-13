@@ -126,6 +126,17 @@ songs:
     lrc_duration_tolerance_sec: 8
     notes: "Clean rhythmic English control clip around the first tough-guy block."
 
+  - artist: "Bruno Mars"
+    title: "Uptown Funk"
+    clip_id: "first-chorus"
+    audio_start_sec: 50.1
+    youtube_id: "OPf0YbXqDm0"
+    youtube_url: "https://www.youtube.com/watch?v=OPf0YbXqDm0"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "First-chorus English clip around hallelujah / uptown funk / watch block."
+
   - artist: "Imagine Dragons"
     title: "Believer"
     clip_id: "first-chorus"
