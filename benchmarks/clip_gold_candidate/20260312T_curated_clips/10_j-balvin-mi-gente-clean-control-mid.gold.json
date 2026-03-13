@@ -560,19 +560,5 @@
         }
       ]
     },
-    {
-      "line_index": 15,
-      "text": "\u00bfY d\u00f3nde est\u00e1 mi gente?",
-      "start": 29.75,
-      "end": 30.0,
-      "words": [
-        {
-          "word_index": 1,
-          "text": "\u00bfY",
-          "start": 29.75,
-          "end": 30.0
-        }
-      ]
-    }
   ]
 }
