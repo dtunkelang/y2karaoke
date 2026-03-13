@@ -137,6 +137,17 @@ songs:
     lrc_duration_tolerance_sec: 20
     notes: "Clean first-chorus English clip before the later rap/version divergence."
 
+  - artist: "Stromae"
+    title: "Papaoutai"
+    clip_id: "verse-hook"
+    audio_start_sec: 31.8
+    youtube_id: "oiKj0Z_Xnjc"
+    youtube_url: "https://www.youtube.com/watch?v=oiKj0Z_Xnjc"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 25
+    notes: "French verse-to-first-hook block with clear lead vocal and limited overlap."
+
   - artist: "The Weepies"
     title: "Take It From Me"
     clip_id: "source-text-stress"
