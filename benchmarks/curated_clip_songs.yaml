@@ -82,6 +82,17 @@ songs:
     lrc_duration_tolerance_sec: 18
     notes: "Clean curated control clip for sanity checks."
 
+  - artist: "Ed Sheeran"
+    title: "Shape of You"
+    clip_id: "second-verse"
+    audio_start_sec: 89.8
+    youtube_id: "liTfD88dbCo"
+    youtube_url: "https://www.youtube.com/watch?v=liTfD88dbCo"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 8
+    notes: "Clean second-verse English control clip from lyric-video source."
+
   - artist: "The Weepies"
     title: "Take It From Me"
     clip_id: "source-text-stress"
