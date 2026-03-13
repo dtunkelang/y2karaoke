@@ -1,0 +1,434 @@
+{
+  "schema_version": "1.0",
+  "title": "Uptown Funk",
+  "artist": "Bruno Mars",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/bruno-mars-uptown-funk-first-chorus-50_1s-80_1s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Girls hit your hallelujah (whoo)",
+      "start": 0.2,
+      "end": 1.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Girls",
+          "start": 0.2,
+          "end": 0.45
+        },
+        {
+          "word_index": 2,
+          "text": "hit",
+          "start": 0.45,
+          "end": 0.75
+        },
+        {
+          "word_index": 3,
+          "text": "your",
+          "start": 0.75,
+          "end": 1.05
+        },
+        {
+          "word_index": 4,
+          "text": "hallelujah",
+          "start": 1.05,
+          "end": 1.45
+        },
+        {
+          "word_index": 5,
+          "text": "(whoo)",
+          "start": 1.45,
+          "end": 1.8
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Girls hit your hallelujah (whoo)",
+      "start": 2.05,
+      "end": 4.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Girls",
+          "start": 2.05,
+          "end": 2.5
+        },
+        {
+          "word_index": 2,
+          "text": "hit",
+          "start": 2.5,
+          "end": 2.9
+        },
+        {
+          "word_index": 3,
+          "text": "your",
+          "start": 2.9,
+          "end": 3.2
+        },
+        {
+          "word_index": 4,
+          "text": "hallelujah",
+          "start": 3.2,
+          "end": 3.65
+        },
+        {
+          "word_index": 5,
+          "text": "(whoo)",
+          "start": 3.65,
+          "end": 4.1
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Girls hit your hallelujah (whoo)",
+      "start": 4.1,
+      "end": 5.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Girls",
+          "start": 4.1,
+          "end": 4.5
+        },
+        {
+          "word_index": 2,
+          "text": "hit",
+          "start": 4.5,
+          "end": 4.75
+        },
+        {
+          "word_index": 3,
+          "text": "your",
+          "start": 4.75,
+          "end": 5.05
+        },
+        {
+          "word_index": 4,
+          "text": "hallelujah",
+          "start": 5.05,
+          "end": 5.5
+        },
+        {
+          "word_index": 5,
+          "text": "(whoo)",
+          "start": 5.5,
+          "end": 5.95
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "'Cause uptown funk gon' give it to you",
+      "start": 6.1,
+      "end": 8.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "'Cause",
+          "start": 6.1,
+          "end": 6.5
+        },
+        {
+          "word_index": 2,
+          "text": "uptown",
+          "start": 6.5,
+          "end": 6.8
+        },
+        {
+          "word_index": 3,
+          "text": "funk",
+          "start": 6.8,
+          "end": 7.1
+        },
+        {
+          "word_index": 4,
+          "text": "gon'",
+          "start": 7.1,
+          "end": 7.45
+        },
+        {
+          "word_index": 5,
+          "text": "give",
+          "start": 7.45,
+          "end": 7.75
+        },
+        {
+          "word_index": 6,
+          "text": "it",
+          "start": 7.75,
+          "end": 8.0
+        },
+        {
+          "word_index": 7,
+          "text": "to",
+          "start": 8.0,
+          "end": 8.15
+        },
+        {
+          "word_index": 8,
+          "text": "you",
+          "start": 8.15,
+          "end": 8.35
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "'Cause uptown funk gon' give it to you",
+      "start": 8.35,
+      "end": 10.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "'Cause",
+          "start": 8.35,
+          "end": 8.6
+        },
+        {
+          "word_index": 2,
+          "text": "uptown",
+          "start": 8.6,
+          "end": 8.85
+        },
+        {
+          "word_index": 3,
+          "text": "funk",
+          "start": 8.85,
+          "end": 9.1
+        },
+        {
+          "word_index": 4,
+          "text": "gon'",
+          "start": 9.1,
+          "end": 9.3
+        },
+        {
+          "word_index": 5,
+          "text": "give",
+          "start": 9.3,
+          "end": 9.55
+        },
+        {
+          "word_index": 6,
+          "text": "it",
+          "start": 9.55,
+          "end": 9.8
+        },
+        {
+          "word_index": 7,
+          "text": "to",
+          "start": 9.8,
+          "end": 10.05
+        },
+        {
+          "word_index": 8,
+          "text": "you",
+          "start": 10.05,
+          "end": 10.25
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "'Cause uptown funk gon' give it to you",
+      "start": 10.4,
+      "end": 12.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "'Cause",
+          "start": 10.4,
+          "end": 10.7
+        },
+        {
+          "word_index": 2,
+          "text": "uptown",
+          "start": 10.7,
+          "end": 11.0
+        },
+        {
+          "word_index": 3,
+          "text": "funk",
+          "start": 11.0,
+          "end": 11.3
+        },
+        {
+          "word_index": 4,
+          "text": "gon'",
+          "start": 11.3,
+          "end": 11.6
+        },
+        {
+          "word_index": 5,
+          "text": "give",
+          "start": 11.6,
+          "end": 11.9
+        },
+        {
+          "word_index": 6,
+          "text": "it",
+          "start": 11.9,
+          "end": 12.1
+        },
+        {
+          "word_index": 7,
+          "text": "to",
+          "start": 12.1,
+          "end": 12.35
+        },
+        {
+          "word_index": 8,
+          "text": "you",
+          "start": 12.35,
+          "end": 12.6
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Saturday night and we in the spot",
+      "start": 12.65,
+      "end": 14.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Saturday",
+          "start": 12.65,
+          "end": 12.9
+        },
+        {
+          "word_index": 2,
+          "text": "night",
+          "start": 12.9,
+          "end": 13.15
+        },
+        {
+          "word_index": 3,
+          "text": "and",
+          "start": 13.15,
+          "end": 13.4
+        },
+        {
+          "word_index": 4,
+          "text": "we",
+          "start": 13.4,
+          "end": 13.65
+        },
+        {
+          "word_index": 5,
+          "text": "in",
+          "start": 13.65,
+          "end": 13.9
+        },
+        {
+          "word_index": 6,
+          "text": "the",
+          "start": 13.9,
+          "end": 14.15
+        },
+        {
+          "word_index": 7,
+          "text": "spot",
+          "start": 14.15,
+          "end": 14.4
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Don't believe me just watch (come on)",
+      "start": 14.75,
+      "end": 17.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Don't",
+          "start": 14.75,
+          "end": 15.1
+        },
+        {
+          "word_index": 2,
+          "text": "believe",
+          "start": 15.1,
+          "end": 15.45
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 15.45,
+          "end": 15.7
+        },
+        {
+          "word_index": 4,
+          "text": "just",
+          "start": 15.7,
+          "end": 16.05
+        },
+        {
+          "word_index": 5,
+          "text": "watch",
+          "start": 16.05,
+          "end": 16.4
+        },
+        {
+          "word_index": 6,
+          "text": "(come",
+          "start": 16.4,
+          "end": 16.65
+        },
+        {
+          "word_index": 7,
+          "text": "on)",
+          "start": 16.65,
+          "end": 17.05
+        }
+      ]
+    },
+    {
+      "line_index": 9,
+      "text": "Don't believe me just watch uh",
+      "start": 23.05,
+      "end": 25.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Don't",
+          "start": 23.05,
+          "end": 23.3
+        },
+        {
+          "word_index": 2,
+          "text": "believe",
+          "start": 23.3,
+          "end": 23.65
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 23.65,
+          "end": 24.0
+        },
+        {
+          "word_index": 4,
+          "text": "just",
+          "start": 24.0,
+          "end": 24.35
+        },
+        {
+          "word_index": 5,
+          "text": "watch",
+          "start": 24.35,
+          "end": 24.75
+        },
+        {
+          "word_index": 6,
+          "text": "uh",
+          "start": 24.75,
+          "end": 25.1
+        }
+      ]
+    }
+  ]
+}
