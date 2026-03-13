@@ -1,0 +1,352 @@
+{
+  "schema_version": "1.0",
+  "title": "Mi Gente",
+  "artist": "J Balvin",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/wnJ6LuUFpMo/J Balvin, Willy William - Mi Gente (Official Video).wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Mira el ritmo c\u00f3mo los tiene",
+      "start": 0.1,
+      "end": 1.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 0.1,
+          "end": 0.3
+        },
+        {
+          "word_index": 2,
+          "text": "el",
+          "start": 0.3,
+          "end": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "ritmo",
+          "start": 0.5,
+          "end": 0.7
+        },
+        {
+          "word_index": 4,
+          "text": "c\u00f3mo",
+          "start": 0.7,
+          "end": 1.0
+        },
+        {
+          "word_index": 5,
+          "text": "los",
+          "start": 1.0,
+          "end": 1.15
+        },
+        {
+          "word_index": 6,
+          "text": "tiene",
+          "start": 1.15,
+          "end": 1.7
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Hago m\u00fasica que entretiene",
+      "start": 1.95,
+      "end": 3.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hago",
+          "start": 1.95,
+          "end": 2.2
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00fasica",
+          "start": 2.2,
+          "end": 2.6
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 2.6,
+          "end": 2.8
+        },
+        {
+          "word_index": 4,
+          "text": "entretiene",
+          "start": 2.8,
+          "end": 3.95
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "El mundo nos quiere, nos quiere, me quiere a m\u00ed",
+      "start": 4.1,
+      "end": 6.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "El",
+          "start": 4.1,
+          "end": 4.3
+        },
+        {
+          "word_index": 2,
+          "text": "mundo",
+          "start": 4.3,
+          "end": 4.6
+        },
+        {
+          "word_index": 3,
+          "text": "nos",
+          "start": 4.6,
+          "end": 4.9
+        },
+        {
+          "word_index": 4,
+          "text": "quiere,",
+          "start": 4.9,
+          "end": 5.25
+        },
+        {
+          "word_index": 5,
+          "text": "nos",
+          "start": 5.25,
+          "end": 5.45
+        },
+        {
+          "word_index": 6,
+          "text": "quiere,",
+          "start": 5.45,
+          "end": 5.8
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 5.8,
+          "end": 6.0
+        },
+        {
+          "word_index": 8,
+          "text": "quiere",
+          "start": 6.0,
+          "end": 6.25
+        },
+        {
+          "word_index": 9,
+          "text": "a",
+          "start": 6.25,
+          "end": 6.35
+        },
+        {
+          "word_index": 10,
+          "text": "m\u00ed",
+          "start": 6.35,
+          "end": 6.55
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Toda mi gente se mueve (rra)",
+      "start": 6.55,
+      "end": 8.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Toda",
+          "start": 6.55,
+          "end": 6.9
+        },
+        {
+          "word_index": 2,
+          "text": "mi",
+          "start": 6.9,
+          "end": 7.15
+        },
+        {
+          "word_index": 3,
+          "text": "gente",
+          "start": 7.15,
+          "end": 7.65
+        },
+        {
+          "word_index": 4,
+          "text": "se",
+          "start": 7.65,
+          "end": 7.95
+        },
+        {
+          "word_index": 5,
+          "text": "mueve",
+          "start": 7.95,
+          "end": 8.6
+        },
+        {
+          "word_index": 6,
+          "text": "(rra)",
+          "start": 8.6,
+          "end": 8.75
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Mira el ritmo c\u00f3mo los tiene",
+      "start": 9.0,
+      "end": 10.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mira",
+          "start": 9.0,
+          "end": 9.3
+        },
+        {
+          "word_index": 2,
+          "text": "el",
+          "start": 9.3,
+          "end": 9.55
+        },
+        {
+          "word_index": 3,
+          "text": "ritmo",
+          "start": 9.55,
+          "end": 9.85
+        },
+        {
+          "word_index": 4,
+          "text": "c\u00f3mo",
+          "start": 9.85,
+          "end": 10.2
+        },
+        {
+          "word_index": 5,
+          "text": "los",
+          "start": 10.2,
+          "end": 10.45
+        },
+        {
+          "word_index": 6,
+          "text": "tiene",
+          "start": 10.45,
+          "end": 10.75
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Hago m\u00fasica que entretiene",
+      "start": 11.2,
+      "end": 13.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hago",
+          "start": 11.2,
+          "end": 11.55
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00fasica",
+          "start": 11.55,
+          "end": 12.0
+        },
+        {
+          "word_index": 3,
+          "text": "que",
+          "start": 12.0,
+          "end": 12.25
+        },
+        {
+          "word_index": 4,
+          "text": "entretiene",
+          "start": 12.25,
+          "end": 13.0
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "Mi m\u00fasica los tiene fuerte bailando y se baila as\u00ed (let's go)",
+      "start": 13.2,
+      "end": 18.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Mi",
+          "start": 13.2,
+          "end": 13.5
+        },
+        {
+          "word_index": 2,
+          "text": "m\u00fasica",
+          "start": 13.5,
+          "end": 14.0
+        },
+        {
+          "word_index": 3,
+          "text": "los",
+          "start": 14.0,
+          "end": 14.2
+        },
+        {
+          "word_index": 4,
+          "text": "tiene",
+          "start": 14.2,
+          "end": 14.45
+        },
+        {
+          "word_index": 5,
+          "text": "fuerte",
+          "start": 14.45,
+          "end": 15.1
+        },
+        {
+          "word_index": 6,
+          "text": "bailando",
+          "start": 15.1,
+          "end": 15.5
+        },
+        {
+          "word_index": 7,
+          "text": "y",
+          "start": 15.5,
+          "end": 15.6
+        },
+        {
+          "word_index": 8,
+          "text": "se",
+          "start": 15.6,
+          "end": 15.7
+        },
+        {
+          "word_index": 9,
+          "text": "baila",
+          "start": 15.7,
+          "end": 16.0
+        },
+        {
+          "word_index": 10,
+          "text": "as\u00ed",
+          "start": 16.0,
+          "end": 16.1
+        },
+        {
+          "word_index": 11,
+          "text": "(let's",
+          "start": 16.1,
+          "end": 16.45
+        },
+        {
+          "word_index": 12,
+          "text": "go)",
+          "start": 16.45,
+          "end": 18.2
+        }
+      ]
+    }
+  ]
+}

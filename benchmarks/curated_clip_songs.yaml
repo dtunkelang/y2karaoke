@@ -62,6 +62,17 @@ songs:
 
   - artist: "J Balvin"
     title: "Mi Gente"
+    clip_id: "clean-control-early"
+    audio_start_sec: 20
+    youtube_id: "wnJ6LuUFpMo"
+    youtube_url: "https://www.youtube.com/watch?v=wnJ6LuUFpMo"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 18
+    notes: "Earlier clean curated control clip before overlap and callouts."
+
+  - artist: "J Balvin"
+    title: "Mi Gente"
     clip_id: "clean-control-mid"
     audio_start_sec: 56
     youtube_id: "wnJ6LuUFpMo"
