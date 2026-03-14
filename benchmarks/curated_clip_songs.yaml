@@ -191,3 +191,14 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 20
     notes: "Clean first-chorus clip from a validated official-video/LRC pairing."
+
+  - artist: "Adele"
+    title: "Rolling in the Deep"
+    clip_id: "first-chorus"
+    audio_start_sec: 58.0
+    youtube_id: "rYEDA3JcQqw"
+    youtube_url: "https://www.youtube.com/watch?v=rYEDA3JcQqw"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 30
+    notes: "First-chorus English clip seeded to start cleanly on 'We could've had it all'."
