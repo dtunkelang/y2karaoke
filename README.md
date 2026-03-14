@@ -193,10 +193,14 @@ Benchmark seed set for timing quality work:
   - add `clip_id` to distinguish multiple entries for the same song
   - add `audio_start_sec` to trim into the song before alignment
   - keep full-song entries as the main truth set; use clips as a supplement, not a replacement
+  - for clip curation, prefer labeling the whole useful audible block inside the ~30s window, not just the first few lines
+  - if a clip is misaligned, change either the audio window or the lyric span first; avoid changing both at once unless you are deliberately reseeding the clip
 - Before curating a new song or clip source, vet the YouTube source against canonical + synced-lyrics durations:
   - `PYTHONPATH=src ./venv/bin/python tools/vet_source_url.py --url <youtube_url> --artist "<artist>" --title "<title>"`
   - Prefer official-audio uploads when available.
+  - Prefer exact version matches over “close enough” official uploads. If the source is a remix / feature / alt version (for example a DaBaby feature vs. solo album version), do not benchmark it against mismatched lyrics.
   - Treat synced-lyrics duration as a supporting signal only; it reflects the timed lyrics track, not necessarily the true song end.
+  - If large errors persist after multiple pipeline attempts, assume source/curation mismatch before assuming a model bug.
 - Validate it with: `make benchmark-validate`
 - Run the benchmark suite and aggregate report:
   - `make benchmark-run`
@@ -247,6 +251,9 @@ Benchmark seed set for timing quality work:
   - Rebaseline one song safely: `./venv/bin/python tools/run_benchmark_suite.py --match "bad guy" --max-songs 1 --rebaseline`
   - Troubleshooting rule: if a song shows a large benchmark error that persists across multiple runs or heuristics, assume the gold curation may be wrong before assuming the pipeline is wrong.
     - First verify `candidate_url` / `audio_path`, then listen-check the gold against the actual benchmark source, and rebaseline before spending time on new alignment heuristics.
+  - Clip workflow rule:
+    - for apples-to-apples clip measurement, prefer rerunning the full song on the normal path and rescoring the curated clip from that full-song report
+    - direct clip-only generation can change source routing and make comparisons misleading
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`
@@ -340,6 +347,11 @@ Then open `http://127.0.0.1:8765`.
 - Input: existing timing report JSON or existing `*.gold.json`.
 - Editing: drag intervals/handles, fine/coarse nudges (`0.05s` / `0.2s`), and audio-anchor snap/jump shortcuts.
 - Validation: editing is permissive while adjusting; the save path normalizes/snap-rounds timings.
+- Practical curation rules from recent clip work:
+  - save and commit/push curated clips immediately; assume hand-labeling is expensive and should never be left local
+  - if the audio and lyrics clearly describe different versions of a song, stop and fix the source instead of curating around the mismatch
+  - clipped first/last words are acceptable in short clips when the rest of the line is clearly labelable, but avoid carrying obviously truncated tail lines past the end of the clip
+  - ambiguity-heavy adlib / duet-overlap clips are still useful as stress cases, but they are weaker optimization targets than clean repeated-chorus or verse clips
 
 See `docs/gold_timing_editor.md` for schema and workflow details.
 
