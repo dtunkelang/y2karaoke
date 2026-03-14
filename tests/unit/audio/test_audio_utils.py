@@ -1,5 +1,6 @@
 """Tests for audio_utils.py module."""
 
+import subprocess
 import pytest
 from pathlib import Path  # noqa: F401
 from unittest.mock import Mock, patch, MagicMock  # noqa: F401
@@ -54,6 +55,43 @@ class TestTrimAudioIfNeeded:
 
         mock_audio = Mock()
         mock_audio.__len__ = Mock(return_value=10000)  # 10 seconds in ms
+        mock_audio.__getitem__ = Mock(return_value=mock_audio)
+        mock_audio.export = Mock()
+        mock_from_wav.return_value = mock_audio
+
+        result = trim_audio_if_needed("/audio.wav", 5.0, "video123", mock_cache)
+
+        assert result == "/trimmed_audio.wav"
+        mock_from_wav.assert_called_once_with("/audio.wav")
+
+    @patch("y2karaoke.core.components.audio.audio_utils.Path.exists", return_value=True)
+    @patch("y2karaoke.core.components.audio.audio_utils.subprocess.run")
+    @patch("y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav")
+    def test_trim_audio_prefers_ffmpeg_when_available(
+        self, mock_from_wav, mock_run, mock_exists
+    ):
+        mock_cache = Mock()
+        mock_cache.get_file_path.return_value = "/trimmed_audio.wav"
+        mock_cache.file_exists.return_value = False
+
+        result = trim_audio_if_needed("/audio.wav", 5.0, "video123", mock_cache)
+
+        assert result == "/trimmed_audio.wav"
+        mock_run.assert_called_once()
+        mock_from_wav.assert_not_called()
+
+    @patch(
+        "y2karaoke.core.components.audio.audio_utils.subprocess.run",
+        side_effect=subprocess.CalledProcessError(1, ["ffmpeg"]),
+    )
+    @patch("y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav")
+    def test_trim_audio_falls_back_when_ffmpeg_fails(self, mock_from_wav, _mock_run):
+        mock_cache = Mock()
+        mock_cache.get_file_path.return_value = "/trimmed_audio.wav"
+        mock_cache.file_exists.return_value = False
+
+        mock_audio = Mock()
+        mock_audio.__len__ = Mock(return_value=10000)
         mock_audio.__getitem__ = Mock(return_value=mock_audio)
         mock_audio.export = Mock()
         mock_from_wav.return_value = mock_audio

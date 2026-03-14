@@ -1,6 +1,7 @@
 """Audio-related utilities for karaoke generation."""
 
 from pathlib import Path
+import subprocess
 from typing import Any
 from pydub import AudioSegment
 
@@ -9,6 +10,35 @@ from ....config import DEFAULT_CACHE_DIR
 from ....utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _trim_audio_with_ffmpeg(
+    audio_path: str, start_time: float, output_path: str
+) -> bool:
+    try:
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-ss",
+                f"{start_time:.3f}",
+                "-i",
+                audio_path,
+                "-vn",
+                "-acodec",
+                "pcm_s16le",
+                output_path,
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return False
+    return Path(output_path).exists()
 
 
 def _candidate_video_cache_dirs(cache_manager: Any, video_id: str) -> list[Path]:
@@ -52,6 +82,10 @@ def trim_audio_if_needed(
         return str(cache_manager.get_file_path(video_id, trimmed_name))
 
     logger.info(f"✂️ Trimming audio from {start_time:.2f}s")
+    trimmed_path = cache_manager.get_file_path(video_id, trimmed_name)
+    if _trim_audio_with_ffmpeg(audio_path, start_time, str(trimmed_path)):
+        return str(trimmed_path)
+
     audio = AudioSegment.from_wav(audio_path)
     start_ms = int(start_time * 1000)
     if start_ms >= len(audio):
@@ -59,7 +93,6 @@ def trim_audio_if_needed(
         return audio_path
 
     trimmed = audio[start_ms:]
-    trimmed_path = cache_manager.get_file_path(video_id, trimmed_name)
     trimmed.export(str(trimmed_path), format="wav")
     return str(trimmed_path)
 
