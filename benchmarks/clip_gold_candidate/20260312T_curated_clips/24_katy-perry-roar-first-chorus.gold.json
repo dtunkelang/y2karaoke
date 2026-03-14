@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "title": "Roar",
+  "artist": "Katy Perry",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/katy-perry-roar-hear-me-roar-block-73_0s-103_0s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Oh-oh-oh-oh-oh-oh-oh",
+      "start": 0.0,
+      "end": 2.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh-oh-oh-oh-oh-oh-oh",
+          "start": 0.0,
+          "end": 2.65
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Oh-oh-oh-oh-oh-oh-oh",
+      "start": 2.65,
+      "end": 5.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Oh-oh-oh-oh-oh-oh-oh",
+          "start": 2.65,
+          "end": 5.05
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "You're gonna hear me roar",
+      "start": 5.05,
+      "end": 8.75,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You're",
+          "start": 5.05,
+          "end": 5.5
+        },
+        {
+          "word_index": 2,
+          "text": "gonna",
+          "start": 5.5,
+          "end": 6.1
+        },
+        {
+          "word_index": 3,
+          "text": "hear",
+          "start": 6.1,
+          "end": 6.8
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 6.8,
+          "end": 7.45
+        },
+        {
+          "word_index": 5,
+          "text": "roar",
+          "start": 7.45,
+          "end": 8.75
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Now I'm floating like a butterfly",
+      "start": 10.05,
+      "end": 13.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Now",
+          "start": 10.05,
+          "end": 10.6
+        },
+        {
+          "word_index": 2,
+          "text": "I'm",
+          "start": 10.6,
+          "end": 10.95
+        },
+        {
+          "word_index": 3,
+          "text": "floating",
+          "start": 10.95,
+          "end": 11.65
+        },
+        {
+          "word_index": 4,
+          "text": "like",
+          "start": 11.65,
+          "end": 12.1
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 12.1,
+          "end": 12.45
+        },
+        {
+          "word_index": 6,
+          "text": "butterfly",
+          "start": 12.45,
+          "end": 13.25
+        }
+      ]
+    }
+  ]
+}
