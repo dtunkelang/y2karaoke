@@ -180,3 +180,14 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 20
     notes: "Soft-duet outro with repeated foreground/background overlap."
+
+  - artist: "Gotye feat. Kimbra"
+    title: "Somebody That I Used to Know"
+    clip_id: "first-chorus"
+    audio_start_sec: 93.5
+    youtube_id: "8UVNT4wvIGY"
+    youtube_url: "https://www.youtube.com/watch?v=8UVNT4wvIGY"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "Clean first-chorus clip from a validated official-video/LRC pairing."
