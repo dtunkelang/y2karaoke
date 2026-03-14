@@ -208,3 +208,24 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 18
   notes: Hear-me-roar chorus block from vetted official-audio source.
+- artist: Sia
+  title: Chandelier
+  clip_id: first-chorus
+  audio_start_sec: 36.85
+  youtube_id: bZ0ZMLQSAWU
+  youtube_url: https://www.youtube.com/watch?v=bZ0ZMLQSAWU
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 10
+  notes: Official-audio first-chorus clip from a vetted source; slight clipped onset
+    on opening I'm.
+- artist: Kelly Clarkson
+  title: Since U Been Gone
+  clip_id: first-chorus
+  audio_start_sec: 46.78
+  youtube_id: R7UrFYvl5TE
+  youtube_url: https://www.youtube.com/watch?v=R7UrFYvl5TE
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 10
+  notes: First-chorus clip from the official video with validated LRCLib timings.
