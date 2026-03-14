@@ -5,9 +5,34 @@ from typing import Any
 from pydub import AudioSegment
 
 from .cache_identity import select_matching_cached_stem
+from ....config import DEFAULT_CACHE_DIR
 from ....utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _candidate_video_cache_dirs(cache_manager: Any, video_id: str) -> list[Path]:
+    raw_primary = cache_manager.get_video_cache_dir(video_id)
+    candidates: list[Path] = []
+    if isinstance(raw_primary, (str, Path)):
+        candidates.append(Path(raw_primary))
+    shared = DEFAULT_CACHE_DIR / video_id
+    if shared not in candidates:
+        candidates.append(shared)
+    return candidates
+
+
+def _select_cached_stem_from_dirs(
+    cache_dirs: list[Path], pattern: str, *, audio_path: str
+) -> Path | None:
+    for cache_dir in cache_dirs:
+        stem_path = select_matching_cached_stem(
+            cache_dir.glob(pattern),
+            audio_path=audio_path,
+        )
+        if stem_path is not None:
+            return stem_path
+    return None
 
 
 def trim_audio_if_needed(
@@ -71,18 +96,20 @@ def separate_vocals(
     force: bool = False,
 ) -> dict[str, str]:
     """Separate vocals and instrumental from audio, using cache if available."""
+    cache_dirs = _candidate_video_cache_dirs(cache_manager, video_id)
     audio_filename = Path(audio_path).name.lower()
     if any(
         marker in audio_filename
         for marker in ["vocals", "instrumental", "drums", "bass", "other"]
     ):
-        cache_dir = cache_manager.get_video_cache_dir(video_id)
-        vocals_path = select_matching_cached_stem(
-            Path(cache_dir).glob("*[Vv]ocals*.wav"),
+        vocals_path = _select_cached_stem_from_dirs(
+            cache_dirs,
+            "*[Vv]ocals*.wav",
             audio_path=audio_path,
         )
-        instrumental_path = select_matching_cached_stem(
-            Path(cache_dir).glob("*[Ii]nstrumental*.wav"),
+        instrumental_path = _select_cached_stem_from_dirs(
+            cache_dirs,
+            "*[Ii]nstrumental*.wav",
             audio_path=audio_path,
         )
         if vocals_path and instrumental_path:
@@ -95,15 +122,28 @@ def separate_vocals(
         )
 
     if not force:
-        # Check for cached files (audio-separator uses "(Vocals)" and "(Instrumental)" with capitals)
+        # Preserve the existing cache-manager lookup for the active run cache,
+        # then fall back to the shared default cache roots.
         vocals_path = select_matching_cached_stem(
             cache_manager.find_files(video_id, "*[Vv]ocals*.wav"),
             audio_path=audio_path,
         )
+        if vocals_path is None:
+            vocals_path = _select_cached_stem_from_dirs(
+                cache_dirs[1:],
+                "*[Vv]ocals*.wav",
+                audio_path=audio_path,
+            )
         instrumental_path = select_matching_cached_stem(
             cache_manager.find_files(video_id, "*[Ii]nstrumental*.wav"),
             audio_path=audio_path,
         )
+        if instrumental_path is None:
+            instrumental_path = _select_cached_stem_from_dirs(
+                cache_dirs[1:],
+                "*[Ii]nstrumental*.wav",
+                audio_path=audio_path,
+            )
         if vocals_path and instrumental_path:
             logger.info("📁 Using cached vocal separation")
             return {

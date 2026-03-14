@@ -3,6 +3,7 @@
 import pytest
 from pathlib import Path  # noqa: F401
 from unittest.mock import Mock, patch, MagicMock  # noqa: F401
+from y2karaoke.core.components.audio import audio_utils as audio_utils_module
 from y2karaoke.core.components.audio.audio_utils import (
     trim_audio_if_needed,
     apply_audio_effects,
@@ -309,6 +310,36 @@ class TestSeparateVocals:
         mock_separator.separate_vocals.assert_called_once_with(
             "/audio.wav", "/cache/video123"
         )
+
+    def test_uses_shared_default_cache_stems_when_run_cache_is_empty(
+        self, tmp_path, monkeypatch
+    ):
+        """Test that stem lookup falls back to the shared default cache root."""
+        shared_root = tmp_path / "shared-cache"
+        shared_video_dir = shared_root / "video123"
+        shared_video_dir.mkdir(parents=True)
+        vocals_path = shared_video_dir / "trimmed_from_54.80s_(Vocals)_htdemucs_ft.wav"
+        instrumental_path = shared_video_dir / "trimmed_from_54.80s_instrumental.wav"
+        vocals_path.write_text("v")
+        instrumental_path.write_text("i")
+
+        monkeypatch.setattr(audio_utils_module, "DEFAULT_CACHE_DIR", shared_root)
+
+        mock_cache = Mock()
+        mock_cache.get_video_cache_dir.return_value = str(tmp_path / "run-cache/video123")
+        mock_cache.find_files.return_value = []
+
+        mock_separator = Mock()
+
+        result = separate_vocals(
+            "/tmp/trimmed_from_54.80s.wav", "video123", mock_separator, mock_cache
+        )
+
+        assert result == {
+            "vocals_path": str(vocals_path),
+            "instrumental_path": str(instrumental_path),
+        }
+        mock_separator.separate_vocals.assert_not_called()
 
     def test_force_reseparate_ignores_cache(self):
         """Test that force=True ignores cached result."""
