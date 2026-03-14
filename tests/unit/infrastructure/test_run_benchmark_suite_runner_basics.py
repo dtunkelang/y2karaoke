@@ -117,6 +117,80 @@ def test_build_generate_command_strategy_variants(tmp_path):
     assert "--whisper-map-lrc-dtw" not in cmd_lrc
 
 
+def test_has_cached_benchmark_source_detects_metadata(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+    )
+    cache_root = tmp_path / ".cache" / "karaoke" / song.youtube_id
+    cache_root.mkdir(parents=True)
+    (cache_root / "metadata.json").write_text("{}", encoding="utf-8")
+
+    module._benchmark_cache_roots = lambda: [tmp_path / ".cache" / "karaoke"]
+
+    assert module._has_cached_benchmark_source(song) is True
+
+
+def test_run_single_song_generation_auto_enables_offline_for_cached_source(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+    )
+    cache_root = tmp_path / ".cache" / "karaoke" / song.youtube_id
+    cache_root.mkdir(parents=True)
+    (cache_root / "metadata.json").write_text("{}", encoding="utf-8")
+    module._benchmark_cache_roots = lambda: [tmp_path / ".cache" / "karaoke"]
+
+    captured: dict[str, object] = {}
+
+    def fake_build_generate_command(**kwargs):
+        captured["offline"] = kwargs["offline"]
+        return ["python", "-m", "y2karaoke.cli", "generate"]
+
+    def fake_run_song_command(**kwargs):
+        return {"status": "ok", "report_path": str(kwargs["report_path"])}
+
+    module._build_generate_command = fake_build_generate_command
+    module._run_song_command = fake_run_song_command
+    module._load_gold_doc = lambda **_kwargs: None
+
+    class Args:
+        python_bin = "python"
+        cache_dir = None
+        offline = False
+        force = False
+        no_whisper_map_lrc_dtw = False
+        strategy = "hybrid_dtw"
+        scenario = "default"
+        timeout_sec = 30
+        heartbeat_sec = 30
+        evaluate_lyrics_sources = False
+        rebaseline = False
+
+    record, result_path = module._run_single_song_generation(
+        args=Args(),
+        index=1,
+        total_songs=1,
+        song=song,
+        run_dir=tmp_path / "run",
+        run_signature={},
+        gold_root=tmp_path / "gold",
+        env={},
+    )
+
+    assert captured["offline"] is True
+    assert result_path.name == "01_x-y_result.json"
+    assert record["status"] == "ok"
+
+
 def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
     module = _load_module()
     manifest = tmp_path / "manifest.yaml"

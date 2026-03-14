@@ -254,6 +254,7 @@ Benchmark seed set for timing quality work:
   - Clip workflow rule:
     - for apples-to-apples clip measurement, prefer rerunning the full song on the normal path and rescoring the curated clip from that full-song report
     - direct clip-only generation can change source routing and make comparisons misleading
+    - when the YouTube source is already cached locally, prefer offline benchmark reruns so clip-heavy iteration does not keep paying avoidable identify/network overhead
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`

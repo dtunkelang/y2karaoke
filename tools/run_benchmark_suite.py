@@ -2455,6 +2455,16 @@ def _resolve_song_audio_path(
     return _resolve_cached_audio_path_by_slug(song.slug)
 
 
+def _has_cached_benchmark_source(song: BenchmarkSong) -> bool:
+    for cache_root in _benchmark_cache_roots():
+        cache_dir = cache_root / song.youtube_id
+        if (cache_dir / "metadata.json").exists():
+            return True
+        if any(cache_dir.glob("*.wav")):
+            return True
+    return False
+
+
 def _prefer_primary_song_wav(wavs: list[Path]) -> Path:
     ranked = sorted(
         wavs,
@@ -7513,12 +7523,13 @@ def _run_single_song_generation(
     env: dict[str, str],
 ) -> tuple[dict[str, Any], Path]:
     report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
+    offline = bool(args.offline or _has_cached_benchmark_source(song))
     cmd = _build_generate_command(
         python_bin=args.python_bin,
         song=song,
         report_path=report_path,
         cache_dir=args.cache_dir,
-        offline=args.offline,
+        offline=offline,
         force=args.force,
         whisper_map_lrc_dtw=not args.no_whisper_map_lrc_dtw,
         strategy=args.strategy,
