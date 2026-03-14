@@ -346,6 +346,49 @@ def test_detect_offset_with_issues_uses_second_line_after_long_interjection_gap(
     assert updated[1][0] == pytest.approx(27.57, abs=0.01)
 
 
+def test_detect_offset_with_issues_keeps_suspicious_positive_offset_blocked_by_default(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 8.45,
+    )
+
+    issues = []
+    line_timings = [(4.10, "I can breathe for the first time")]
+    updated, offset = lw._detect_offset_with_issues(
+        "vocals.wav",
+        line_timings,
+        lyrics_offset=None,
+        issues=issues,
+    )
+
+    assert offset == 0.0
+    assert updated == line_timings
+
+
+def test_detect_offset_with_issues_can_allow_suspicious_positive_offset(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 8.45,
+    )
+
+    issues = []
+    line_timings = [(4.10, "I can breathe for the first time")]
+    updated, offset = lw._detect_offset_with_issues(
+        "vocals.wav",
+        line_timings,
+        lyrics_offset=None,
+        issues=issues,
+        allow_suspicious_positive_offset=True,
+    )
+
+    assert offset == pytest.approx(4.35)
+    assert updated[0][0] == pytest.approx(8.45)
+
+
 def test_map_lrc_lines_uses_whisper_pause_for_word_slots():
     line = Line(
         words=[

@@ -227,6 +227,7 @@ def _detect_offset_with_issues(
     scaled_offset_min_abs_sec: float = 0.0,
     scaled_offset_max_abs_sec: float = float("inf"),
     scale_large_negative_offsets: bool = False,
+    allow_suspicious_positive_offset: bool = False,
 ) -> Tuple[List[Tuple[float, str]], float]:
     """Detect vocal offset, track issues for quality report.
 
@@ -250,6 +251,17 @@ def _detect_offset_with_issues(
     offset = 0.0
     if lyrics_offset is not None:
         offset = lyrics_offset
+    elif (
+        allow_suspicious_positive_offset
+        and delta > 2.5
+        and delta <= AUTO_OFFSET_MAX_ABS_SEC
+    ):
+        scale = 0.6 if used_alternate_anchor else 1.0
+        offset = delta * scale
+        logger.info(
+            "Auto-applying suspicious positive vocal offset under disagreement guard: %+.2fs",
+            offset,
+        )
     elif abs(delta) > 2.5 and abs(delta) <= AUTO_OFFSET_MAX_ABS_SEC:
         logger.warning(
             f"Detected vocal offset ({delta:+.2f}s) matches suspicious range (2.5-5.0s) - NOT auto-applying."
