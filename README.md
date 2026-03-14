@@ -353,6 +353,7 @@ Then open `http://127.0.0.1:8765`.
   - clipped first/last words are acceptable in short clips when the rest of the line is clearly labelable, but avoid carrying obviously truncated tail lines past the end of the clip
   - ambiguity-heavy adlib / duet-overlap clips are still useful as stress cases, but they are weaker optimization targets than clean repeated-chorus or verse clips
   - when a curated clip exposes a large positive offset on an `audio_scored_disagreement` song with otherwise good duration match, prefer a narrow guarded auto-offset over globally dropping provider timings
+  - when a source censors profanity (`sh*t`, `f*ck`), normalize it back to the sung lyric form before benchmarking or curation so the text stays aligned with the real audio
 
 See `docs/gold_timing_editor.md` for schema and workflow details.
 

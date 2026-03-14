@@ -161,6 +161,14 @@ class TestParseLrcWithTiming:
         assert abs(result[0][0] - 30.5) < 0.01
         assert result[0][1] == "Hello world"
 
+    def test_uncensors_common_starred_profanity(self):
+        lrc_text = "[00:30.50]What the f*ck is that\n[00:35.00]This sh*t hurts"
+        result = parse_lrc_with_timing(lrc_text)
+        assert result == [
+            (30.5, "What the fuck is that"),
+            (35.0, "This shit hurts"),
+        ]
+
     def test_empty_lrc_returns_empty(self):
         # Parser skips empty lines, so expected result is []
         result = parse_lrc_with_timing("")
@@ -366,6 +374,12 @@ class TestCreateLinesFromLrc:
         # Note: output may include tone marks or special characters depending on library
         original_has_chinese = any("\u4e00" <= c <= "\u9fff" for c in "你好世界")
         assert original_has_chinese  # Verify original is Chinese
+
+    def test_create_lines_from_lrc_uncensors_starred_profanity(self):
+        lrc_text = "[00:10.00]What the f*ck\n[00:15.00]This sh*t"
+        lines = create_lines_from_lrc(lrc_text, romanize=False)
+        assert lines[0].text == "What the fuck"
+        assert lines[1].text == "This shit"
 
 
 # ------------------------------

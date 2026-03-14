@@ -12,6 +12,7 @@ from .lrc import (
     parse_lrc_with_timing,
     create_lines_from_lrc,
     create_lines_from_lrc_timings,
+    uncensor_lyrics_text,
 )
 
 logger = logging.getLogger(__name__)
@@ -202,7 +203,7 @@ def _extract_text_lines_from_lrc(lrc_text: str) -> List[str]:
         return [text for _t, text in timed if text.strip()]
     lines: List[str] = []
     for raw in lrc_text.splitlines():
-        line = re.sub(r"\[[0-9:.]+\]", "", raw).strip()
+        line = uncensor_lyrics_text(re.sub(r"\[[0-9:.]+\]", "", raw).strip())
         if line:
             lines.append(line)
     return lines
@@ -238,6 +239,7 @@ def _create_lines_from_plain_text(text_lines: List[str]) -> List[Line]:
     lines: List[Line] = []
     current_time = 0.0
     for text in text_lines:
+        text = uncensor_lyrics_text(text)
         word_texts = text.split()
         if not word_texts:
             continue
@@ -259,7 +261,7 @@ def _create_lines_from_plain_text(text_lines: List[str]) -> List[Line]:
 def _clean_text_lines(lines: List[str]) -> List[str]:
     cleaned = []
     for line in lines:
-        line = re.sub(r"\s+", " ", line).strip()
+        line = uncensor_lyrics_text(re.sub(r"\s+", " ", line).strip())
         if not line:
             continue
         if len(line) < 2:

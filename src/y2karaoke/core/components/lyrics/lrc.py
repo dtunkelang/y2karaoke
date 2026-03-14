@@ -13,6 +13,23 @@ from difflib import SequenceMatcher
 from ...models import Line, Word
 from ...romanization import romanize_line
 
+_CENSORED_PROFANITY_PATTERNS = [
+    (
+        re.compile(
+            r"\bf(?:[\W_]*\*+[\W_]*)+(?:c(?:[\W_]*\*+[\W_]*)*k)(ing|er|ers|ed|s)?\b",
+            re.IGNORECASE,
+        ),
+        "fuck",
+    ),
+    (
+        re.compile(
+            r"\bsh(?:[\W_]*\*+[\W_]*)+(?:t)(ty|ted|ting|s)?\b",
+            re.IGNORECASE,
+        ),
+        "shit",
+    ),
+]
+
 # ----------------------
 # LRC timestamp regex
 # ----------------------
@@ -117,6 +134,18 @@ _METADATA_PATTERNS = [
     "(hook)",
     "[hook]",
 ]
+
+
+def uncensor_lyrics_text(text: str) -> str:
+    """Normalize common starred profanity back to the sung lyric form."""
+    normalized = text
+    for pattern, replacement in _CENSORED_PROFANITY_PATTERNS:
+        normalized = pattern.sub(
+            lambda match: replacement + (match.group(1) or ""),
+            normalized,
+        )
+    return normalized
+
 
 # Promo/CTA patterns commonly found in synced lyric dumps
 _PROMO_PATTERNS = [
@@ -378,7 +407,7 @@ def parse_lrc_with_timing(
         if text_part and not _is_metadata_line(
             text_part, title, artist, timestamp, filter_promos=filter_promos
         ):
-            lines.append((timestamp, text_part))
+            lines.append((timestamp, uncensor_lyrics_text(text_part)))
 
     return lines
 

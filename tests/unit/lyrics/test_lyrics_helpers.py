@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 from y2karaoke.core.components.lyrics import api as lyrics
 from y2karaoke.core.components.lyrics import helpers as lh
@@ -165,6 +166,35 @@ def test_distribute_word_timing_extends_phrase_break_dense_line():
     lh._distribute_word_timing_in_line(line, line_start=32.62, next_line_start=38.24)
 
     assert line.end_time == pytest.approx(36.42, abs=0.03)
+
+
+def test_clean_text_lines_uncensors_common_starred_profanity():
+    assert lh._clean_text_lines(["  sh*t  ", "What the f*ck is that"]) == [
+        "shit",
+        "What the fuck is that",
+    ]
+
+
+def test_load_lyrics_file_uncensors_plain_text_and_lrc(tmp_path: Path):
+    plain = tmp_path / "lyrics.txt"
+    plain.write_text("This sh*t hurts\nWhat the f*ck is that\n", encoding="utf-8")
+
+    _, plain_timings, plain_lines = lh._load_lyrics_file(plain, filter_promos=False)
+    assert plain_timings is None
+    assert plain_lines == ["This shit hurts", "What the fuck is that"]
+
+    synced = tmp_path / "lyrics.lrc"
+    synced.write_text(
+        "[00:01.00]This sh*t hurts\n[00:02.00]What the f*ck is that\n",
+        encoding="utf-8",
+    )
+
+    _, synced_timings, synced_lines = lh._load_lyrics_file(synced, filter_promos=False)
+    assert synced_timings == [
+        (1.0, "This shit hurts"),
+        (2.0, "What the fuck is that"),
+    ]
+    assert synced_lines == ["This shit hurts", "What the fuck is that"]
 
 
 def test_distribute_word_timing_extends_long_line_with_trailing_parenthetical_interjection():
