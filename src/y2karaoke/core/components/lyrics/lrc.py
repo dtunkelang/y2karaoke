@@ -16,14 +16,14 @@ from ...romanization import romanize_line
 _CENSORED_PROFANITY_PATTERNS = [
     (
         re.compile(
-            r"\bf(?:[\W_]*\*+[\W_]*)+(?:c(?:[\W_]*\*+[\W_]*)*k)(ing|er|ers|ed|s)?\b",
+            r"\bf(?:[\W_]*(?:u|\*+))[\W_]*(?:c|\*+)[\W_]*k(ing|er|ers|ed|s)?\b",
             re.IGNORECASE,
         ),
         "fuck",
     ),
     (
         re.compile(
-            r"\bsh(?:[\W_]*\*+[\W_]*)+(?:t)(ty|ted|ting|s)?\b",
+            r"\bsh(?:[\W_]*(?:i|\*+))[\W_]*t(ty|ted|ting|s)?\b",
             re.IGNORECASE,
         ),
         "shit",

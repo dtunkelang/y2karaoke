@@ -169,6 +169,14 @@ class TestParseLrcWithTiming:
             (35.0, "This shit hurts"),
         ]
 
+    def test_uncensors_vowel_masked_profanity(self):
+        lrc_text = "[00:30.50]What the fu*k is that\n[00:35.00]This is sh*t"
+        result = parse_lrc_with_timing(lrc_text)
+        assert result == [
+            (30.5, "What the fuck is that"),
+            (35.0, "This is shit"),
+        ]
+
     def test_empty_lrc_returns_empty(self):
         # Parser skips empty lines, so expected result is []
         result = parse_lrc_with_timing("")
