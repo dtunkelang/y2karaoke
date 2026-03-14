@@ -326,7 +326,9 @@ class TestSeparateVocals:
         monkeypatch.setattr(audio_utils_module, "DEFAULT_CACHE_DIR", shared_root)
 
         mock_cache = Mock()
-        mock_cache.get_video_cache_dir.return_value = str(tmp_path / "run-cache/video123")
+        mock_cache.get_video_cache_dir.return_value = str(
+            tmp_path / "run-cache/video123"
+        )
         mock_cache.find_files.return_value = []
 
         mock_separator = Mock()
