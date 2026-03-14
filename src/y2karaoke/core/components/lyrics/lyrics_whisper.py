@@ -228,6 +228,7 @@ def _detect_offset_with_issues(
     scaled_offset_max_abs_sec: float = float("inf"),
     scale_large_negative_offsets: bool = False,
     allow_suspicious_positive_offset: bool = False,
+    suppress_moderate_negative_offset: bool = False,
 ) -> Tuple[List[Tuple[float, str]], float]:
     """Detect vocal offset, track issues for quality report.
 
@@ -246,30 +247,71 @@ def _detect_offset_with_issues(
         f"LRC_start={anchor_time:.2f}s, delta={delta:+.2f}s"
     )
 
-    AUTO_OFFSET_MAX_ABS_SEC = 5.0
+    offset = _compute_auto_offset(
+        delta=delta,
+        lyrics_offset=lyrics_offset,
+        used_alternate_anchor=used_alternate_anchor,
+        issues=issues,
+        auto_offset_scale=auto_offset_scale,
+        scaled_offset_min_abs_sec=scaled_offset_min_abs_sec,
+        scaled_offset_max_abs_sec=scaled_offset_max_abs_sec,
+        scale_large_negative_offsets=scale_large_negative_offsets,
+        allow_suspicious_positive_offset=allow_suspicious_positive_offset,
+        suppress_moderate_negative_offset=suppress_moderate_negative_offset,
+    )
 
-    offset = 0.0
+    if offset != 0.0:
+        line_timings = [(ts + offset, text) for ts, text in line_timings]
+
+    return line_timings, offset
+
+
+def _should_skip_moderate_negative_offset(
+    *, delta: float, suppress_moderate_negative_offset: bool
+) -> bool:
+    return suppress_moderate_negative_offset and delta < 0.0 and abs(delta) < 0.9
+
+
+def _compute_auto_offset(
+    *,
+    delta: float,
+    lyrics_offset: Optional[float],
+    used_alternate_anchor: bool,
+    issues: List[str],
+    auto_offset_scale: float,
+    scaled_offset_min_abs_sec: float,
+    scaled_offset_max_abs_sec: float,
+    scale_large_negative_offsets: bool,
+    allow_suspicious_positive_offset: bool,
+    suppress_moderate_negative_offset: bool,
+) -> float:
+    auto_offset_max_abs_sec = 5.0
     if lyrics_offset is not None:
-        offset = lyrics_offset
-    elif (
-        allow_suspicious_positive_offset
-        and delta > 2.5
-        and delta <= AUTO_OFFSET_MAX_ABS_SEC
-    ):
+        return lyrics_offset
+    if allow_suspicious_positive_offset and 2.5 < delta <= auto_offset_max_abs_sec:
         scale = 0.6 if used_alternate_anchor else 1.0
         offset = delta * scale
         logger.info(
             "Auto-applying suspicious positive vocal offset under disagreement guard: %+.2fs",
             offset,
         )
-    elif abs(delta) > 2.5 and abs(delta) <= AUTO_OFFSET_MAX_ABS_SEC:
+        return offset
+    if 2.5 < abs(delta) <= auto_offset_max_abs_sec:
         logger.warning(
             f"Detected vocal offset ({delta:+.2f}s) matches suspicious range (2.5-5.0s) - NOT auto-applying."
         )
-    elif abs(delta) > 0.3 and abs(delta) <= 2.5:
-        scale = 1.0
-        if used_alternate_anchor:
-            scale *= 0.6
+        return 0.0
+    if _should_skip_moderate_negative_offset(
+        delta=delta,
+        suppress_moderate_negative_offset=suppress_moderate_negative_offset,
+    ):
+        logger.info(
+            "Skipping moderate negative vocal offset under disagreement guard: %+.2fs",
+            delta,
+        )
+        return 0.0
+    if 0.3 < abs(delta) <= 2.5:
+        scale = 0.6 if used_alternate_anchor else 1.0
         if scaled_offset_min_abs_sec <= abs(delta) <= scaled_offset_max_abs_sec:
             scale *= max(0.0, auto_offset_scale)
         elif (
@@ -280,21 +322,18 @@ def _detect_offset_with_issues(
             scale *= max(0.0, auto_offset_scale)
         offset = delta * scale
         logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
-    elif abs(delta) > AUTO_OFFSET_MAX_ABS_SEC:
+        return offset
+    if abs(delta) > auto_offset_max_abs_sec:
         logger.warning(
             "Large timing delta (%+.2fs) exceeds auto-offset clamp (%.1fs) - "
             "not auto-applying.",
             delta,
-            AUTO_OFFSET_MAX_ABS_SEC,
+            auto_offset_max_abs_sec,
         )
         issues.append(
             f"Large timing delta ({delta:+.2f}s) exceeded auto-offset clamp and was not applied"
         )
-
-    if offset != 0.0:
-        line_timings = [(ts + offset, text) for ts, text in line_timings]
-
-    return line_timings, offset
+    return 0.0
 
 
 def _refine_timing_with_quality(

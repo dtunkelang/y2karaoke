@@ -622,6 +622,7 @@ def get_lyrics_with_quality(  # noqa: C901
         scaled_offset_max_abs_sec = float("inf")
         scale_large_negative_offsets = False
         allow_suspicious_positive_offset = False
+        suppress_moderate_negative_offset = False
         if (
             quality_report.get("lyrics_source_audio_scoring_used")
             and quality_report.get("lyrics_source_selection_mode")
@@ -638,6 +639,9 @@ def get_lyrics_with_quality(  # noqa: C901
             allow_suspicious_positive_offset = bool(
                 lyrics_quality.get("duration_match", False)
             )
+            suppress_moderate_negative_offset = bool(
+                lyrics_quality.get("duration_match", False)
+            )
         line_timings, _ = _detect_offset_with_issues(
             vocals_path,
             line_timings,
@@ -648,6 +652,7 @@ def get_lyrics_with_quality(  # noqa: C901
             scaled_offset_max_abs_sec=scaled_offset_max_abs_sec,
             scale_large_negative_offsets=scale_large_negative_offsets,
             allow_suspicious_positive_offset=allow_suspicious_positive_offset,
+            suppress_moderate_negative_offset=suppress_moderate_negative_offset,
         )
 
     if should_auto_enable_whisper(
