@@ -1,0 +1,250 @@
+{
+  "schema_version": "1.0",
+  "title": "Chandelier",
+  "artist": "Sia",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/sia-chandelier-first-chorus-36_85s-66_85s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "I'm gonna swing from the chandelier, from the chandelier",
+      "start": 0.0,
+      "end": 8.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 0.0,
+          "end": 0.1
+        },
+        {
+          "word_index": 2,
+          "text": "gonna",
+          "start": 0.1,
+          "end": 0.75
+        },
+        {
+          "word_index": 3,
+          "text": "swing",
+          "start": 0.75,
+          "end": 2.4
+        },
+        {
+          "word_index": 4,
+          "text": "from",
+          "start": 2.4,
+          "end": 2.9
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 2.9,
+          "end": 3.35
+        },
+        {
+          "word_index": 6,
+          "text": "chandelier,",
+          "start": 3.35,
+          "end": 5.25
+        },
+        {
+          "word_index": 7,
+          "text": "from",
+          "start": 5.25,
+          "end": 5.7
+        },
+        {
+          "word_index": 8,
+          "text": "the",
+          "start": 5.7,
+          "end": 6.1
+        },
+        {
+          "word_index": 9,
+          "text": "chandelier",
+          "start": 6.1,
+          "end": 8.65
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "I'm gonna live like tomorrow doesn't exist",
+      "start": 8.65,
+      "end": 16.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 8.65,
+          "end": 10.5
+        },
+        {
+          "word_index": 2,
+          "text": "gonna",
+          "start": 10.5,
+          "end": 11.2
+        },
+        {
+          "word_index": 3,
+          "text": "live",
+          "start": 11.2,
+          "end": 12.4
+        },
+        {
+          "word_index": 4,
+          "text": "like",
+          "start": 12.4,
+          "end": 13.1
+        },
+        {
+          "word_index": 5,
+          "text": "tomorrow",
+          "start": 13.1,
+          "end": 14.15
+        },
+        {
+          "word_index": 6,
+          "text": "doesn't",
+          "start": 14.15,
+          "end": 14.7
+        },
+        {
+          "word_index": 7,
+          "text": "exist",
+          "start": 14.7,
+          "end": 16.35
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Like it doesn't exist",
+      "start": 16.35,
+      "end": 19.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Like",
+          "start": 16.35,
+          "end": 16.75
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 16.75,
+          "end": 17.0
+        },
+        {
+          "word_index": 3,
+          "text": "doesn't",
+          "start": 17.0,
+          "end": 17.45
+        },
+        {
+          "word_index": 4,
+          "text": "exist",
+          "start": 17.45,
+          "end": 19.6
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "I'm gonna fly like a bird through the night, feel my tears as they dry",
+      "start": 19.6,
+      "end": 29.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 19.6,
+          "end": 21.5
+        },
+        {
+          "word_index": 2,
+          "text": "gonna",
+          "start": 21.5,
+          "end": 22.35
+        },
+        {
+          "word_index": 3,
+          "text": "fly",
+          "start": 22.35,
+          "end": 23.65
+        },
+        {
+          "word_index": 4,
+          "text": "like",
+          "start": 23.65,
+          "end": 24.35
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 24.35,
+          "end": 24.75
+        },
+        {
+          "word_index": 6,
+          "text": "bird",
+          "start": 24.75,
+          "end": 25.35
+        },
+        {
+          "word_index": 7,
+          "text": "through",
+          "start": 25.35,
+          "end": 25.7
+        },
+        {
+          "word_index": 8,
+          "text": "the",
+          "start": 25.7,
+          "end": 25.95
+        },
+        {
+          "word_index": 9,
+          "text": "night,",
+          "start": 25.95,
+          "end": 26.75
+        },
+        {
+          "word_index": 10,
+          "text": "feel",
+          "start": 27.3,
+          "end": 27.8
+        },
+        {
+          "word_index": 11,
+          "text": "my",
+          "start": 27.8,
+          "end": 28.1
+        },
+        {
+          "word_index": 12,
+          "text": "tears",
+          "start": 28.1,
+          "end": 28.65
+        },
+        {
+          "word_index": 13,
+          "text": "as",
+          "start": 28.65,
+          "end": 28.95
+        },
+        {
+          "word_index": 14,
+          "text": "they",
+          "start": 28.95,
+          "end": 29.2
+        },
+        {
+          "word_index": 15,
+          "text": "dry",
+          "start": 29.2,
+          "end": 29.55
+        }
+      ]
+    }
+  ]
+}
