@@ -100,6 +100,21 @@ def test_refine_timing_with_audio_no_adjust_when_close(monkeypatch):
     assert result is lines
 
 
+def test_should_suppress_disagreement_negative_offset_only_when_provider_timings_kept():
+    from y2karaoke.core.components.lyrics.lyrics_whisper_quality import (
+        _should_suppress_disagreement_negative_offset,
+    )
+
+    assert _should_suppress_disagreement_negative_offset(
+        ["LRC duration mismatch: LRC=258s vs audio=283s"]
+    )
+    assert not _should_suppress_disagreement_negative_offset(
+        [
+            "Ignoring provider LRC timestamps due to severe duration mismatch; using audio/Whisper timing alignment instead"
+        ]
+    )
+
+
 def test_apply_whisper_alignment_records_fixes(monkeypatch):
     lines = [_make_line("hello", 0.0, 0.5)]
     # Patch where it's imported in lyrics_helpers

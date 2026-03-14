@@ -25,6 +25,10 @@ logger = logging.getLogger(__name__)
 TailGuardrailSnapshot = dict[str, Any]
 
 
+def _should_suppress_disagreement_negative_offset(issues_list: list[str]) -> bool:
+    return not any("Ignoring provider LRC timestamps" in issue for issue in issues_list)
+
+
 def _serialize_line_timing_snapshot(lines: List[Line]) -> list[dict[str, Any]]:
     snapshot: list[dict[str, Any]] = []
     for idx, line in enumerate(lines, start=1):
@@ -639,7 +643,9 @@ def get_lyrics_with_quality(  # noqa: C901
             allow_suspicious_positive_offset = bool(
                 lyrics_quality.get("duration_match", False)
             )
-            suppress_moderate_negative_offset = True
+            suppress_moderate_negative_offset = (
+                _should_suppress_disagreement_negative_offset(issues_list)
+            )
         line_timings, _ = _detect_offset_with_issues(
             vocals_path,
             line_timings,
