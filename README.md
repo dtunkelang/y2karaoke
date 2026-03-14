@@ -193,6 +193,10 @@ Benchmark seed set for timing quality work:
   - add `clip_id` to distinguish multiple entries for the same song
   - add `audio_start_sec` to trim into the song before alignment
   - keep full-song entries as the main truth set; use clips as a supplement, not a replacement
+- Before curating a new song or clip source, vet the YouTube source against canonical + synced-lyrics durations:
+  - `PYTHONPATH=src ./venv/bin/python tools/vet_source_url.py --url <youtube_url> --artist "<artist>" --title "<title>"`
+  - Prefer official-audio uploads when available.
+  - Treat synced-lyrics duration as a supporting signal only; it reflects the timed lyrics track, not necessarily the true song end.
 - Validate it with: `make benchmark-validate`
 - Run the benchmark suite and aggregate report:
   - `make benchmark-run`
