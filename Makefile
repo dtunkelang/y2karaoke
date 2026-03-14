@@ -3,6 +3,11 @@ PIP := $(PYTHON) -m pip
 PYTEST := PYTHONPATH=src $(PYTHON) -m pytest
 MIN_COVERAGE_GAIN ?= 0.005
 MAX_BAD_RATIO_INCREASE ?= 0.002
+TEST_FAST_PYTEST_FLAGS := -q
+
+ifdef CI
+TEST_FAST_PYTEST_FLAGS += --durations=20 --durations-min=0.1
+endif
 
 .PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill curated-canary-prewarm-sources curated-canary-guardrails curated-canary-compare curated-canary-eval curated-canary-experiment check ci-fast ci-full
 
@@ -25,7 +30,7 @@ type:
 	$(PYTHON) -m mypy src
 
 test-fast:
-	$(PYTEST) tests/unit -m "not slow and not network" -q
+	$(PYTEST) tests/unit -m "not slow and not network" $(TEST_FAST_PYTEST_FLAGS)
 
 test-full:
 	$(PYTEST) tests -m "not network" -v
