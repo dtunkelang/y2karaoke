@@ -269,7 +269,7 @@ def _detect_offset_with_issues(
 def _should_skip_moderate_negative_offset(
     *, delta: float, suppress_moderate_negative_offset: bool
 ) -> bool:
-    return suppress_moderate_negative_offset and delta < 0.0 and abs(delta) < 0.9
+    return suppress_moderate_negative_offset and delta < 0.0 and abs(delta) <= 1.1
 
 
 def _compute_auto_offset(
