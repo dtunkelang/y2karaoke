@@ -631,7 +631,10 @@ def get_lyrics_with_quality(  # noqa: C901
             scaled_offset_min_abs_sec = 0.9
             scaled_offset_max_abs_sec = 1.4
             scale_large_negative_offsets = True
-            lyrics_quality = quality_report.get("lyrics_quality") or {}
+            lyrics_quality_raw = quality_report.get("lyrics_quality")
+            lyrics_quality = (
+                lyrics_quality_raw if isinstance(lyrics_quality_raw, dict) else {}
+            )
             allow_suspicious_positive_offset = bool(
                 lyrics_quality.get("duration_match", False)
             )
