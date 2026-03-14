@@ -202,3 +202,14 @@ songs:
     fallback_lyrics_provider: "syncedlyrics"
     lrc_duration_tolerance_sec: 30
     notes: "First-chorus English clip seeded to start cleanly on 'We could've had it all'."
+
+  - artist: "Imagine Dragons"
+    title: "Radioactive"
+    clip_id: "first-chorus"
+    audio_start_sec: 55.0
+    youtube_id: "CAEUnn0HNLM"
+    youtube_url: "https://www.youtube.com/watch?v=CAEUnn0HNLM"
+    preferred_lyrics_provider: "lyriq"
+    fallback_lyrics_provider: "syncedlyrics"
+    lrc_duration_tolerance_sec: 20
+    notes: "First-chorus English clip from the replacement source with validated LRCLib timings."
