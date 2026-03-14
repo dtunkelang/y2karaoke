@@ -1,0 +1,360 @@
+{
+  "schema_version": "1.0",
+  "title": "Since U Been Gone",
+  "artist": "Kelly Clarkson",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/kelly-clarkson-since-u-been-gone-first-chorus-46_78s-76_78s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "But since you been gone",
+      "start": 0.25,
+      "end": 3.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 0.25,
+          "end": 0.5
+        },
+        {
+          "word_index": 2,
+          "text": "since",
+          "start": 0.5,
+          "end": 0.8
+        },
+        {
+          "word_index": 3,
+          "text": "you",
+          "start": 0.8,
+          "end": 1.1
+        },
+        {
+          "word_index": 4,
+          "text": "been",
+          "start": 1.1,
+          "end": 1.4
+        },
+        {
+          "word_index": 5,
+          "text": "gone",
+          "start": 1.4,
+          "end": 3.65
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "I can breathe for the first time",
+      "start": 4.1,
+      "end": 7.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 4.1,
+          "end": 4.3
+        },
+        {
+          "word_index": 2,
+          "text": "can",
+          "start": 4.3,
+          "end": 4.6
+        },
+        {
+          "word_index": 3,
+          "text": "breathe",
+          "start": 4.6,
+          "end": 5.35
+        },
+        {
+          "word_index": 4,
+          "text": "for",
+          "start": 5.35,
+          "end": 5.7
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 5.7,
+          "end": 5.95
+        },
+        {
+          "word_index": 6,
+          "text": "first",
+          "start": 5.95,
+          "end": 6.8
+        },
+        {
+          "word_index": 7,
+          "text": "time",
+          "start": 6.8,
+          "end": 7.5
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "I'm so moving on, yeah, yeah",
+      "start": 7.75,
+      "end": 11.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 7.75,
+          "end": 8.05
+        },
+        {
+          "word_index": 2,
+          "text": "so",
+          "start": 8.05,
+          "end": 8.3
+        },
+        {
+          "word_index": 3,
+          "text": "moving",
+          "start": 8.3,
+          "end": 8.6
+        },
+        {
+          "word_index": 4,
+          "text": "on,",
+          "start": 8.6,
+          "end": 9.4
+        },
+        {
+          "word_index": 5,
+          "text": "yeah,",
+          "start": 9.4,
+          "end": 10.2
+        },
+        {
+          "word_index": 6,
+          "text": "yeah",
+          "start": 10.2,
+          "end": 11.2
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Thanks to you",
+      "start": 11.9,
+      "end": 13.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Thanks",
+          "start": 11.9,
+          "end": 12.15
+        },
+        {
+          "word_index": 2,
+          "text": "to",
+          "start": 12.15,
+          "end": 12.35
+        },
+        {
+          "word_index": 3,
+          "text": "you",
+          "start": 12.35,
+          "end": 13.0
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Now I get what I want",
+      "start": 13.65,
+      "end": 18.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Now",
+          "start": 13.65,
+          "end": 14.1
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 14.1,
+          "end": 14.35
+        },
+        {
+          "word_index": 3,
+          "text": "get",
+          "start": 14.35,
+          "end": 15.2
+        },
+        {
+          "word_index": 4,
+          "text": "what",
+          "start": 15.35,
+          "end": 15.7
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 15.7,
+          "end": 15.95
+        },
+        {
+          "word_index": 6,
+          "text": "want",
+          "start": 15.95,
+          "end": 18.3
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Since you been gone",
+      "start": 18.6,
+      "end": 20.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Since",
+          "start": 18.6,
+          "end": 18.9
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 18.9,
+          "end": 19.2
+        },
+        {
+          "word_index": 3,
+          "text": "been",
+          "start": 19.2,
+          "end": 19.5
+        },
+        {
+          "word_index": 4,
+          "text": "gone",
+          "start": 19.5,
+          "end": 20.35
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "How can I put it? You put me on",
+      "start": 23.8,
+      "end": 27.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "How",
+          "start": 23.8,
+          "end": 24.0
+        },
+        {
+          "word_index": 2,
+          "text": "can",
+          "start": 24.0,
+          "end": 24.2
+        },
+        {
+          "word_index": 3,
+          "text": "I",
+          "start": 24.2,
+          "end": 24.4
+        },
+        {
+          "word_index": 4,
+          "text": "put",
+          "start": 24.4,
+          "end": 24.75
+        },
+        {
+          "word_index": 5,
+          "text": "it?",
+          "start": 24.75,
+          "end": 25.2
+        },
+        {
+          "word_index": 6,
+          "text": "You",
+          "start": 25.2,
+          "end": 25.65
+        },
+        {
+          "word_index": 7,
+          "text": "put",
+          "start": 25.65,
+          "end": 26.0
+        },
+        {
+          "word_index": 8,
+          "text": "me",
+          "start": 26.0,
+          "end": 26.3
+        },
+        {
+          "word_index": 9,
+          "text": "on",
+          "start": 26.3,
+          "end": 27.15
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "I even fell for that stupid love song",
+      "start": 27.5,
+      "end": 30.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 27.5,
+          "end": 27.7
+        },
+        {
+          "word_index": 2,
+          "text": "even",
+          "start": 27.7,
+          "end": 27.95
+        },
+        {
+          "word_index": 3,
+          "text": "fell",
+          "start": 27.95,
+          "end": 28.25
+        },
+        {
+          "word_index": 4,
+          "text": "for",
+          "start": 28.25,
+          "end": 28.65
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 28.65,
+          "end": 28.9
+        },
+        {
+          "word_index": 6,
+          "text": "stupid",
+          "start": 28.9,
+          "end": 29.55
+        },
+        {
+          "word_index": 7,
+          "text": "love",
+          "start": 29.55,
+          "end": 30.0
+        },
+        {
+          "word_index": 8,
+          "text": "song",
+          "start": 30.0,
+          "end": 30.2
+        }
+      ]
+    }
+  ]
+}
