@@ -1,0 +1,516 @@
+{
+  "schema_version": "1.0",
+  "title": "Somebody That I Used to Know",
+  "artist": "Gotye feat. Kimbra",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/gotye-somebody-that-i-used-to-know-first-chorus-93_5s-123_5s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "But you didn't have to cut me off",
+      "start": 0.0,
+      "end": 3.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 0.0,
+          "end": 0.35
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 0.35,
+          "end": 0.55
+        },
+        {
+          "word_index": 3,
+          "text": "didn't",
+          "start": 0.55,
+          "end": 0.95
+        },
+        {
+          "word_index": 4,
+          "text": "have",
+          "start": 0.95,
+          "end": 1.3
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 1.3,
+          "end": 1.6
+        },
+        {
+          "word_index": 6,
+          "text": "cut",
+          "start": 1.6,
+          "end": 2.1
+        },
+        {
+          "word_index": 7,
+          "text": "me",
+          "start": 2.1,
+          "end": 2.45
+        },
+        {
+          "word_index": 8,
+          "text": "off",
+          "start": 2.45,
+          "end": 3.2
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Make out like it never happened and that we were nothing",
+      "start": 3.8,
+      "end": 7.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Make",
+          "start": 3.8,
+          "end": 4.05
+        },
+        {
+          "word_index": 2,
+          "text": "out",
+          "start": 4.05,
+          "end": 4.3
+        },
+        {
+          "word_index": 3,
+          "text": "like",
+          "start": 4.3,
+          "end": 4.65
+        },
+        {
+          "word_index": 4,
+          "text": "it",
+          "start": 4.65,
+          "end": 4.85
+        },
+        {
+          "word_index": 5,
+          "text": "never",
+          "start": 4.85,
+          "end": 5.15
+        },
+        {
+          "word_index": 6,
+          "text": "happened",
+          "start": 5.15,
+          "end": 5.65
+        },
+        {
+          "word_index": 7,
+          "text": "and",
+          "start": 5.65,
+          "end": 5.9
+        },
+        {
+          "word_index": 8,
+          "text": "that",
+          "start": 5.9,
+          "end": 6.15
+        },
+        {
+          "word_index": 9,
+          "text": "we",
+          "start": 6.15,
+          "end": 6.4
+        },
+        {
+          "word_index": 10,
+          "text": "were",
+          "start": 6.4,
+          "end": 6.65
+        },
+        {
+          "word_index": 11,
+          "text": "nothing",
+          "start": 6.65,
+          "end": 7.1
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "And I don't even need your love",
+      "start": 7.4,
+      "end": 9.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 7.4,
+          "end": 7.65
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 7.65,
+          "end": 7.85
+        },
+        {
+          "word_index": 3,
+          "text": "don't",
+          "start": 7.85,
+          "end": 8.05
+        },
+        {
+          "word_index": 4,
+          "text": "even",
+          "start": 8.05,
+          "end": 8.3
+        },
+        {
+          "word_index": 5,
+          "text": "need",
+          "start": 8.3,
+          "end": 9.05
+        },
+        {
+          "word_index": 6,
+          "text": "your",
+          "start": 9.05,
+          "end": 9.3
+        },
+        {
+          "word_index": 7,
+          "text": "love",
+          "start": 9.3,
+          "end": 9.9
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "But you treat me like a stranger, and that feels so rough",
+      "start": 9.9,
+      "end": 14.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 9.9,
+          "end": 10.25
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 10.25,
+          "end": 10.55
+        },
+        {
+          "word_index": 3,
+          "text": "treat",
+          "start": 10.55,
+          "end": 10.8
+        },
+        {
+          "word_index": 4,
+          "text": "me",
+          "start": 10.8,
+          "end": 11.1
+        },
+        {
+          "word_index": 5,
+          "text": "like",
+          "start": 11.1,
+          "end": 11.4
+        },
+        {
+          "word_index": 6,
+          "text": "a",
+          "start": 11.4,
+          "end": 11.55
+        },
+        {
+          "word_index": 7,
+          "text": "stranger,",
+          "start": 11.55,
+          "end": 12.15
+        },
+        {
+          "word_index": 8,
+          "text": "and",
+          "start": 12.15,
+          "end": 12.45
+        },
+        {
+          "word_index": 9,
+          "text": "that",
+          "start": 12.45,
+          "end": 12.75
+        },
+        {
+          "word_index": 10,
+          "text": "feels",
+          "start": 12.75,
+          "end": 13.15
+        },
+        {
+          "word_index": 11,
+          "text": "so",
+          "start": 13.15,
+          "end": 13.45
+        },
+        {
+          "word_index": 12,
+          "text": "rough",
+          "start": 13.45,
+          "end": 14.15
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "No, you didn't have to stoop so low",
+      "start": 14.6,
+      "end": 17.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "No,",
+          "start": 14.6,
+          "end": 14.8
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 14.8,
+          "end": 15.1
+        },
+        {
+          "word_index": 3,
+          "text": "didn't",
+          "start": 15.1,
+          "end": 15.55
+        },
+        {
+          "word_index": 4,
+          "text": "have",
+          "start": 15.55,
+          "end": 15.85
+        },
+        {
+          "word_index": 5,
+          "text": "to",
+          "start": 15.85,
+          "end": 16.15
+        },
+        {
+          "word_index": 6,
+          "text": "stoop",
+          "start": 16.15,
+          "end": 16.8
+        },
+        {
+          "word_index": 7,
+          "text": "so",
+          "start": 16.8,
+          "end": 17.1
+        },
+        {
+          "word_index": 8,
+          "text": "low",
+          "start": 17.1,
+          "end": 17.7
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "Have your friends collect your records and then change your number",
+      "start": 18.6,
+      "end": 22.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Have",
+          "start": 18.6,
+          "end": 18.85
+        },
+        {
+          "word_index": 2,
+          "text": "your",
+          "start": 18.85,
+          "end": 19.1
+        },
+        {
+          "word_index": 3,
+          "text": "friends",
+          "start": 19.1,
+          "end": 19.4
+        },
+        {
+          "word_index": 4,
+          "text": "collect",
+          "start": 19.4,
+          "end": 19.85
+        },
+        {
+          "word_index": 5,
+          "text": "your",
+          "start": 19.85,
+          "end": 20.1
+        },
+        {
+          "word_index": 6,
+          "text": "records",
+          "start": 20.1,
+          "end": 20.55
+        },
+        {
+          "word_index": 7,
+          "text": "and",
+          "start": 20.55,
+          "end": 20.8
+        },
+        {
+          "word_index": 8,
+          "text": "then",
+          "start": 20.8,
+          "end": 21.05
+        },
+        {
+          "word_index": 9,
+          "text": "change",
+          "start": 21.05,
+          "end": 21.5
+        },
+        {
+          "word_index": 10,
+          "text": "your",
+          "start": 21.5,
+          "end": 21.75
+        },
+        {
+          "word_index": 11,
+          "text": "number",
+          "start": 21.75,
+          "end": 22.4
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "I guess that I don't need that, though",
+      "start": 22.55,
+      "end": 25.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 22.55,
+          "end": 22.75
+        },
+        {
+          "word_index": 2,
+          "text": "guess",
+          "start": 22.75,
+          "end": 22.95
+        },
+        {
+          "word_index": 3,
+          "text": "that",
+          "start": 22.95,
+          "end": 23.15
+        },
+        {
+          "word_index": 4,
+          "text": "I",
+          "start": 23.15,
+          "end": 23.35
+        },
+        {
+          "word_index": 5,
+          "text": "don't",
+          "start": 23.35,
+          "end": 23.65
+        },
+        {
+          "word_index": 6,
+          "text": "need",
+          "start": 23.65,
+          "end": 24.25
+        },
+        {
+          "word_index": 7,
+          "text": "that,",
+          "start": 24.25,
+          "end": 24.65
+        },
+        {
+          "word_index": 8,
+          "text": "though",
+          "start": 24.65,
+          "end": 25.2
+        }
+      ]
+    },
+    {
+      "line_index": 8,
+      "text": "Now you're just somebody that I used to know",
+      "start": 25.5,
+      "end": 28.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Now",
+          "start": 25.5,
+          "end": 25.8
+        },
+        {
+          "word_index": 2,
+          "text": "you're",
+          "start": 25.8,
+          "end": 26.1
+        },
+        {
+          "word_index": 3,
+          "text": "just",
+          "start": 26.1,
+          "end": 26.25
+        },
+        {
+          "word_index": 4,
+          "text": "somebody",
+          "start": 26.25,
+          "end": 27.0
+        },
+        {
+          "word_index": 5,
+          "text": "that",
+          "start": 27.0,
+          "end": 27.3
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 27.3,
+          "end": 27.5
+        },
+        {
+          "word_index": 7,
+          "text": "used",
+          "start": 27.5,
+          "end": 27.95
+        },
+        {
+          "word_index": 8,
+          "text": "to",
+          "start": 27.95,
+          "end": 28.2
+        },
+        {
+          "word_index": 9,
+          "text": "know",
+          "start": 28.2,
+          "end": 28.95
+        }
+      ]
+    }
+  ]
+}
