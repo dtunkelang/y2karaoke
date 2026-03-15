@@ -36,6 +36,10 @@ logger = logging.getLogger(__name__)
 __all__ = ["get_lyrics_simple", "get_lyrics_with_quality"]
 
 
+_LYRIQ_PROVIDER_KEYS = {"lyriq", "lrclib", "lyriqlrclib"}
+_DisagreementSourceMap = dict[str, tuple[Optional[str], Optional[int]]]
+
+
 @dataclass
 class LyricsWhisperHooks:
     """Optional runtime overrides for lyrics-whisper collaborators."""
@@ -564,6 +568,42 @@ def _duration_tolerance_from_env(*, default: int) -> int:
     return max(parsed, 0)
 
 
+def _normalize_provider_key(value: str) -> str:
+    return "".join(ch for ch in value.lower() if ch.isalnum())
+
+
+def _filter_sources_for_preferred_provider(
+    sources: _DisagreementSourceMap,
+) -> _DisagreementSourceMap:
+    preferred = os.getenv("Y2K_PREFERRED_LYRICS_PROVIDER", "").strip().lower()
+    if not preferred:
+        return sources
+
+    normalized_preferred = _normalize_provider_key(preferred)
+    if normalized_preferred in _LYRIQ_PROVIDER_KEYS:
+        filtered = {
+            key: value
+            for key, value in sources.items()
+            if _normalize_provider_key(key) in _LYRIQ_PROVIDER_KEYS
+        }
+        return filtered or sources
+
+    if normalized_preferred == "syncedlyrics":
+        filtered = {
+            key: value
+            for key, value in sources.items()
+            if _normalize_provider_key(key) not in _LYRIQ_PROVIDER_KEYS
+        }
+        return filtered or sources
+
+    filtered = {
+        key: value
+        for key, value in sources.items()
+        if _normalize_provider_key(key) == normalized_preferred
+    }
+    return filtered or sources
+
+
 def _initialize_routing_diagnostics(
     routing_diagnostics: Optional[dict],
     *,
@@ -611,6 +651,7 @@ def _select_disagreement_source_if_needed(
     from .sync import fetch_from_all_sources
 
     sources = fetch_from_all_sources(title, artist, offline=offline)
+    sources = _filter_sources_for_preferred_provider(sources)
     disagreement = analyze_source_disagreement(title, artist, sources)
     _update_routing_diagnostics_from_disagreement(
         routing_diagnostics,

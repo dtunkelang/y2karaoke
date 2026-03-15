@@ -220,6 +220,54 @@ def test_fetch_lrc_text_and_timings_uses_cached_sources_offline_when_disagreemen
     assert routing["lyrics_source_routing_skip_reason"] == "none"
 
 
+def test_fetch_lrc_text_and_timings_prefers_lyriq_sources_during_disagreement(
+    monkeypatch,
+):
+    class Report:
+        overall_score = 88.5
+
+    captured_sources = {}
+
+    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "lyriq")
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
+        lambda *_args, **_kwargs: {
+            "lyriq (LRCLib)": ("[00:01.00]hi", 120),
+            "Musixmatch": ("[00:02.00]hi", 130),
+            "NetEase": ("[00:03.00]hi", 129),
+        },
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.timing_evaluator_comparison.analyze_source_disagreement",
+        lambda *_args: {
+            "flagged": True,
+            "reasons": ["duration spread 10.0s"],
+        },
+    )
+
+    def _select_best_source(*_args, **kwargs):
+        captured_sources.update(kwargs["sources"])
+        return ("[00:01.00]hi", "lyriq (LRCLib)", Report())
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.timing_evaluator.select_best_source",
+        _select_best_source,
+    )
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
+
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=120,
+        vocals_path="vocals.wav",
+    )
+
+    assert lrc_text == "[00:01.00]hi"
+    assert timings == [(1.0, "hi")]
+    assert source == "lyriq (LRCLib)"
+    assert list(captured_sources) == ["lyriq (LRCLib)"]
+
+
 def test_fetch_lrc_text_and_timings_marks_offline_skip_reason():
     routing = {}
 
