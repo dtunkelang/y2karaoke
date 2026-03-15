@@ -289,7 +289,7 @@ def _should_skip_moderate_negative_offset(
     elif scale_large_negative_offsets and abs(delta) >= scaled_offset_min_abs_sec:
         scale *= max(0.0, auto_offset_scale)
     effective_offset = abs(delta * scale)
-    return effective_offset <= 1.1
+    return effective_offset <= 1.4
 
 
 def _compute_auto_offset(

@@ -216,6 +216,7 @@ class KaraokeGenerator:
             f
             for f in audio_files
             if not any(stem in f.name.lower() for stem in separated_stems)
+            and not f.name.lower().startswith("trimmed_from_")
         ]
         original_audio = select_matching_cached_audio(
             original_audio_files,
