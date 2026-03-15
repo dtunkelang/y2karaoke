@@ -1,5 +1,6 @@
 """Pipeline implementations for sync lyrics orchestration."""
 
+import os
 import re
 from typing import Any, Callable, Optional, Tuple
 
@@ -39,6 +40,11 @@ def _build_provider_search_terms(title: str, artist: str) -> list[str]:
         if term and term not in terms:
             terms.append(term)
     return terms
+
+
+def _preferred_lyrics_provider_from_env() -> str | None:
+    value = os.getenv("Y2K_PREFERRED_LYRICS_PROVIDER", "").strip().lower()
+    return value or None
 
 
 def _warn_once(runtime_state: Any, key: str, logger, message: str, *args: Any) -> None:
@@ -149,7 +155,59 @@ def fetch_lyrics_multi_source_impl(  # noqa: C901
     )
 
     try:
-        if is_lyriq_available_fn(runtime_state):
+        prefer_syncedlyrics = _preferred_lyrics_provider_from_env() == "syncedlyrics"
+
+        def _search_syncedlyrics_sources() -> Tuple[Optional[str], bool, str]:
+            if not is_syncedlyrics_available_fn(runtime_state):
+                _warn_once(
+                    runtime_state,
+                    "syncedlyrics_missing",
+                    logger,
+                    "syncedlyrics not installed",
+                )
+                return (None, False, "")
+
+            provider_terms = search_terms or [search_term]
+            for term in provider_terms:
+                if enhanced:
+                    lrc, provider = search_with_state_fallback_fn(
+                        term,
+                        synced_only=True,
+                        enhanced=True,
+                        state=runtime_state,
+                    )
+                    if lrc and has_timestamps_fn(lrc, runtime_state):
+                        logger.debug(
+                            f"Found enhanced (word-level) synced lyrics from {provider}"
+                        )
+                        lrc_duration = get_lrc_duration_fn(lrc, runtime_state)
+                        result = (lrc, True, f"{provider} (enhanced)", lrc_duration)
+                        set_lrc_cache_fn(cache_key, result, state=runtime_state)
+                        return (lrc, True, f"{provider} (enhanced)")
+
+                lrc, provider = search_with_state_fallback_fn(
+                    term,
+                    synced_only=synced_only,
+                    enhanced=False,
+                    state=runtime_state,
+                )
+
+                if lrc:
+                    is_synced = has_timestamps_fn(lrc, runtime_state)
+                    if is_synced:
+                        logger.debug(f"Found synced lyrics from {provider}")
+                        lrc_duration = get_lrc_duration_fn(lrc, runtime_state)
+                        result = (lrc, True, provider, lrc_duration)
+                        set_lrc_cache_fn(cache_key, result, state=runtime_state)
+                        return (lrc, True, provider)
+                    if not synced_only:
+                        logger.debug(f"Found plain lyrics from {provider}")
+                        result = (lrc, False, provider, None)
+                        set_lrc_cache_fn(cache_key, result, state=runtime_state)
+                        return (lrc, False, provider)
+            return (None, False, "")
+
+        if not prefer_syncedlyrics and is_lyriq_available_fn(runtime_state):
             normalized_title = _normalize_for_provider_search(title)
             normalized_artist = _normalize_for_provider_search(artist)
             lyriq_attempts = [
@@ -172,56 +230,33 @@ def fetch_lyrics_multi_source_impl(  # noqa: C901
                     result = (lrc, True, "lyriq (LRCLib)", lrc_duration)
                     set_lrc_cache_fn(cache_key, result, state=runtime_state)
                     return (lrc, True, "lyriq (LRCLib)")
+        lrc, is_synced, source = _search_syncedlyrics_sources()
+        if lrc:
+            return (lrc, is_synced, source)
 
-        if not is_syncedlyrics_available_fn(runtime_state):
-            _warn_once(
-                runtime_state,
-                "syncedlyrics_missing",
-                logger,
-                "syncedlyrics not installed",
-            )
-            no_sync_result = (None, False, "", None)
-            set_lrc_cache_fn(cache_key, no_sync_result, state=runtime_state)
-            return (None, False, "")
-
-        provider_terms = search_terms or [search_term]
-        for term in provider_terms:
-            if enhanced:
-                lrc, provider = search_with_state_fallback_fn(
-                    term,
-                    synced_only=True,
-                    enhanced=True,
-                    state=runtime_state,
+        if prefer_syncedlyrics and is_lyriq_available_fn(runtime_state):
+            normalized_title = _normalize_for_provider_search(title)
+            normalized_artist = _normalize_for_provider_search(artist)
+            lyriq_attempts = [
+                (normalized_title or title, normalized_artist or artist),
+                (title, artist),
+            ]
+            seen_lyriq_attempts: set[tuple[str, str]] = set()
+            for lyriq_title, lyriq_artist in lyriq_attempts:
+                key = (lyriq_title, lyriq_artist)
+                if key in seen_lyriq_attempts:
+                    continue
+                seen_lyriq_attempts.add(key)
+                logger.debug("Trying lyriq for: %s - %s", lyriq_title, lyriq_artist)
+                lrc = fetch_from_lyriq_fn(
+                    lyriq_title, lyriq_artist, state=runtime_state
                 )
                 if lrc and has_timestamps_fn(lrc, runtime_state):
-                    logger.debug(
-                        f"Found enhanced (word-level) synced lyrics from {provider}"
-                    )
+                    logger.debug("Found synced lyrics from lyriq (LRCLib)")
                     lrc_duration = get_lrc_duration_fn(lrc, runtime_state)
-                    result = (lrc, True, f"{provider} (enhanced)", lrc_duration)
+                    result = (lrc, True, "lyriq (LRCLib)", lrc_duration)
                     set_lrc_cache_fn(cache_key, result, state=runtime_state)
-                    return (lrc, True, f"{provider} (enhanced)")
-
-            lrc, provider = search_with_state_fallback_fn(
-                term,
-                synced_only=synced_only,
-                enhanced=False,
-                state=runtime_state,
-            )
-
-            if lrc:
-                is_synced = has_timestamps_fn(lrc, runtime_state)
-                if is_synced:
-                    logger.debug(f"Found synced lyrics from {provider}")
-                    lrc_duration = get_lrc_duration_fn(lrc, runtime_state)
-                    result = (lrc, True, provider, lrc_duration)
-                    set_lrc_cache_fn(cache_key, result, state=runtime_state)
-                    return (lrc, True, provider)
-                if not synced_only:
-                    logger.debug(f"Found plain lyrics from {provider}")
-                    result = (lrc, False, provider, None)
-                    set_lrc_cache_fn(cache_key, result, state=runtime_state)
-                    return (lrc, False, provider)
+                    return (lrc, True, "lyriq (LRCLib)")
 
         if fallback_cached and fallback_cached[0]:
             _warn_once(

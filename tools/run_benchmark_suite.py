@@ -156,6 +156,7 @@ class BenchmarkSong:
     clip_id: str | None = None
     audio_start_sec: float = 0.0
     lyrics_file: str | None = None
+    preferred_lyrics_provider: str | None = None
 
     @property
     def slug(self) -> str:
@@ -200,6 +201,9 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
                     audio_start_sec=float(audio_start_sec),
                     lyrics_file=_resolve_manifest_optional_path(
                         path.parent, song.get("lyrics_file")
+                    ),
+                    preferred_lyrics_provider=_normalize_optional_manifest_text(
+                        song.get("preferred_lyrics_provider")
                     ),
                 )
             )
@@ -7570,9 +7574,13 @@ def _run_single_song_generation(
     start = time.monotonic()
     song_log_path = run_dir / f"{index:02d}_{song.slug}_generate.log"
     gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+    song_env = dict(env)
+    if song.preferred_lyrics_provider:
+        song_env["Y2K_PREFERRED_LYRICS_PROVIDER"] = song.preferred_lyrics_provider
+
     record = _run_song_command(
         cmd=cmd,
-        env=env,
+        env=song_env,
         start=start,
         song=song,
         report_path=report_path,

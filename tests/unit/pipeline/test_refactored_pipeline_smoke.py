@@ -257,6 +257,49 @@ def test_fetch_lyrics_multi_source_impl_logs_not_found_once_per_state():
     )
 
 
+def test_fetch_lyrics_multi_source_impl_prefers_syncedlyrics_via_env(monkeypatch):
+    logger = _DummyLogger()
+
+    class State:
+        lrc_cache = {}
+        disk_cache = {}
+
+    calls: list[tuple[str, str]] = []
+
+    def _fetch_from_lyriq(*_args, **_kwargs):
+        calls.append(("lyriq", "fetch"))
+        return "[00:00]From lyriq"
+
+    def _search_with_state_fallback(*_args, **_kwargs):
+        calls.append(("syncedlyrics", "search"))
+        return ("[00:00]From syncedlyrics", "NetEase")
+
+    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "syncedlyrics")
+    result = fetch_lyrics_multi_source_impl(
+        "Song",
+        "Artist",
+        synced_only=True,
+        enhanced=False,
+        target_duration=None,
+        duration_tolerance=20,
+        offline=False,
+        runtime_state=State(),
+        disk_cache_enabled_fn=lambda _s: False,
+        load_disk_cache_fn=lambda _s: None,
+        is_lyriq_available_fn=lambda _s: True,
+        fetch_from_lyriq_fn=_fetch_from_lyriq,
+        has_timestamps_fn=lambda *_a, **_k: True,
+        get_lrc_duration_fn=lambda *_a, **_k: 100,
+        set_lrc_cache_fn=lambda *_a, **_k: None,
+        is_syncedlyrics_available_fn=lambda _s: True,
+        search_with_state_fallback_fn=_search_with_state_fallback,
+        logger=logger,
+    )
+
+    assert result == ("[00:00]From syncedlyrics", True, "NetEase")
+    assert calls == [("syncedlyrics", "search")]
+
+
 def test_build_provider_search_terms_strips_noisy_suffixes():
     terms = _build_provider_search_terms(
         "Shape Of You (Penisland produced 2015 version)",
