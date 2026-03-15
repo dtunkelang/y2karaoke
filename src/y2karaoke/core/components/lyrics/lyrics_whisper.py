@@ -267,9 +267,24 @@ def _detect_offset_with_issues(
 
 
 def _should_skip_moderate_negative_offset(
-    *, delta: float, suppress_moderate_negative_offset: bool
+    *,
+    delta: float,
+    suppress_moderate_negative_offset: bool,
+    used_alternate_anchor: bool,
+    auto_offset_scale: float,
+    scaled_offset_min_abs_sec: float,
+    scaled_offset_max_abs_sec: float,
+    scale_large_negative_offsets: bool,
 ) -> bool:
-    return suppress_moderate_negative_offset and delta < 0.0 and abs(delta) <= 1.1
+    if not suppress_moderate_negative_offset or delta >= 0.0:
+        return False
+    scale = 0.6 if used_alternate_anchor else 1.0
+    if scaled_offset_min_abs_sec <= abs(delta) <= scaled_offset_max_abs_sec:
+        scale *= max(0.0, auto_offset_scale)
+    elif scale_large_negative_offsets and abs(delta) >= scaled_offset_min_abs_sec:
+        scale *= max(0.0, auto_offset_scale)
+    effective_offset = abs(delta * scale)
+    return effective_offset <= 1.1
 
 
 def _compute_auto_offset(
@@ -304,6 +319,11 @@ def _compute_auto_offset(
     if _should_skip_moderate_negative_offset(
         delta=delta,
         suppress_moderate_negative_offset=suppress_moderate_negative_offset,
+        used_alternate_anchor=used_alternate_anchor,
+        auto_offset_scale=auto_offset_scale,
+        scaled_offset_min_abs_sec=scaled_offset_min_abs_sec,
+        scaled_offset_max_abs_sec=scaled_offset_max_abs_sec,
+        scale_large_negative_offsets=scale_large_negative_offsets,
     ):
         logger.info(
             "Skipping moderate negative vocal offset under disagreement guard: %+.2fs",

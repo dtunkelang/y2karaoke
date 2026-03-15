@@ -392,6 +392,32 @@ def test_detect_offset_with_issues_skips_negative_offset_up_to_guard_threshold(
     assert updated == line_timings
 
 
+def test_detect_offset_with_issues_skips_scaled_large_negative_offset_under_guard(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda _: 0.05,
+    )
+
+    issues = []
+    line_timings = [(1.67, "Line")]
+    updated, offset = lw._detect_offset_with_issues(
+        "vocals.wav",
+        line_timings,
+        lyrics_offset=None,
+        issues=issues,
+        auto_offset_scale=0.6,
+        scaled_offset_min_abs_sec=0.9,
+        scaled_offset_max_abs_sec=1.4,
+        scale_large_negative_offsets=True,
+        suppress_moderate_negative_offset=True,
+    )
+
+    assert offset == pytest.approx(0.0)
+    assert updated == line_timings
+
+
 def test_detect_offset_with_issues_uses_second_line_after_long_interjection_gap(
     monkeypatch,
 ):
