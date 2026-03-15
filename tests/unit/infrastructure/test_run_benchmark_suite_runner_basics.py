@@ -129,10 +129,30 @@ def test_has_cached_benchmark_source_detects_metadata(tmp_path):
     cache_root = tmp_path / ".cache" / "karaoke" / song.youtube_id
     cache_root.mkdir(parents=True)
     (cache_root / "metadata.json").write_text("{}", encoding="utf-8")
+    (cache_root / "song.wav").write_text("x", encoding="utf-8")
 
     module._benchmark_cache_roots = lambda: [tmp_path / ".cache" / "karaoke"]
 
     assert module._has_cached_benchmark_source(song) is True
+
+
+def test_has_cached_benchmark_source_rejects_trimmed_only_cache(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+    )
+    cache_root = tmp_path / ".cache" / "karaoke" / song.youtube_id
+    cache_root.mkdir(parents=True)
+    (cache_root / "metadata.json").write_text("{}", encoding="utf-8")
+    (cache_root / "trimmed_from_10.00s.wav").write_text("x", encoding="utf-8")
+
+    module._benchmark_cache_roots = lambda: [tmp_path / ".cache" / "karaoke"]
+
+    assert module._has_cached_benchmark_source(song) is False
 
 
 def test_run_single_song_generation_auto_enables_offline_for_cached_source(tmp_path):
@@ -147,6 +167,7 @@ def test_run_single_song_generation_auto_enables_offline_for_cached_source(tmp_p
     cache_root = tmp_path / ".cache" / "karaoke" / song.youtube_id
     cache_root.mkdir(parents=True)
     (cache_root / "metadata.json").write_text("{}", encoding="utf-8")
+    (cache_root / "song.wav").write_text("x", encoding="utf-8")
     module._benchmark_cache_roots = lambda: [tmp_path / ".cache" / "karaoke"]
 
     captured: dict[str, object] = {}

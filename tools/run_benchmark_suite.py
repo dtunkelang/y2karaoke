@@ -2455,12 +2455,29 @@ def _resolve_song_audio_path(
     return _resolve_cached_audio_path_by_slug(song.slug)
 
 
+def _has_cached_primary_song_audio(song: BenchmarkSong) -> bool:
+    for cache_root in _benchmark_cache_roots():
+        cache_dir = cache_root / song.youtube_id
+        wavs = sorted(cache_dir.glob("*.wav"))
+        for wav in wavs:
+            name = wav.name.lower()
+            if name.startswith("trimmed_from_"):
+                continue
+            if any(
+                key in name
+                for key in ["vocals", "instrumental", "bass", "drums", "other"]
+            ):
+                continue
+            return True
+    return False
+
+
 def _has_cached_benchmark_source(song: BenchmarkSong) -> bool:
     for cache_root in _benchmark_cache_roots():
         cache_dir = cache_root / song.youtube_id
-        if (cache_dir / "metadata.json").exists():
-            return True
-        if any(cache_dir.glob("*.wav")):
+        if (cache_dir / "metadata.json").exists() and _has_cached_primary_song_audio(
+            song
+        ):
             return True
     return False
 
