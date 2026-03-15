@@ -1,0 +1,318 @@
+{
+  "schema_version": "1.0",
+  "title": "Someone Like You",
+  "artist": "Adele",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/adele-someone-like-you-first-chorus-72_0s-102_0s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Never mind, I'll find someone like you",
+      "start": 1.75,
+      "end": 7.9,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Never",
+          "start": 1.75,
+          "end": 2.35
+        },
+        {
+          "word_index": 2,
+          "text": "mind,",
+          "start": 2.35,
+          "end": 2.85
+        },
+        {
+          "word_index": 3,
+          "text": "I'll",
+          "start": 2.85,
+          "end": 3.4
+        },
+        {
+          "word_index": 4,
+          "text": "find",
+          "start": 3.4,
+          "end": 4.25
+        },
+        {
+          "word_index": 5,
+          "text": "someone",
+          "start": 4.25,
+          "end": 5.0
+        },
+        {
+          "word_index": 6,
+          "text": "like",
+          "start": 5.0,
+          "end": 5.6
+        },
+        {
+          "word_index": 7,
+          "text": "you",
+          "start": 5.6,
+          "end": 7.9
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "I wish nothing but the best for you, too",
+      "start": 7.9,
+      "end": 15.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 7.9,
+          "end": 8.35
+        },
+        {
+          "word_index": 2,
+          "text": "wish",
+          "start": 8.35,
+          "end": 8.9
+        },
+        {
+          "word_index": 3,
+          "text": "nothing",
+          "start": 8.9,
+          "end": 9.5
+        },
+        {
+          "word_index": 4,
+          "text": "but",
+          "start": 9.5,
+          "end": 9.85
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 9.85,
+          "end": 10.3
+        },
+        {
+          "word_index": 6,
+          "text": "best",
+          "start": 10.3,
+          "end": 11.55
+        },
+        {
+          "word_index": 7,
+          "text": "for",
+          "start": 11.55,
+          "end": 12.15
+        },
+        {
+          "word_index": 8,
+          "text": "you,",
+          "start": 12.15,
+          "end": 14.25
+        },
+        {
+          "word_index": 9,
+          "text": "too",
+          "start": 14.25,
+          "end": 15.25
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Don't forget me, I beg, I remember you said",
+      "start": 15.25,
+      "end": 22.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Don't",
+          "start": 15.25,
+          "end": 15.8
+        },
+        {
+          "word_index": 2,
+          "text": "forget",
+          "start": 15.8,
+          "end": 16.45
+        },
+        {
+          "word_index": 3,
+          "text": "me,",
+          "start": 16.45,
+          "end": 16.95
+        },
+        {
+          "word_index": 4,
+          "text": "I",
+          "start": 16.95,
+          "end": 17.3
+        },
+        {
+          "word_index": 5,
+          "text": "beg,",
+          "start": 17.3,
+          "end": 18.3
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 18.3,
+          "end": 18.85
+        },
+        {
+          "word_index": 7,
+          "text": "remember",
+          "start": 18.85,
+          "end": 20.1
+        },
+        {
+          "word_index": 8,
+          "text": "you",
+          "start": 20.1,
+          "end": 20.9
+        },
+        {
+          "word_index": 9,
+          "text": "said",
+          "start": 20.9,
+          "end": 22.0
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Sometimes it lasts in love, but sometimes it hurts instead",
+      "start": 22.05,
+      "end": 28.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sometimes",
+          "start": 22.05,
+          "end": 22.85
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 22.85,
+          "end": 23.25
+        },
+        {
+          "word_index": 3,
+          "text": "lasts",
+          "start": 23.25,
+          "end": 23.65
+        },
+        {
+          "word_index": 4,
+          "text": "in",
+          "start": 23.65,
+          "end": 24.1
+        },
+        {
+          "word_index": 5,
+          "text": "love,",
+          "start": 24.1,
+          "end": 24.65
+        },
+        {
+          "word_index": 6,
+          "text": "but",
+          "start": 24.65,
+          "end": 24.9
+        },
+        {
+          "word_index": 7,
+          "text": "sometimes",
+          "start": 24.9,
+          "end": 25.45
+        },
+        {
+          "word_index": 8,
+          "text": "it",
+          "start": 25.45,
+          "end": 25.85
+        },
+        {
+          "word_index": 9,
+          "text": "hurts",
+          "start": 25.85,
+          "end": 26.3
+        },
+        {
+          "word_index": 10,
+          "text": "instead",
+          "start": 26.3,
+          "end": 28.95
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "Sometimes it lasts in love, but sometimes it hurts instead",
+      "start": 29.15,
+      "end": 30.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Sometimes",
+          "start": 29.15,
+          "end": 29.75
+        },
+        {
+          "word_index": 2,
+          "text": "it",
+          "start": 29.75,
+          "end": 30.0
+        },
+        {
+          "word_index": 3,
+          "text": "lasts",
+          "start": 30.0,
+          "end": 30.1
+        },
+        {
+          "word_index": 4,
+          "text": "in",
+          "start": 30.1,
+          "end": 30.2
+        },
+        {
+          "word_index": 5,
+          "text": "love,",
+          "start": 30.2,
+          "end": 30.3
+        },
+        {
+          "word_index": 6,
+          "text": "but",
+          "start": 30.3,
+          "end": 30.4
+        },
+        {
+          "word_index": 7,
+          "text": "sometimes",
+          "start": 30.4,
+          "end": 30.5
+        },
+        {
+          "word_index": 8,
+          "text": "it",
+          "start": 30.5,
+          "end": 30.6
+        },
+        {
+          "word_index": 9,
+          "text": "hurts",
+          "start": 30.6,
+          "end": 30.7
+        },
+        {
+          "word_index": 10,
+          "text": "instead",
+          "start": 30.7,
+          "end": 30.8
+        }
+      ]
+    }
+  ]
+}
