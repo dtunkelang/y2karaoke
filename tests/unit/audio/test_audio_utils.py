@@ -175,6 +175,12 @@ class TestTrimAudioIfNeeded:
         assert result == "/trimmed_audio.wav"
         mock_from_wav.assert_called_once()
 
+    def test_parse_trimmed_start_time(self):
+        assert audio_utils_module._parse_trimmed_start_time(
+            "/tmp/trimmed_from_42.00s.wav"
+        ) == pytest.approx(42.0)
+        assert audio_utils_module._parse_trimmed_start_time("/tmp/song.wav") is None
+
 
 class TestApplyAudioEffects:
     """Test apply_audio_effects function."""
@@ -406,6 +412,44 @@ class TestSeparateVocals:
         assert result == {
             "vocals_path": str(vocals_path),
             "instrumental_path": str(instrumental_path),
+        }
+        mock_separator.separate_vocals.assert_not_called()
+
+    def test_reuses_full_song_cached_stems_for_trimmed_clip(
+        self, tmp_path, monkeypatch
+    ):
+        run_cache = tmp_path / "run-cache" / "video123"
+        run_cache.mkdir(parents=True)
+        full_vocals = run_cache / "Song_(Vocals)_htdemucs_ft.wav"
+        full_instrumental = run_cache / "Song_instrumental.wav"
+        full_vocals.write_text("v", encoding="utf-8")
+        full_instrumental.write_text("i", encoding="utf-8")
+
+        mock_cache = Mock()
+        mock_cache.get_video_cache_dir.return_value = str(run_cache)
+        mock_cache.find_files.return_value = []
+
+        mock_separator = Mock()
+
+        def _fake_trim(audio_path, start_time, output_path):
+            Path(output_path).write_text(
+                f"{Path(audio_path).name}@{start_time}", encoding="utf-8"
+            )
+            return True
+
+        monkeypatch.setattr(audio_utils_module, "_trim_audio_with_ffmpeg", _fake_trim)
+
+        result = separate_vocals(
+            "/tmp/trimmed_from_42.00s.wav", "video123", mock_separator, mock_cache
+        )
+
+        assert result == {
+            "vocals_path": str(
+                run_cache / "trimmed_from_42.00s_(Vocals)_htdemucs_ft.wav"
+            ),
+            "instrumental_path": str(
+                run_cache / "trimmed_from_42.00s_instrumental.wav"
+            ),
         }
         mock_separator.separate_vocals.assert_not_called()
 

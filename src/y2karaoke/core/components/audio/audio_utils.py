@@ -1,6 +1,7 @@
 """Audio-related utilities for karaoke generation."""
 
 from pathlib import Path
+import re
 import subprocess
 from typing import Any
 from pydub import AudioSegment
@@ -10,6 +11,7 @@ from ....config import DEFAULT_CACHE_DIR
 from ....utils.logging import get_logger
 
 logger = get_logger(__name__)
+_TRIMMED_AUDIO_RE = re.compile(r"trimmed_from_(\d+(?:\.\d+)?)s$", re.IGNORECASE)
 
 
 def _trim_audio_with_ffmpeg(
@@ -74,6 +76,59 @@ def _select_cached_trimmed_audio(
         if candidate.exists():
             return candidate
     return None
+
+
+def _parse_trimmed_start_time(audio_path: str) -> float | None:
+    match = _TRIMMED_AUDIO_RE.match(Path(audio_path).stem)
+    if match is None:
+        return None
+    return float(match.group(1))
+
+
+def _select_full_length_cached_stem(
+    cache_dirs: list[Path],
+    pattern: str,
+) -> Path | None:
+    candidates: list[Path] = []
+    for cache_dir in cache_dirs:
+        for candidate in cache_dir.glob(pattern):
+            if candidate.stem.lower().startswith("trimmed_from_"):
+                continue
+            candidates.append(candidate)
+    if not candidates:
+        return None
+    candidates.sort(key=lambda path: path.stat().st_mtime if path.exists() else 0.0)
+    return candidates[-1]
+
+
+def _derive_trimmed_stem_paths(
+    *,
+    cache_dir: Path,
+    start_time: float,
+    vocals_stem: Path,
+    instrumental_stem: Path,
+    force: bool,
+) -> dict[str, Path] | None:
+    trimmed_vocals = (
+        cache_dir / f"trimmed_from_{start_time:.2f}s_(Vocals)_htdemucs_ft.wav"
+    )
+    trimmed_instrumental = (
+        cache_dir / f"trimmed_from_{start_time:.2f}s_instrumental.wav"
+    )
+    if force or not trimmed_vocals.exists():
+        if not _trim_audio_with_ffmpeg(
+            str(vocals_stem), start_time, str(trimmed_vocals)
+        ):
+            return None
+    if force or not trimmed_instrumental.exists():
+        if not _trim_audio_with_ffmpeg(
+            str(instrumental_stem), start_time, str(trimmed_instrumental)
+        ):
+            return None
+    return {
+        "vocals_path": trimmed_vocals,
+        "instrumental_path": trimmed_instrumental,
+    }
 
 
 def trim_audio_if_needed(
@@ -149,6 +204,7 @@ def separate_vocals(
 ) -> dict[str, str]:
     """Separate vocals and instrumental from audio, using cache if available."""
     cache_dirs = _candidate_video_cache_dirs(cache_manager, video_id)
+    trimmed_start_time = _parse_trimmed_start_time(audio_path)
     audio_filename = Path(audio_path).name.lower()
     if any(
         marker in audio_filename
@@ -202,6 +258,30 @@ def separate_vocals(
                 "vocals_path": str(vocals_path),
                 "instrumental_path": str(instrumental_path),
             }
+
+    if trimmed_start_time is not None:
+        full_vocals = _select_full_length_cached_stem(
+            cache_dirs,
+            "*[Vv]ocals*.wav",
+        )
+        full_instrumental = _select_full_length_cached_stem(
+            cache_dirs,
+            "*[Ii]nstrumental*.wav",
+        )
+        if full_vocals is not None and full_instrumental is not None:
+            derived = _derive_trimmed_stem_paths(
+                cache_dir=cache_dirs[0],
+                start_time=trimmed_start_time,
+                vocals_stem=full_vocals,
+                instrumental_stem=full_instrumental,
+                force=force,
+            )
+            if derived is not None:
+                logger.info("📁 Reused full-song cached stems for trimmed clip")
+                return {
+                    "vocals_path": str(derived["vocals_path"]),
+                    "instrumental_path": str(derived["instrumental_path"]),
+                }
 
     cache_dir = cache_manager.get_video_cache_dir(video_id)
     return separator.separate_vocals(audio_path, str(cache_dir))

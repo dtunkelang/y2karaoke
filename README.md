@@ -357,6 +357,7 @@ Then open `http://127.0.0.1:8765`.
   - when a source censors profanity (`sh*t`, `f*ck`), normalize it back to the sung lyric form before benchmarking or curation so the text stays aligned with the real audio
   - if a curated clip shows a stable line-for-line early bias on an `audio_scored_disagreement` source, inspect the auto-applied vocal offset before tuning Whisper stages; a moderate negative auto-offset can be the whole failure
   - for clip probes, prefer reusing cached stems and fast ffmpeg-based trims; if a 30-second probe still behaves like a full rerender, treat that as an infra bug before assuming the clip pack is too expensive
+  - once a song has full-song cached stems, new clip windows should reuse those stems and trim them directly instead of rerunning Demucs on each `trimmed_from_*.wav` clip
 
 See `docs/gold_timing_editor.md` for schema and workflow details.
 
