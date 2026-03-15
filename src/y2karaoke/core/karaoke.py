@@ -130,6 +130,7 @@ class KaraokeGenerator:
         max_break_duration: float = 30.0,
         debug_audio: str = "instrumental",
         skip_render: bool = False,
+        skip_separation: bool = False,
         timing_report_path: Optional[str] = None,
     ) -> Dict[str, Any]:
         return generate_karaoke(
@@ -170,6 +171,7 @@ class KaraokeGenerator:
             max_break_duration=max_break_duration,
             debug_audio=debug_audio,
             skip_render=skip_render,
+            skip_separation=skip_separation,
             timing_report_path=timing_report_path,
         )
 
@@ -273,6 +275,7 @@ class KaraokeGenerator:
         use_backgrounds: bool,
         force: bool,
         offline: bool,
+        skip_separation: bool,
         expected_title: Optional[str] = None,
         expected_artist: Optional[str] = None,
     ) -> Tuple[Dict[str, str], Optional[str], Dict[str, str]]:
@@ -298,13 +301,20 @@ class KaraokeGenerator:
             force=force,
         )
 
-        separation_result = separate_vocals(
-            effective_audio_path,
-            video_id,
-            self.separator,
-            self.cache_manager,
-            force=force,
-        )
+        if skip_separation:
+            logger.info("⏩ Skipping vocal separation for no-render probe")
+            separation_result = {
+                "vocals_path": effective_audio_path,
+                "instrumental_path": effective_audio_path,
+            }
+        else:
+            separation_result = separate_vocals(
+                effective_audio_path,
+                video_id,
+                self.separator,
+                self.cache_manager,
+                force=force,
+            )
 
         return audio_result, video_path, separation_result
 

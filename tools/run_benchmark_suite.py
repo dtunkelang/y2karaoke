@@ -991,6 +991,7 @@ def _build_generate_command(
     strategy: str = "hybrid_dtw",
     drop_lrc_line_timings: bool = False,
     evaluate_lyrics_sources: bool = False,
+    fast_clip_probe: bool = False,
 ) -> list[str]:
     cmd = [
         python_bin,
@@ -1012,6 +1013,8 @@ def _build_generate_command(
         cmd.extend(["--lyrics-file", song.lyrics_file])
     if song.audio_start_sec > 0.0:
         cmd.extend(["--audio-start", f"{song.audio_start_sec:g}"])
+    if fast_clip_probe and song.clip_id:
+        cmd.append("--skip-separation")
     if offline:
         cmd.append("--offline")
     if force:
@@ -6524,6 +6527,7 @@ def _build_run_signature(
         "offline": bool(args.offline),
         "force": bool(args.force),
         "strategy": str(args.strategy),
+        "fast_clip_probe": bool(getattr(args, "fast_clip_probe", False)),
         "scenario": str(args.scenario),
         "whisper_map_lrc_dtw": not bool(args.no_whisper_map_lrc_dtw),
         "cache_dir": str(args.cache_dir.resolve()) if args.cache_dir else None,
@@ -6632,6 +6636,14 @@ def _parse_args() -> argparse.Namespace:
             "Optional benchmark scenario variant. "
             "'lyrics_no_timing' ignores provider LRC timestamps to isolate "
             "lyrics-text + audio alignment behavior."
+        ),
+    )
+    parser.add_argument(
+        "--fast-clip-probe",
+        action="store_true",
+        help=(
+            "For clip entries only, skip vocal separation during no-render probes "
+            "to get a faster first triage pass."
         ),
     )
     parser.add_argument(
@@ -7575,6 +7587,7 @@ def _run_single_song_generation(
         strategy=args.strategy,
         drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
         evaluate_lyrics_sources=bool(getattr(args, "evaluate_lyrics_sources", False)),
+        fast_clip_probe=bool(getattr(args, "fast_clip_probe", False)),
     )
     print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
     start = time.monotonic()

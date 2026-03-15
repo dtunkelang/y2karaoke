@@ -244,6 +244,11 @@ def doctor():
     help="Skip video rendering (run timing/lyrics pipeline only)",
 )
 @click.option(
+    "--skip-separation",
+    is_flag=True,
+    help="Skip vocal separation for no-render timing probes (faster, lower fidelity)",
+)
+@click.option(
     "--timing-report",
     type=click.Path(),
     default=None,
@@ -381,6 +386,7 @@ def generate(
     font_size,
     no_progress,
     no_render,
+    skip_separation,
     timing_report,
     evaluate_lyrics,
     whisper,
@@ -426,6 +432,7 @@ def generate(
         font_size=font_size,
         no_progress=no_progress,
         no_render=no_render,
+        skip_separation=skip_separation,
         timing_report=timing_report,
         evaluate_lyrics=evaluate_lyrics,
         whisper=whisper,

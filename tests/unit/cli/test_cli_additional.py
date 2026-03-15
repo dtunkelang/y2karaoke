@@ -222,6 +222,21 @@ def test_generate_handles_y2karaoke_error(monkeypatch):
     assert result.exit_code == 1
 
 
+def test_generate_rejects_skip_separation_without_no_render():
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.cli,
+        [
+            "generate",
+            "--title",
+            "Song",
+            "--skip-separation",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "--skip-separation requires --no-render" in result.output
+
+
 def test_evaluate_timing_handles_error(monkeypatch):
     class BadIdentifier:
         def identify_from_search(self, _query):

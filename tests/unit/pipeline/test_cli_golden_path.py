@@ -76,3 +76,25 @@ def test_cli_generate_golden_path_wiring(monkeypatch):
     assert generator.generate_kwargs["use_whisper"] is True
     assert generator.generate_kwargs["tempo_multiplier"] == 1.1
     assert generator.generate_kwargs["skip_render"] is True
+
+
+def test_cli_generate_skip_separation_wiring(monkeypatch):
+    monkeypatch.setattr(cli_commands, "TrackIdentifier", _DummyIdentifier)
+    monkeypatch.setattr(cli, "KaraokeGenerator", _DummyGenerator)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.cli,
+        [
+            "generate",
+            "song artist query",
+            "--no-render",
+            "--skip-separation",
+        ],
+    )
+
+    assert result.exit_code == 0
+    generator = _DummyGenerator.last_instance
+    assert generator is not None
+    assert generator.generate_kwargs is not None
+    assert generator.generate_kwargs["skip_separation"] is True

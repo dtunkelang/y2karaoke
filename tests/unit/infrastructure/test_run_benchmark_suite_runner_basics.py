@@ -48,6 +48,7 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
         whisper_map_lrc_dtw=True,
         strategy="hybrid_dtw",
         drop_lrc_line_timings=True,
+        fast_clip_probe=True,
     )
     assert cmd[:4] == ["python", "-m", "y2karaoke.cli", "generate"]
     assert "--offline" in cmd
@@ -61,6 +62,32 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
     assert str(lyrics_file) in cmd
     assert "--audio-start" in cmd
     assert "12.5" in cmd
+    assert "--skip-separation" in cmd
+
+
+def test_build_generate_command_fast_clip_probe_skips_non_clip_song(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+    )
+    report_path = tmp_path / "report.json"
+    cmd = module._build_generate_command(
+        python_bin="python",
+        song=song,
+        report_path=report_path,
+        cache_dir=None,
+        offline=False,
+        force=False,
+        whisper_map_lrc_dtw=True,
+        strategy="hybrid_dtw",
+        drop_lrc_line_timings=False,
+        fast_clip_probe=True,
+    )
+    assert "--skip-separation" not in cmd
 
 
 def test_build_generate_command_strategy_variants(tmp_path):

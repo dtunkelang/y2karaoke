@@ -252,9 +252,10 @@ Benchmark seed set for timing quality work:
   - Troubleshooting rule: if a song shows a large benchmark error that persists across multiple runs or heuristics, assume the gold curation may be wrong before assuming the pipeline is wrong.
     - First verify `candidate_url` / `audio_path`, then listen-check the gold against the actual benchmark source, and rebaseline before spending time on new alignment heuristics.
   - Clip workflow rule:
-    - for apples-to-apples clip measurement, prefer rerunning the full song on the normal path and rescoring the curated clip from that full-song report
-    - direct clip-only generation can change source routing and make comparisons misleading
-    - when the YouTube source is already cached locally, prefer offline benchmark reruns so clip-heavy iteration does not keep paying avoidable identify/network overhead
+  - for apples-to-apples clip measurement, prefer rerunning the full song on the normal path and rescoring the curated clip from that full-song report
+  - direct clip-only generation can change source routing and make comparisons misleading
+  - when the YouTube source is already cached locally, prefer offline benchmark reruns so clip-heavy iteration does not keep paying avoidable identify/network overhead
+  - for a brand-new clip on a cold song, use `tools/run_benchmark_suite.py --fast-clip-probe` to skip vocal separation during the no-render probe; this is a triage path for quick signal, not the final apples-to-apples benchmark path
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)
   - Recommend default strategy/thresholds from prior reports: `make benchmark-recommend`
@@ -358,6 +359,7 @@ Then open `http://127.0.0.1:8765`.
   - if a curated clip shows a stable line-for-line early bias on an `audio_scored_disagreement` source, inspect the auto-applied vocal offset before tuning Whisper stages; a moderate negative auto-offset can be the whole failure
   - for clip probes, prefer reusing cached stems and fast ffmpeg-based trims; if a 30-second probe still behaves like a full rerender, treat that as an infra bug before assuming the clip pack is too expensive
   - once a song has full-song cached stems, new clip windows should reuse those stems and trim them directly instead of rerunning Demucs on each `trimmed_from_*.wav` clip
+  - if a song is still cold, the expensive first pass is usually Demucs separation; `--fast-clip-probe` avoids paying that cost just to get an initial read on whether a new clip is a control, a clean failure, or a comparability problem
 
 See `docs/gold_timing_editor.md` for schema and workflow details.
 

@@ -93,6 +93,7 @@ def _build_generate_kwargs(
     max_break,
     debug_audio,
     no_render,
+    skip_separation,
     timing_report,
 ):
     return {
@@ -132,8 +133,26 @@ def _build_generate_kwargs(
         "max_break_duration": max_break,
         "debug_audio": debug_audio,
         "skip_render": no_render,
+        "skip_separation": skip_separation,
         "timing_report_path": timing_report,
     }
+
+
+def _validate_generate_probe_options(
+    *,
+    audio_start: float,
+    skip_separation: bool,
+    no_render: bool,
+    shorten_breaks: bool,
+) -> None:
+    if audio_start < 0:
+        raise click.BadParameter("--audio-start must be non-negative")
+    if skip_separation and not no_render:
+        raise click.BadParameter("--skip-separation requires --no-render")
+    if skip_separation and shorten_breaks:
+        raise click.BadParameter(
+            "--skip-separation cannot be combined with --shorten-breaks"
+        )
 
 
 def run_generate_command(
@@ -180,6 +199,7 @@ def run_generate_command(
     shorten_breaks,
     max_break,
     debug_audio,
+    skip_separation,
     resolve_url_or_query_fn,
     identify_track_fn,
     identify_track_offline_fn,
@@ -224,8 +244,12 @@ def run_generate_command(
         tempo = validate_tempo(tempo)
         offset = validate_offset(offset)
 
-        if audio_start < 0:
-            raise click.BadParameter("--audio-start must be non-negative")
+        _validate_generate_probe_options(
+            audio_start=audio_start,
+            skip_separation=skip_separation,
+            no_render=no_render,
+            shorten_breaks=shorten_breaks,
+        )
 
         video_settings = build_video_settings_fn(
             resolution, fps, font_size, no_progress
@@ -280,6 +304,7 @@ def run_generate_command(
                 max_break=max_break,
                 debug_audio=debug_audio,
                 no_render=no_render,
+                skip_separation=skip_separation,
                 timing_report=timing_report,
             )
         )

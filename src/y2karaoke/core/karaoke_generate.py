@@ -51,6 +51,7 @@ def generate_karaoke(
     max_break_duration: float = 30.0,
     debug_audio: str = "instrumental",
     skip_render: bool = False,
+    skip_separation: bool = False,
     timing_report_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Run the full karaoke generation pipeline."""
@@ -72,6 +73,7 @@ def generate_karaoke(
         use_backgrounds,
         force_reprocess,
         offline,
+        skip_separation,
         expected_title=lyrics_title,
         expected_artist=lyrics_artist,
     )
