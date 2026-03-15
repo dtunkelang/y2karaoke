@@ -235,8 +235,8 @@ songs:
   audio_start_sec: 57.0
   youtube_id: aeDdS9aIpck
   youtube_url: https://www.youtube.com/watch?v=aeDdS9aIpck
-  preferred_lyrics_provider: syncedlyrics
-  fallback_lyrics_provider: lyriq
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Main chorus clip from the Topic source, using clean-version wording for the
     tell-me-what-is-up-with-that line to match the vetted audio.
