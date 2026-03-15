@@ -927,6 +927,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+        capture_trace_snapshot_fn=_capture_trace_snapshot,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
     )
     _capture_trace_snapshot(
         trace_snapshots,

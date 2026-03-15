@@ -253,6 +253,9 @@ def _run_mapped_line_postpasses(
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
     enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
     resolve_line_overlaps_fn: Callable[..., Any],
+    capture_trace_snapshot_fn: Callable[..., Any] | None = None,
+    trace_snapshots: list[dict[str, Any]] | None = None,
+    trace_line_range: tuple[int, int] | None = None,
 ) -> Tuple[List[models.Line], List[str]]:
     mapped_lines = interpolate_unmatched_lines_fn(mapped_lines, mapped_lines_set)
     mapped_lines = _enforce_mapped_line_stage_invariants(
@@ -261,7 +264,97 @@ def _run_mapped_line_postpasses(
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_interpolate_unmatched",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
 
+    mapped_lines = _run_core_mapped_line_postpasses(
+        mapped_lines=mapped_lines,
+        mapped_lines_set=mapped_lines_set,
+        all_words=all_words,
+        transcription=transcription,
+        vocals_path=vocals_path,
+        epitran_lang=epitran_lang,
+        interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
+        refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
+        shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
+        extend_line_to_trailing_whisper_matches_fn=extend_line_to_trailing_whisper_matches_fn,
+        pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
+        retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    mapped_lines, corrections = _run_audio_feature_mapped_line_postpasses(
+        mapped_lines=mapped_lines,
+        corrections=corrections,
+        audio_features=audio_features,
+        all_words=all_words,
+        transcription=transcription,
+        epitran_lang=epitran_lang,
+        pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
+        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+
+    return mapped_lines, corrections
+
+
+def _maybe_capture_mapped_line_postpass_snapshot(
+    mapped_lines: List[models.Line],
+    *,
+    stage: str,
+    capture_trace_snapshot_fn: Callable[..., Any] | None,
+    trace_snapshots: list[dict[str, Any]] | None,
+    trace_line_range: tuple[int, int] | None,
+) -> None:
+    if (
+        capture_trace_snapshot_fn is None
+        or trace_snapshots is None
+        or trace_line_range is None
+    ):
+        return
+    capture_trace_snapshot_fn(
+        trace_snapshots,
+        stage=stage,
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
+
+
+def _run_core_mapped_line_postpasses(
+    *,
+    mapped_lines: List[models.Line],
+    mapped_lines_set: Set[int],
+    all_words: List[timing_models.TranscriptionWord],
+    transcription: List[timing_models.TranscriptionSegment],
+    vocals_path: str,
+    epitran_lang: str,
+    interpolate_unmatched_lines_fn: Callable[..., Any],
+    refine_unmatched_lines_with_onsets_fn: Callable[..., Any],
+    shift_repeated_lines_to_next_whisper_fn: Callable[..., Any],
+    extend_line_to_trailing_whisper_matches_fn: Callable[..., Any],
+    pull_late_lines_to_matching_segments_fn: Callable[..., Any],
+    retime_short_interjection_lines_fn: Callable[..., Any],
+    snap_first_word_to_whisper_onset_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
+    resolve_line_overlaps_fn: Callable[..., Any],
+    capture_trace_snapshot_fn: Callable[..., Any] | None,
+    trace_snapshots: list[dict[str, Any]] | None,
+    trace_line_range: tuple[int, int] | None,
+) -> List[models.Line]:
     mapped_lines = refine_unmatched_lines_with_onsets_fn(
         mapped_lines,
         mapped_lines_set,
@@ -273,7 +366,13 @@ def _run_mapped_line_postpasses(
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
-
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_refine_unmatched_onsets",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
     mapped_lines = shift_repeated_lines_to_next_whisper_fn(mapped_lines, all_words)
     mapped_lines = _normalize_repeated_line_durations(mapped_lines)
     mapped_lines = _enforce_mapped_line_stage_invariants(
@@ -282,15 +381,26 @@ def _run_mapped_line_postpasses(
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
-    mapped_lines = extend_line_to_trailing_whisper_matches_fn(
+    _maybe_capture_mapped_line_postpass_snapshot(
         mapped_lines,
-        all_words,
+        stage="postpass_shift_repeated",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
     )
+    mapped_lines = extend_line_to_trailing_whisper_matches_fn(mapped_lines, all_words)
     mapped_lines = _enforce_mapped_line_stage_invariants(
         mapped_lines,
         all_words,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_extend_trailing",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
     )
     mapped_lines = pull_late_lines_to_matching_segments_fn(
         mapped_lines,
@@ -303,40 +413,84 @@ def _run_mapped_line_postpasses(
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
-    mapped_lines = retime_short_interjection_lines_fn(
+    _maybe_capture_mapped_line_postpass_snapshot(
         mapped_lines,
-        transcription,
+        stage="postpass_pull_late_segments",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
     )
+    mapped_lines = retime_short_interjection_lines_fn(mapped_lines, transcription)
     mapped_lines = _enforce_mapped_line_stage_invariants(
         mapped_lines,
         all_words,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
-    mapped_lines = snap_first_word_to_whisper_onset_fn(
+    _maybe_capture_mapped_line_postpass_snapshot(
         mapped_lines,
-        all_words,
+        stage="postpass_retime_interjections",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
     )
+    mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
     mapped_lines = _enforce_mapped_line_stage_invariants(
         mapped_lines,
         all_words,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
-    if audio_features is not None:
-        mapped_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
-            mapped_lines,
-            audio_features,
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_snap_first_word_initial",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    return mapped_lines
+
+
+def _run_audio_feature_mapped_line_postpasses(
+    *,
+    mapped_lines: List[models.Line],
+    corrections: List[str],
+    audio_features: Optional[timing_models.AudioFeatures],
+    all_words: List[timing_models.TranscriptionWord],
+    transcription: List[timing_models.TranscriptionSegment],
+    epitran_lang: str,
+    pull_late_lines_to_matching_segments_fn: Callable[..., Any],
+    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+    snap_first_word_to_whisper_onset_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
+    resolve_line_overlaps_fn: Callable[..., Any],
+    capture_trace_snapshot_fn: Callable[..., Any] | None,
+    trace_snapshots: list[dict[str, Any]] | None,
+    trace_line_range: tuple[int, int] | None,
+) -> Tuple[List[models.Line], List[str]]:
+    if audio_features is None:
+        return mapped_lines, corrections
+
+    mapped_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
+        mapped_lines,
+        audio_features,
+    )
+    if continuous_fixes:
+        corrections.append(
+            f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
         )
-        if continuous_fixes:
-            corrections.append(
-                f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
-            )
     mapped_lines = _enforce_mapped_line_stage_invariants(
         mapped_lines,
         all_words,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_pull_continuous_vocals",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
     )
     mapped_lines = pull_late_lines_to_matching_segments_fn(
         mapped_lines,
@@ -349,63 +503,106 @@ def _run_mapped_line_postpasses(
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
     )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_pull_late_segments_second",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    mapped_lines = _snap_first_word_with_optional_max_shift(
+        mapped_lines,
+        all_words,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+    )
+    mapped_lines = _enforce_mapped_line_stage_invariants(
+        mapped_lines,
+        all_words,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_snap_first_word_second",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    mapped_lines, late_audio_fixes = pull_lines_forward_for_continuous_vocals_fn(
+        mapped_lines,
+        audio_features,
+    )
+    if late_audio_fixes:
+        corrections.append(
+            f"Applied {late_audio_fixes} late audio onset/silence adjustment(s)"
+        )
+    mapped_lines = _enforce_mapped_line_stage_invariants(
+        mapped_lines,
+        all_words,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_pull_continuous_vocals_second",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    mapped_lines = _snap_first_word_with_optional_max_shift(
+        mapped_lines,
+        all_words,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+    )
+    mapped_lines = _enforce_mapped_line_stage_invariants(
+        mapped_lines,
+        all_words,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_snap_first_word_third",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
+        mapped_lines,
+        audio_features,
+        all_words,
+    )
+    if carryover_fixes:
+        corrections.append(
+            f"Shifted {carryover_fixes} weak-opening line(s) past prior-phrase carryover"
+        )
+        mapped_lines = _enforce_mapped_line_stage_invariants(
+            mapped_lines,
+            all_words,
+            enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+            resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+        )
+        _maybe_capture_mapped_line_postpass_snapshot(
+            mapped_lines,
+            stage="postpass_shift_weak_opening_carryover",
+            capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+            trace_snapshots=trace_snapshots,
+            trace_line_range=trace_line_range,
+        )
+    return mapped_lines, corrections
+
+
+def _snap_first_word_with_optional_max_shift(
+    mapped_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    *,
+    snap_first_word_to_whisper_onset_fn: Callable[..., Any],
+) -> List[models.Line]:
     try:
-        mapped_lines = snap_first_word_to_whisper_onset_fn(
+        return snap_first_word_to_whisper_onset_fn(
             mapped_lines,
             all_words,
             max_shift=2.5,
         )
     except TypeError:
-        mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    if audio_features is not None:
-        mapped_lines, late_audio_fixes = pull_lines_forward_for_continuous_vocals_fn(
-            mapped_lines,
-            audio_features,
-        )
-        if late_audio_fixes:
-            corrections.append(
-                f"Applied {late_audio_fixes} late audio onset/silence adjustment(s)"
-            )
-        mapped_lines = _enforce_mapped_line_stage_invariants(
-            mapped_lines,
-            all_words,
-            enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-            resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-        )
-        try:
-            mapped_lines = snap_first_word_to_whisper_onset_fn(
-                mapped_lines,
-                all_words,
-                max_shift=2.5,
-            )
-        except TypeError:
-            mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
-        mapped_lines = _enforce_mapped_line_stage_invariants(
-            mapped_lines,
-            all_words,
-            enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-            resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-        )
-        mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
-            mapped_lines,
-            audio_features,
-            all_words,
-        )
-        if carryover_fixes:
-            corrections.append(
-                f"Shifted {carryover_fixes} weak-opening line(s) past prior-phrase carryover"
-            )
-            mapped_lines = _enforce_mapped_line_stage_invariants(
-                mapped_lines,
-                all_words,
-                enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-                resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-            )
-
-    return mapped_lines, corrections
+        return snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
