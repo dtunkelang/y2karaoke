@@ -157,6 +157,7 @@ class BenchmarkSong:
     audio_start_sec: float = 0.0
     lyrics_file: str | None = None
     preferred_lyrics_provider: str | None = None
+    lrc_duration_tolerance_sec: int | None = None
 
     @property
     def slug(self) -> str:
@@ -204,6 +205,11 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
                     ),
                     preferred_lyrics_provider=_normalize_optional_manifest_text(
                         song.get("preferred_lyrics_provider")
+                    ),
+                    lrc_duration_tolerance_sec=(
+                        int(song["lrc_duration_tolerance_sec"])
+                        if song.get("lrc_duration_tolerance_sec") is not None
+                        else None
                     ),
                 )
             )
@@ -7577,6 +7583,10 @@ def _run_single_song_generation(
     song_env = dict(env)
     if song.preferred_lyrics_provider:
         song_env["Y2K_PREFERRED_LYRICS_PROVIDER"] = song.preferred_lyrics_provider
+    if song.lrc_duration_tolerance_sec is not None:
+        song_env["Y2K_LRC_DURATION_TOLERANCE_SEC"] = str(
+            song.lrc_duration_tolerance_sec
+        )
 
     record = _run_song_command(
         cmd=cmd,

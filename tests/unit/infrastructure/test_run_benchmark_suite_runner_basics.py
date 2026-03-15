@@ -314,6 +314,29 @@ def test_parse_manifest_resolves_preferred_lyrics_provider(tmp_path):
     assert songs[0].preferred_lyrics_provider == "syncedlyrics"
 
 
+def test_parse_manifest_resolves_lrc_duration_tolerance(tmp_path):
+    module = _load_module()
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text(
+        "\n".join(
+            [
+                "songs:",
+                "  - artist: Test Artist",
+                "    title: Test Song",
+                "    youtube_id: abcdefghijk",
+                "    youtube_url: https://www.youtube.com/watch?v=abcdefghijk",
+                "    lrc_duration_tolerance_sec: 18",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    songs = module._parse_manifest(manifest)
+
+    assert len(songs) == 1
+    assert songs[0].lrc_duration_tolerance_sec == 18
+
+
 def test_run_single_song_generation_exports_preferred_lyrics_provider_env(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
@@ -371,6 +394,64 @@ def test_run_single_song_generation_exports_preferred_lyrics_provider_env(tmp_pa
 
     assert captured_env["BASE_ENV"] == "1"
     assert captured_env["Y2K_PREFERRED_LYRICS_PROVIDER"] == "syncedlyrics"
+
+
+def test_run_single_song_generation_exports_duration_tolerance_env(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="Artist A",
+        title="Alpha",
+        youtube_id="aaaaaaaaaaa",
+        youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
+        lrc_duration_tolerance_sec=18,
+    )
+    args = type(
+        "Args",
+        (),
+        {
+            "python_bin": "python",
+            "cache_dir": None,
+            "offline": False,
+            "force": False,
+            "no_whisper_map_lrc_dtw": False,
+            "strategy": "hybrid_whisper",
+            "scenario": "default",
+            "timeout_sec": 30,
+            "heartbeat_sec": 1,
+            "evaluate_lyrics_sources": False,
+            "rebaseline": False,
+        },
+    )()
+    captured_env: dict[str, str] = {}
+    old_build_cmd = module._build_generate_command
+    old_load_gold = module._load_gold_doc
+    old_run_cmd = module._run_song_command
+    module._build_generate_command = lambda **_: ["python", "-m", "noop"]  # type: ignore[assignment]
+    module._load_gold_doc = lambda **_: None  # type: ignore[assignment]
+
+    def _fake_run_song_command(**kwargs):
+        captured_env.update(kwargs["env"])
+        return {"status": "ok", "elapsed_sec": 1.23}
+
+    module._run_song_command = _fake_run_song_command  # type: ignore[assignment]
+    try:
+        module._run_single_song_generation(
+            args=args,
+            index=1,
+            total_songs=1,
+            song=song,
+            run_dir=tmp_path,
+            run_signature={"k": "v"},
+            gold_root=tmp_path,
+            env={},
+        )
+    finally:
+        module._build_generate_command = old_build_cmd
+        module._load_gold_doc = old_load_gold
+        module._run_song_command = old_run_cmd
+
+    assert captured_env["Y2K_LRC_DURATION_TOLERANCE_SEC"] == "18"
 
 
 def test_benchmark_song_slug_includes_clip_id():

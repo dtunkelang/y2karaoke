@@ -214,12 +214,12 @@ def fetch_lyrics_multi_source_impl(  # noqa: C901
                 (normalized_title or title, normalized_artist or artist),
                 (title, artist),
             ]
-            seen_lyriq_attempts: set[tuple[str, str]] = set()
+            seen_synced_pref_lyriq_attempts: set[tuple[str, str]] = set()
             for lyriq_title, lyriq_artist in lyriq_attempts:
                 key = (lyriq_title, lyriq_artist)
-                if key in seen_lyriq_attempts:
+                if key in seen_synced_pref_lyriq_attempts:
                     continue
-                seen_lyriq_attempts.add(key)
+                seen_synced_pref_lyriq_attempts.add(key)
                 logger.debug("Trying lyriq for: %s - %s", lyriq_title, lyriq_artist)
                 lrc = fetch_from_lyriq_fn(
                     lyriq_title, lyriq_artist, state=runtime_state

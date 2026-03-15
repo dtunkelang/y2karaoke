@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
 import logging
+import os
 from pathlib import Path
 from typing import Callable, Iterator, List, Optional, Tuple
 
@@ -460,6 +461,7 @@ def _fetch_lrc_text_and_timings(
         Tuple of (lrc_text, parsed_timings, source_name)
     """
     try:
+        duration_tolerance = _duration_tolerance_from_env(default=8)
         _initialize_routing_diagnostics(
             routing_diagnostics,
             target_duration=target_duration,
@@ -508,7 +510,11 @@ def _fetch_lrc_text_and_timings(
             from .sync import fetch_lyrics_for_duration
 
             lrc_text, is_synced, source, lrc_duration = fetch_lyrics_for_duration(
-                title, artist, target_duration, tolerance=8, offline=offline
+                title,
+                artist,
+                target_duration,
+                tolerance=duration_tolerance,
+                offline=offline,
             )
             if lrc_text and is_synced:
                 lines = parse_lrc_with_timing(
@@ -540,6 +546,22 @@ def _fetch_lrc_text_and_timings(
     except Exception as e:
         logger.warning(f"LRC fetch failed: {e}")
         return None, None, ""
+
+
+def _duration_tolerance_from_env(*, default: int) -> int:
+    raw_value = os.getenv("Y2K_LRC_DURATION_TOLERANCE_SEC", "").strip()
+    if not raw_value:
+        return default
+    try:
+        parsed = int(raw_value)
+    except ValueError:
+        logger.warning(
+            "Ignoring invalid Y2K_LRC_DURATION_TOLERANCE_SEC=%r; using %ds",
+            raw_value,
+            default,
+        )
+        return default
+    return max(parsed, 0)
 
 
 def _initialize_routing_diagnostics(

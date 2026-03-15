@@ -275,6 +275,32 @@ def test_fetch_lrc_text_and_timings_filters_promos(monkeypatch):
     assert len(timings_unfiltered) == 3
 
 
+def test_fetch_lrc_text_and_timings_uses_duration_tolerance_env(monkeypatch):
+    captured: dict[str, object] = {}
+
+    def _fetch_lyrics_for_duration(*args, **kwargs):
+        captured["tolerance"] = kwargs["tolerance"]
+        return ("[00:01.00]hi", True, "provider", 120)
+
+    monkeypatch.setenv("Y2K_LRC_DURATION_TOLERANCE_SEC", "18")
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
+        _fetch_lyrics_for_duration,
+    )
+    monkeypatch.setattr(lh, "parse_lrc_with_timing", lambda *a, **k: [(1.0, "hi")])
+
+    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
+        "Title",
+        "Artist",
+        target_duration=120,
+    )
+
+    assert lrc_text == "[00:01.00]hi"
+    assert timings == [(1.0, "hi")]
+    assert source == "provider"
+    assert captured["tolerance"] == 18
+
+
 def test_get_lyrics_simple_falls_back_to_genius(monkeypatch):
     monkeypatch.setattr(
         lw, "_fetch_lrc_text_and_timings", lambda *a, **k: (None, None, "")
