@@ -6945,6 +6945,21 @@ def _collect_process_tree_commands(root_pid: int) -> list[str]:
         return []
 
 
+def _candidate_video_cache_dirs_for_command(cmd: list[str]) -> list[Path]:
+    video_id = _extract_video_id_from_command(cmd)
+    if not video_id:
+        return []
+    dirs: list[Path] = []
+    cache_dir_value = _find_flag_value(cmd, "--work-dir")
+    if cache_dir_value:
+        dirs.append(Path(cache_dir_value) / video_id)
+    for cache_root in _benchmark_cache_roots():
+        candidate = cache_root / video_id
+        if candidate not in dirs:
+            dirs.append(candidate)
+    return dirs
+
+
 def _infer_compute_substage(
     *,
     cmd: list[str],
@@ -6962,11 +6977,9 @@ def _infer_compute_substage(
     ):
         return "whisper"
 
-    cache_dir_value = _find_flag_value(cmd, "--work-dir")
-    video_id = _extract_video_id_from_command(cmd)
-    if cache_dir_value and video_id:
-        cache_dir = Path(cache_dir_value)
-        video_cache = cache_dir / video_id
+    for video_cache in _candidate_video_cache_dirs_for_command(cmd):
+        if not video_cache.exists():
+            continue
         whisper_files = list(video_cache.glob("*_whisper_*.json"))
         has_whisper_output = bool(whisper_files)
         stem_files = [

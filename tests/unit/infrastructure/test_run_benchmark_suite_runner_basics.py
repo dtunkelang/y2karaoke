@@ -191,6 +191,55 @@ def test_run_single_song_generation_auto_enables_offline_for_cached_source(tmp_p
     assert record["status"] == "ok"
 
 
+def test_infer_compute_substage_uses_shared_cache_without_work_dir(tmp_path):
+    module = _load_module()
+    cache_root = tmp_path / ".cache" / "karaoke" / "abcdefghijk"
+    cache_root.mkdir(parents=True)
+    (cache_root / "song_(Vocals)_htdemucs_ft.wav").write_text("", encoding="utf-8")
+
+    module._benchmark_cache_roots = lambda: [tmp_path / ".cache" / "karaoke"]
+    stage = module._infer_compute_substage(
+        cmd=[
+            "python",
+            "-m",
+            "y2karaoke.cli",
+            "generate",
+            "https://www.youtube.com/watch?v=abcdefghijk",
+        ],
+        proc_pid=999999,
+        stage_hint=None,
+        report_path=tmp_path / "missing.json",
+    )
+
+    assert stage == "whisper"
+
+
+def test_infer_compute_substage_prefers_alignment_when_shared_whisper_cache_exists(
+    tmp_path,
+):
+    module = _load_module()
+    cache_root = tmp_path / ".cache" / "karaoke" / "abcdefghijk"
+    cache_root.mkdir(parents=True)
+    (cache_root / "song_(Vocals)_htdemucs_ft.wav").write_text("", encoding="utf-8")
+    (cache_root / "song_whisper_large.json").write_text("{}", encoding="utf-8")
+
+    module._benchmark_cache_roots = lambda: [tmp_path / ".cache" / "karaoke"]
+    stage = module._infer_compute_substage(
+        cmd=[
+            "python",
+            "-m",
+            "y2karaoke.cli",
+            "generate",
+            "https://www.youtube.com/watch?v=abcdefghijk",
+        ],
+        proc_pid=999999,
+        stage_hint=None,
+        report_path=tmp_path / "missing.json",
+    )
+
+    assert stage == "alignment"
+
+
 def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
     module = _load_module()
     manifest = tmp_path / "manifest.yaml"
