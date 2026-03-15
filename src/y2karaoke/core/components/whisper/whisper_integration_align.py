@@ -1336,12 +1336,10 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
             lines=mapped_lines,
             line_range=trace_line_range,
         )
-
     _maybe_write_trace_snapshot_file(
         snapshots=trace_snapshots,
         trace_path=trace_path,
     )
-
     metrics: Dict[str, Any] = {
         "matched_ratio": matched_ratio,
         "word_coverage": matched_ratio,
@@ -1367,7 +1365,6 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         "mapped_postpasses_sec": float(postpass_elapsed),
         "alignment_total_sec": float(time.perf_counter() - overall_start),
     }
-
     if mapped_count:
         corrections.append(f"DTW-phonetic mapped {mapped_count} word(s) to Whisper")
     rollback, short_before, short_after = should_rollback_short_line_degradation_fn(

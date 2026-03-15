@@ -468,30 +468,6 @@ def _run_audio_feature_mapped_line_postpasses(
     trace_snapshots: list[dict[str, Any]] | None,
     trace_line_range: tuple[int, int] | None,
 ) -> Tuple[List[models.Line], List[str]]:
-    if audio_features is None:
-        return mapped_lines, corrections
-
-    mapped_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
-        mapped_lines,
-        audio_features,
-    )
-    if continuous_fixes:
-        corrections.append(
-            f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
-        )
-    mapped_lines = _enforce_mapped_line_stage_invariants(
-        mapped_lines,
-        all_words,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
-        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-    )
-    _maybe_capture_mapped_line_postpass_snapshot(
-        mapped_lines,
-        stage="postpass_pull_continuous_vocals",
-        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
-        trace_snapshots=trace_snapshots,
-        trace_line_range=trace_line_range,
-    )
     mapped_lines = pull_late_lines_to_matching_segments_fn(
         mapped_lines,
         transcription,
@@ -524,6 +500,30 @@ def _run_audio_feature_mapped_line_postpasses(
     _maybe_capture_mapped_line_postpass_snapshot(
         mapped_lines,
         stage="postpass_snap_first_word_second",
+        capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    if audio_features is None:
+        return mapped_lines, corrections
+
+    mapped_lines, continuous_fixes = pull_lines_forward_for_continuous_vocals_fn(
+        mapped_lines,
+        audio_features,
+    )
+    if continuous_fixes:
+        corrections.append(
+            f"Pulled {continuous_fixes} line(s) forward for continuous vocals"
+        )
+    mapped_lines = _enforce_mapped_line_stage_invariants(
+        mapped_lines,
+        all_words,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+    )
+    _maybe_capture_mapped_line_postpass_snapshot(
+        mapped_lines,
+        stage="postpass_pull_continuous_vocals",
         capture_trace_snapshot_fn=capture_trace_snapshot_fn,
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
