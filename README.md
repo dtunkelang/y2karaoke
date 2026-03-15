@@ -255,6 +255,8 @@ Benchmark seed set for timing quality work:
   - for apples-to-apples clip measurement, prefer rerunning the full song on the normal path and rescoring the curated clip from that full-song report
   - direct clip-only generation can change source routing and make comparisons misleading
   - when the YouTube source is already cached locally, prefer offline benchmark reruns so clip-heavy iteration does not keep paying avoidable identify/network overhead
+  - exception: if a clip manifest explicitly requests a non-`lyriq` provider, benchmark reruns now suppress auto-offline so the requested provider can actually be fetched instead of silently reusing cached LRCLib data
+  - benchmark result diagnostics now record the requested provider/tolerance and whether auto-offline was suppressed for that request
   - for a brand-new clip on a cold song, use `tools/run_benchmark_suite.py --fast-clip-probe` to skip vocal separation during the no-render probe; this is a triage path for quick signal, not the final apples-to-apples benchmark path
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
   - Matrix JSON now includes `recommendations` (best strategy by p95/mean start error, low-confidence ratio, DTW coverage, runtime, and quality/runtime balance)

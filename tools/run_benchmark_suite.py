@@ -2800,6 +2800,33 @@ def _extract_alignment_diagnostics(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _augment_alignment_diagnostics_with_song_context(
+    diagnostics: dict[str, Any],
+    *,
+    song: BenchmarkSong | None,
+    offline: bool | None = None,
+    auto_offline_suppressed: bool | None = None,
+) -> dict[str, Any]:
+    if not isinstance(diagnostics, dict):
+        diagnostics = {}
+    if song is not None:
+        diagnostics["preferred_lyrics_provider_requested"] = (
+            song.preferred_lyrics_provider or "none"
+        )
+        diagnostics["lrc_duration_tolerance_sec_requested"] = (
+            int(song.lrc_duration_tolerance_sec)
+            if song.lrc_duration_tolerance_sec is not None
+            else None
+        )
+    if offline is not None:
+        diagnostics["benchmark_offline_mode"] = bool(offline)
+    if auto_offline_suppressed is not None:
+        diagnostics["benchmark_auto_offline_suppressed_for_provider_preference"] = bool(
+            auto_offline_suppressed
+        )
+    return diagnostics
+
+
 def _lexical_tokens_basic(text: str) -> list[str]:
     return _strip_optional_hook_boundary_tokens(_lexical_tokens_basic_raw(text))
 
@@ -5955,7 +5982,10 @@ def _refresh_metrics_from_loaded_report(
         gold_doc=gold_doc,
         audio_path=song_audio_path,
     )
-    record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
+    record["alignment_diagnostics"] = _augment_alignment_diagnostics_with_song_context(
+        _extract_alignment_diagnostics(report),
+        song=song,
+    )
     record["reference_divergence"] = _infer_reference_divergence_suspicion(
         record["metrics"],
         alignment_diagnostics=record.get("alignment_diagnostics"),
@@ -7451,7 +7481,14 @@ def _run_song_command(
                 gold_doc=gold_doc,
                 audio_path=_resolve_song_audio_path(song, gold_doc=gold_doc),
             )
-            record["alignment_diagnostics"] = _extract_alignment_diagnostics(report)
+            record["alignment_diagnostics"] = (
+                _augment_alignment_diagnostics_with_song_context(
+                    _extract_alignment_diagnostics(report),
+                    song=song,
+                    offline=offline,
+                    auto_offline_suppressed=auto_offline_suppressed,
+                )
+            )
             record["reference_divergence"] = _infer_reference_divergence_suspicion(
                 record["metrics"],
                 alignment_diagnostics=record.get("alignment_diagnostics"),
@@ -7578,6 +7615,12 @@ def _run_single_song_generation(
     auto_offline_allowed = not (
         song.preferred_lyrics_provider
         and song.preferred_lyrics_provider.strip().lower() != "lyriq"
+    )
+    auto_offline_suppressed = bool(
+        song.preferred_lyrics_provider
+        and song.preferred_lyrics_provider.strip().lower() != "lyriq"
+        and not args.offline
+        and _has_cached_benchmark_source(song)
     )
     offline = bool(
         args.offline or (auto_offline_allowed and _has_cached_benchmark_source(song))

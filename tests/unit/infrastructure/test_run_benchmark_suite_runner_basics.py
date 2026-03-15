@@ -489,6 +489,29 @@ def test_run_single_song_generation_disables_auto_offline_for_non_lyriq_preferen
     assert captured_kwargs["offline"] is False
 
 
+def test_augment_alignment_diagnostics_with_song_context_includes_offline_flags():
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="Artist A",
+        title="Alpha",
+        youtube_id="aaaaaaaaaaa",
+        youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
+        preferred_lyrics_provider="syncedlyrics",
+        lrc_duration_tolerance_sec=18,
+    )
+    diag = module._augment_alignment_diagnostics_with_song_context(
+        {"lyrics_source_provider": "NetEase"},
+        song=song,
+        offline=False,
+        auto_offline_suppressed=True,
+    )
+    assert diag["preferred_lyrics_provider_requested"] == "syncedlyrics"
+    assert diag["lrc_duration_tolerance_sec_requested"] == 18
+    assert diag["benchmark_offline_mode"] is False
+    assert diag["benchmark_auto_offline_suppressed_for_provider_preference"] is True
+
+
 def test_run_single_song_generation_exports_duration_tolerance_env(tmp_path):
     module = _load_module()
     song = module.BenchmarkSong(
@@ -619,6 +642,30 @@ def test_refresh_cached_metrics(tmp_path):
     refreshed = module._refresh_cached_metrics(record)
     assert refreshed["metrics"]["alignment_method"] == "whisper_hybrid"
     assert refreshed["metrics"]["dtw_line_coverage"] == 0.9
+
+
+def test_refresh_metrics_adds_requested_provider_context(tmp_path):
+    module = _load_module()
+    report = {"alignment_method": "whisper_hybrid", "lyrics_source": "NetEase"}
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="Artist A",
+        title="Alpha",
+        youtube_id="aaaaaaaaaaa",
+        youtube_url="https://www.youtube.com/watch?v=aaaaaaaaaaa",
+        preferred_lyrics_provider="syncedlyrics",
+        lrc_duration_tolerance_sec=18,
+    )
+    refreshed = module._refresh_metrics_from_loaded_report(
+        {"status": "ok"},
+        report=report,
+        index=1,
+        song=song,
+        gold_root=tmp_path,
+    )
+    diag = refreshed["alignment_diagnostics"]
+    assert diag["preferred_lyrics_provider_requested"] == "syncedlyrics"
+    assert diag["lrc_duration_tolerance_sec_requested"] == 18
 
 
 def test_load_aggregate_only_results_keeps_line_overlapping_clip_start(tmp_path):
