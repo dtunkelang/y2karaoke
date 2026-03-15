@@ -1,0 +1,388 @@
+{
+  "schema_version": "1.0",
+  "title": "Call Me Maybe",
+  "artist": "Carly Rae Jepsen",
+  "audio_path": "/Users/dtunkelang/y2karaoke/.cache/clip_audio/carly-rae-jepsen-call-me-maybe-first-chorus-42_0s-72_0s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Hey, I just met you, and this is crazy",
+      "start": 2.45,
+      "end": 6.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Hey,",
+          "start": 2.45,
+          "end": 2.95
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 2.95,
+          "end": 3.25
+        },
+        {
+          "word_index": 3,
+          "text": "just",
+          "start": 3.25,
+          "end": 3.5
+        },
+        {
+          "word_index": 4,
+          "text": "met",
+          "start": 3.5,
+          "end": 3.8
+        },
+        {
+          "word_index": 5,
+          "text": "you,",
+          "start": 3.8,
+          "end": 4.3
+        },
+        {
+          "word_index": 6,
+          "text": "and",
+          "start": 4.65,
+          "end": 5.0
+        },
+        {
+          "word_index": 7,
+          "text": "this",
+          "start": 5.0,
+          "end": 5.45
+        },
+        {
+          "word_index": 8,
+          "text": "is",
+          "start": 5.45,
+          "end": 5.95
+        },
+        {
+          "word_index": 9,
+          "text": "crazy",
+          "start": 5.95,
+          "end": 6.4
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "But here's my number, so call me, maybe",
+      "start": 6.8,
+      "end": 10.1,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 6.8,
+          "end": 7.0
+        },
+        {
+          "word_index": 2,
+          "text": "here's",
+          "start": 7.0,
+          "end": 7.3
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 7.3,
+          "end": 7.6
+        },
+        {
+          "word_index": 4,
+          "text": "number,",
+          "start": 7.6,
+          "end": 8.25
+        },
+        {
+          "word_index": 5,
+          "text": "so",
+          "start": 8.7,
+          "end": 9.05
+        },
+        {
+          "word_index": 6,
+          "text": "call",
+          "start": 9.05,
+          "end": 9.3
+        },
+        {
+          "word_index": 7,
+          "text": "me,",
+          "start": 9.3,
+          "end": 9.65
+        },
+        {
+          "word_index": 8,
+          "text": "maybe",
+          "start": 9.65,
+          "end": 10.1
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "And all the other boys try to chase me",
+      "start": 10.45,
+      "end": 14.5,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 10.45,
+          "end": 10.9
+        },
+        {
+          "word_index": 2,
+          "text": "all",
+          "start": 10.9,
+          "end": 11.25
+        },
+        {
+          "word_index": 3,
+          "text": "the",
+          "start": 11.25,
+          "end": 11.65
+        },
+        {
+          "word_index": 4,
+          "text": "other",
+          "start": 11.65,
+          "end": 11.95
+        },
+        {
+          "word_index": 5,
+          "text": "boys",
+          "start": 11.95,
+          "end": 12.45
+        },
+        {
+          "word_index": 6,
+          "text": "try",
+          "start": 12.8,
+          "end": 13.2
+        },
+        {
+          "word_index": 7,
+          "text": "to",
+          "start": 13.2,
+          "end": 13.55
+        },
+        {
+          "word_index": 8,
+          "text": "chase",
+          "start": 13.55,
+          "end": 14.0
+        },
+        {
+          "word_index": 9,
+          "text": "me",
+          "start": 14.0,
+          "end": 14.5
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "But here's my number, so call me, maybe",
+      "start": 14.5,
+      "end": 18.45,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 14.5,
+          "end": 14.9
+        },
+        {
+          "word_index": 2,
+          "text": "here's",
+          "start": 14.9,
+          "end": 15.3
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 15.3,
+          "end": 15.65
+        },
+        {
+          "word_index": 4,
+          "text": "number,",
+          "start": 15.65,
+          "end": 16.6
+        },
+        {
+          "word_index": 5,
+          "text": "so",
+          "start": 16.6,
+          "end": 16.85
+        },
+        {
+          "word_index": 6,
+          "text": "call",
+          "start": 16.85,
+          "end": 17.2
+        },
+        {
+          "word_index": 7,
+          "text": "me,",
+          "start": 17.2,
+          "end": 17.5
+        },
+        {
+          "word_index": 8,
+          "text": "maybe",
+          "start": 17.5,
+          "end": 18.45
+        }
+      ]
+    },
+    {
+      "line_index": 5,
+      "text": "You took your time with the call",
+      "start": 22.15,
+      "end": 24.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 22.15,
+          "end": 22.45
+        },
+        {
+          "word_index": 2,
+          "text": "took",
+          "start": 22.45,
+          "end": 22.8
+        },
+        {
+          "word_index": 3,
+          "text": "your",
+          "start": 22.8,
+          "end": 23.1
+        },
+        {
+          "word_index": 4,
+          "text": "time",
+          "start": 23.1,
+          "end": 23.45
+        },
+        {
+          "word_index": 5,
+          "text": "with",
+          "start": 23.45,
+          "end": 23.8
+        },
+        {
+          "word_index": 6,
+          "text": "the",
+          "start": 23.8,
+          "end": 24.1
+        },
+        {
+          "word_index": 7,
+          "text": "call",
+          "start": 24.1,
+          "end": 24.35
+        }
+      ]
+    },
+    {
+      "line_index": 6,
+      "text": "I took no time with the fall",
+      "start": 24.35,
+      "end": 26.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 24.35,
+          "end": 24.6
+        },
+        {
+          "word_index": 2,
+          "text": "took",
+          "start": 24.6,
+          "end": 24.95
+        },
+        {
+          "word_index": 3,
+          "text": "no",
+          "start": 24.95,
+          "end": 25.25
+        },
+        {
+          "word_index": 4,
+          "text": "time",
+          "start": 25.25,
+          "end": 25.5
+        },
+        {
+          "word_index": 5,
+          "text": "with",
+          "start": 25.5,
+          "end": 25.75
+        },
+        {
+          "word_index": 6,
+          "text": "the",
+          "start": 25.75,
+          "end": 26.05
+        },
+        {
+          "word_index": 7,
+          "text": "fall",
+          "start": 26.05,
+          "end": 26.3
+        }
+      ]
+    },
+    {
+      "line_index": 7,
+      "text": "You gave me nothing at all",
+      "start": 26.4,
+      "end": 28.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 26.4,
+          "end": 26.7
+        },
+        {
+          "word_index": 2,
+          "text": "gave",
+          "start": 26.7,
+          "end": 27.0
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 27.0,
+          "end": 27.3
+        },
+        {
+          "word_index": 4,
+          "text": "nothing",
+          "start": 27.3,
+          "end": 27.6
+        },
+        {
+          "word_index": 5,
+          "text": "at",
+          "start": 27.6,
+          "end": 27.9
+        },
+        {
+          "word_index": 6,
+          "text": "all",
+          "start": 27.9,
+          "end": 28.2
+        }
+      ]
+    }
+  ]
+}
