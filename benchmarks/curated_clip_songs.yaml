@@ -240,3 +240,14 @@ songs:
   lrc_duration_tolerance_sec: 20
   notes: Main chorus clip from the Topic source, using clean-version wording for the
     tell-me-what-is-up-with-that line to match the vetted audio.
+- artist: Carly Rae Jepsen
+  title: Call Me Maybe
+  clip_id: first-chorus
+  audio_start_sec: 42.0
+  youtube_id: eHx--ZtG_Ds
+  youtube_url: https://www.youtube.com/watch?v=eHx--ZtG_Ds
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Official-audio chorus clip seeded from validated LRCLib timings; current
+    gold covers the clean central chorus span.
