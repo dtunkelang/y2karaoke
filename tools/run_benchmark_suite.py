@@ -7575,7 +7575,13 @@ def _run_single_song_generation(
     env: dict[str, str],
 ) -> tuple[dict[str, Any], Path]:
     report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
-    offline = bool(args.offline or _has_cached_benchmark_source(song))
+    auto_offline_allowed = not (
+        song.preferred_lyrics_provider
+        and song.preferred_lyrics_provider.strip().lower() != "lyriq"
+    )
+    offline = bool(
+        args.offline or (auto_offline_allowed and _has_cached_benchmark_source(song))
+    )
     cmd = _build_generate_command(
         python_bin=args.python_bin,
         song=song,

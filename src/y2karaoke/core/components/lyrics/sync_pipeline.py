@@ -47,6 +47,17 @@ def _preferred_lyrics_provider_from_env() -> str | None:
     return value or None
 
 
+def _source_matches_preference(source: str, preferred: str | None) -> bool:
+    if not preferred:
+        return True
+    normalized_source = (source or "").strip().lower()
+    if preferred == "lyriq":
+        return "lyriq" in normalized_source or "lrclib" in normalized_source
+    if preferred == "syncedlyrics":
+        return "lyriq" not in normalized_source and "lrclib" not in normalized_source
+    return preferred in normalized_source
+
+
 def _warn_once(runtime_state: Any, key: str, logger, message: str, *args: Any) -> None:
     warning_keys = getattr(runtime_state, "warning_once_keys", None)
     if warning_keys is None:
@@ -82,36 +93,25 @@ def fetch_lyrics_multi_source_impl(  # noqa: C901
     """Fetch lyrics from multiple sources using lyriq and syncedlyrics."""
     disk_cache_enabled = disk_cache_enabled_fn(runtime_state)
     fallback_cached: Optional[Tuple[Optional[str], bool, str, Optional[int]]] = None
+    preferred_provider = _preferred_lyrics_provider_from_env()
     if disk_cache_enabled:
         load_disk_cache_fn(runtime_state)
 
     cache_key = (artist.lower().strip(), title.lower().strip())
     if cache_key in runtime_state.lrc_cache:
         cached = runtime_state.lrc_cache[cache_key]
-        cached_duration = cached[3] if len(cached) > 3 else None
-        if target_duration and cached_duration:
-            if abs(cached_duration - target_duration) <= duration_tolerance:
-                logger.debug(f"Using cached LRC result for {artist} - {title}")
-                return (cached[0], cached[1], cached[2])
+        cached_source = cached[2] if len(cached) > 2 else ""
+        if not _source_matches_preference(cached_source, preferred_provider):
             fallback_cached = tuple(cached)
             logger.debug(
-                "Cached LRC duration (%ss) doesn't match target (%ss), re-fetching",
-                cached_duration,
-                target_duration,
+                "Cached LRC source '%s' does not match preferred provider '%s'; re-fetching",
+                cached_source,
+                preferred_provider,
             )
         else:
-            logger.debug(f"Using cached LRC result for {artist} - {title}")
-            return (cached[0], cached[1], cached[2])
-
-    if disk_cache_enabled:
-        disk_key = f"{cache_key[0]}|{cache_key[1]}"
-        disk_lrc = runtime_state.disk_cache.get("lrc_cache", {})
-        if disk_key in disk_lrc:
-            cached = disk_lrc[disk_key]
             cached_duration = cached[3] if len(cached) > 3 else None
             if target_duration and cached_duration:
                 if abs(cached_duration - target_duration) <= duration_tolerance:
-                    runtime_state.lrc_cache[cache_key] = tuple(cached)
                     logger.debug(f"Using cached LRC result for {artist} - {title}")
                     return (cached[0], cached[1], cached[2])
                 fallback_cached = tuple(cached)
@@ -121,9 +121,39 @@ def fetch_lyrics_multi_source_impl(  # noqa: C901
                     target_duration,
                 )
             else:
-                runtime_state.lrc_cache[cache_key] = tuple(cached)
                 logger.debug(f"Using cached LRC result for {artist} - {title}")
                 return (cached[0], cached[1], cached[2])
+
+    if disk_cache_enabled:
+        disk_key = f"{cache_key[0]}|{cache_key[1]}"
+        disk_lrc = runtime_state.disk_cache.get("lrc_cache", {})
+        if disk_key in disk_lrc:
+            cached = disk_lrc[disk_key]
+            cached_source = cached[2] if len(cached) > 2 else ""
+            if not _source_matches_preference(cached_source, preferred_provider):
+                fallback_cached = tuple(cached)
+                logger.debug(
+                    "Cached disk LRC source '%s' does not match preferred provider '%s'; re-fetching",
+                    cached_source,
+                    preferred_provider,
+                )
+            else:
+                cached_duration = cached[3] if len(cached) > 3 else None
+                if target_duration and cached_duration:
+                    if abs(cached_duration - target_duration) <= duration_tolerance:
+                        runtime_state.lrc_cache[cache_key] = tuple(cached)
+                        logger.debug(f"Using cached LRC result for {artist} - {title}")
+                        return (cached[0], cached[1], cached[2])
+                    fallback_cached = tuple(cached)
+                    logger.debug(
+                        "Cached LRC duration (%ss) doesn't match target (%ss), re-fetching",
+                        cached_duration,
+                        target_duration,
+                    )
+                else:
+                    runtime_state.lrc_cache[cache_key] = tuple(cached)
+                    logger.debug(f"Using cached LRC result for {artist} - {title}")
+                    return (cached[0], cached[1], cached[2])
 
     if offline:
         logger.info("Offline mode: skipping lyrics providers (cache only)")
@@ -155,7 +185,7 @@ def fetch_lyrics_multi_source_impl(  # noqa: C901
     )
 
     try:
-        prefer_syncedlyrics = _preferred_lyrics_provider_from_env() == "syncedlyrics"
+        prefer_syncedlyrics = preferred_provider == "syncedlyrics"
 
         def _search_syncedlyrics_sources() -> Tuple[Optional[str], bool, str]:
             if not is_syncedlyrics_available_fn(runtime_state):

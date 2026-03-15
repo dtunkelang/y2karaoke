@@ -300,6 +300,86 @@ def test_fetch_lyrics_multi_source_impl_prefers_syncedlyrics_via_env(monkeypatch
     assert calls == [("syncedlyrics", "search")]
 
 
+def test_fetch_lyrics_multi_source_impl_ignores_cached_wrong_provider_for_preference(
+    monkeypatch,
+):
+    logger = _DummyLogger()
+
+    class State:
+        lrc_cache = {
+            ("artist", "song"): ("[00:00]From lyriq", True, "lyriq (LRCLib)", 100)
+        }
+        disk_cache = {}
+
+    calls: list[tuple[str, str]] = []
+
+    def _search_with_state_fallback(*_args, **_kwargs):
+        calls.append(("syncedlyrics", "search"))
+        return ("[00:00]From syncedlyrics", "NetEase")
+
+    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "syncedlyrics")
+    result = fetch_lyrics_multi_source_impl(
+        "Song",
+        "Artist",
+        synced_only=True,
+        enhanced=False,
+        target_duration=None,
+        duration_tolerance=20,
+        offline=False,
+        runtime_state=State(),
+        disk_cache_enabled_fn=lambda _s: False,
+        load_disk_cache_fn=lambda _s: None,
+        is_lyriq_available_fn=lambda _s: True,
+        fetch_from_lyriq_fn=lambda *_a, **_k: "[00:00]From lyriq",
+        has_timestamps_fn=lambda *_a, **_k: True,
+        get_lrc_duration_fn=lambda *_a, **_k: 100,
+        set_lrc_cache_fn=lambda *_a, **_k: None,
+        is_syncedlyrics_available_fn=lambda _s: True,
+        search_with_state_fallback_fn=_search_with_state_fallback,
+        logger=logger,
+    )
+
+    assert result == ("[00:00]From syncedlyrics", True, "NetEase")
+    assert calls == [("syncedlyrics", "search")]
+
+
+def test_fetch_lyrics_multi_source_impl_offline_reuses_cached_wrong_provider_when_needed(
+    monkeypatch,
+):
+    logger = _DummyLogger()
+
+    class State:
+        lrc_cache = {
+            ("artist", "song"): ("[00:00]From lyriq", True, "lyriq (LRCLib)", 100)
+        }
+        disk_cache = {}
+        warning_once_keys = set()
+
+    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "syncedlyrics")
+    result = fetch_lyrics_multi_source_impl(
+        "Song",
+        "Artist",
+        synced_only=True,
+        enhanced=False,
+        target_duration=None,
+        duration_tolerance=20,
+        offline=True,
+        runtime_state=State(),
+        disk_cache_enabled_fn=lambda _s: False,
+        load_disk_cache_fn=lambda _s: None,
+        is_lyriq_available_fn=lambda _s: True,
+        fetch_from_lyriq_fn=lambda *_a, **_k: "[00:00]From lyriq",
+        has_timestamps_fn=lambda *_a, **_k: True,
+        get_lrc_duration_fn=lambda *_a, **_k: 100,
+        set_lrc_cache_fn=lambda *_a, **_k: None,
+        is_syncedlyrics_available_fn=lambda _s: True,
+        search_with_state_fallback_fn=lambda *_a, **_k: (None, ""),
+        logger=logger,
+    )
+
+    assert result == ("[00:00]From lyriq", True, "lyriq (LRCLib)")
+
+
 def test_build_provider_search_terms_strips_noisy_suffixes():
     terms = _build_provider_search_terms(
         "Shape Of You (Penisland produced 2015 version)",
