@@ -25,6 +25,7 @@ from ..pipeline.audio import (
     separate_vocals_cached as separate_vocals,
 )
 from .components.audio.cache_identity import select_matching_cached_audio
+from .components.audio.cache_identity import cache_asset_matches_request
 
 logger = get_logger(__name__)
 
@@ -221,6 +222,16 @@ class KaraokeGenerator:
             expected_title=expected_title,
             expected_artist=expected_artist,
         )
+        if (
+            original_audio is None
+            and len(original_audio_files) == 1
+            and cache_asset_matches_request(
+                original_audio_files[0],
+                expected_title=expected_title,
+                expected_artist=None,
+            )
+        ):
+            original_audio = original_audio_files[0]
         metadata_title = metadata["title"] if metadata else "Unknown"
         metadata_artist = metadata["artist"] if metadata else "Unknown"
 
