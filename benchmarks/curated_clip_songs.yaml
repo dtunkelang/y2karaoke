@@ -251,3 +251,14 @@ songs:
   lrc_duration_tolerance_sec: 20
   notes: Official-audio chorus clip seeded from validated LRCLib timings; current
     gold covers the clean central chorus span.
+- artist: Adele
+  title: Someone Like You
+  clip_id: first-chorus
+  audio_start_sec: 72.0
+  youtube_id: 22c3_LoIfZQ
+  youtube_url: https://www.youtube.com/watch?v=22c3_LoIfZQ
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Official-audio chorus clip seeded from validated LRCLib timings; current
+    gold includes a clipped-tail final line.
