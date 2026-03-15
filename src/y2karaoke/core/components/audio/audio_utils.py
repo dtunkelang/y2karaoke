@@ -65,6 +65,17 @@ def _select_cached_stem_from_dirs(
     return None
 
 
+def _select_cached_trimmed_audio(
+    cache_dirs: list[Path],
+    trimmed_name: str,
+) -> Path | None:
+    for cache_dir in cache_dirs:
+        candidate = cache_dir / trimmed_name
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def trim_audio_if_needed(
     audio_path: str,
     start_time: float,
@@ -80,6 +91,14 @@ def trim_audio_if_needed(
     if not force and cache_manager.file_exists(video_id, trimmed_name):
         logger.debug("📁 Using cached trimmed audio")
         return str(cache_manager.get_file_path(video_id, trimmed_name))
+    if not force:
+        cached_trimmed = _select_cached_trimmed_audio(
+            _candidate_video_cache_dirs(cache_manager, video_id)[1:],
+            trimmed_name,
+        )
+        if cached_trimmed is not None:
+            logger.debug("📁 Using shared cached trimmed audio")
+            return str(cached_trimmed)
 
     logger.info(f"✂️ Trimming audio from {start_time:.2f}s")
     trimmed_path = cache_manager.get_file_path(video_id, trimmed_name)

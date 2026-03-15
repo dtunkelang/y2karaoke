@@ -127,6 +127,34 @@ class TestTrimAudioIfNeeded:
 
         assert result == "/cached_trimmed.wav"
 
+    def test_uses_shared_cached_trimmed_audio_when_available(self, tmp_path):
+        mock_cache = Mock()
+        mock_cache.file_exists.return_value = False
+        mock_cache.get_video_cache_dir.return_value = (
+            tmp_path / "run_cache" / "video123"
+        )
+        shared_dir = tmp_path / "shared" / "video123"
+        shared_dir.mkdir(parents=True)
+        shared_trimmed = shared_dir / "trimmed_from_3.00s.wav"
+        shared_trimmed.write_text("x", encoding="utf-8")
+
+        with (
+            patch.object(
+                audio_utils_module,
+                "DEFAULT_CACHE_DIR",
+                tmp_path / "shared",
+            ),
+            patch(
+                "y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav"
+            ) as mock_from_wav,
+        ):
+            result = trim_audio_if_needed(
+                "/audio.wav", 3.0, "video123", mock_cache, force=False
+            )
+
+        assert result == str(shared_trimmed)
+        mock_from_wav.assert_not_called()
+
     @patch("y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav")
     def test_force_retrim_ignores_cache(self, mock_from_wav):
         """Test that force=True ignores cached result."""
