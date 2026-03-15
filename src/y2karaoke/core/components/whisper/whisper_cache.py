@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from ....config import DEFAULT_CACHE_DIR
 from ..alignment.timing_models import TranscriptionSegment, TranscriptionWord
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,18 @@ def _model_index(model_size: str) -> int:
         return _MODEL_ORDER.index(model_size)
     except ValueError:
         return -1
+
+
+def _candidate_whisper_cache_dirs(vocals_path: str) -> list[Path]:
+    vocals_file = Path(vocals_path)
+    if not vocals_file.exists():
+        return []
+
+    candidates = [vocals_file.parent]
+    shared_dir = DEFAULT_CACHE_DIR / vocals_file.parent.name
+    if shared_dir not in candidates:
+        candidates.append(shared_dir)
+    return candidates
 
 
 def _get_whisper_cache_path(
@@ -58,65 +71,66 @@ def _find_best_cached_whisper_model(  # noqa: C901
     best_score: Tuple[int, int, int, int, int] = (-1, -1, -1, -1, -1)
 
     pattern = f"{vocals_file.stem}_whisper_*.json"
-    for cache_file in vocals_file.parent.glob(pattern):
-        stem = cache_file.stem
-        if "_whisper_" not in stem:
-            continue
-        tail = stem.split("_whisper_", 1)[1]
-        file_aggressive = tail.endswith("_aggr")
-        if file_aggressive:
-            tail = tail[: -len("_aggr")]
-        mode_exact = file_aggressive == aggressive
-        if aggressive and not file_aggressive:
-            # Never satisfy an aggressive request with a non-aggressive transcript.
-            continue
-
-        # Parse temperature from filename if present
-        file_temp = 0.0
-        if "_temp" in tail:
-            temp_parts = tail.split("_temp")
-            try:
-                file_temp = float(temp_parts[1])
-            except (ValueError, IndexError):
-                pass
-            tail = temp_parts[0]
-
-        if "_" not in tail:
-            continue
-        model_part, lang_part = tail.rsplit("_", 1)
-
-        # Language matching
-        lang_exact = lang_part == lang_token
-        if not lang_exact:
-            if language is None:
-                pass
-            elif lang_part == "auto":
-                pass
-            else:
+    for cache_dir in _candidate_whisper_cache_dirs(vocals_path):
+        for cache_file in cache_dir.glob(pattern):
+            stem = cache_file.stem
+            if "_whisper_" not in stem:
+                continue
+            tail = stem.split("_whisper_", 1)[1]
+            file_aggressive = tail.endswith("_aggr")
+            if file_aggressive:
+                tail = tail[: -len("_aggr")]
+            mode_exact = file_aggressive == aggressive
+            if aggressive and not file_aggressive:
+                # Never satisfy an aggressive request with a non-aggressive transcript.
                 continue
 
-        # Temperature matching
-        temp_exact = abs(file_temp - temperature) < 1e-6
-        if not temp_exact and file_temp != 0.0:
-            continue
+            # Parse temperature from filename if present
+            file_temp = 0.0
+            if "_temp" in tail:
+                temp_parts = tail.split("_temp")
+                try:
+                    file_temp = float(temp_parts[1])
+                except (ValueError, IndexError):
+                    pass
+                tail = temp_parts[0]
 
-        model_idx = _model_index(model_part)
-        if model_idx < 0:
-            continue
-        if target_idx >= 0 and model_idx < target_idx:
-            continue
+            if "_" not in tail:
+                continue
+            model_part, lang_part = tail.rsplit("_", 1)
 
-        score = (
-            model_idx,
-            int(target_idx < 0 or model_idx >= target_idx),
-            int(temp_exact),
-            int(mode_exact),
-            int(lang_exact),
-        )
-        if score > best_score:
-            best_path = cache_file
-            best_model = model_part
-            best_score = score
+            # Language matching
+            lang_exact = lang_part == lang_token
+            if not lang_exact:
+                if language is None:
+                    pass
+                elif lang_part == "auto":
+                    pass
+                else:
+                    continue
+
+            # Temperature matching
+            temp_exact = abs(file_temp - temperature) < 1e-6
+            if not temp_exact and file_temp != 0.0:
+                continue
+
+            model_idx = _model_index(model_part)
+            if model_idx < 0:
+                continue
+            if target_idx >= 0 and model_idx < target_idx:
+                continue
+
+            score = (
+                model_idx,
+                int(target_idx < 0 or model_idx >= target_idx),
+                int(temp_exact),
+                int(mode_exact),
+                int(lang_exact),
+            )
+            if score > best_score:
+                best_path = cache_file
+                best_model = model_part
+                best_score = score
 
     if best_path and best_model:
         return str(best_path), best_model

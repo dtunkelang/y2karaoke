@@ -254,6 +254,32 @@ def test_find_best_cached_requires_model_at_least_target(tmp_path):
     assert result is None
 
 
+def test_find_best_cached_reuses_shared_cache_for_matching_video_dir(
+    tmp_path, monkeypatch
+):
+    shared_root = tmp_path / ".cache" / "karaoke"
+    video_id = "abcdefghijk"
+    work_dir = tmp_path / "work" / video_id
+    work_dir.mkdir(parents=True)
+    audio = work_dir / "vocals.wav"
+    audio.write_bytes(b"fake")
+
+    shared_dir = shared_root / video_id
+    shared_dir.mkdir(parents=True)
+    cache_path = shared_dir / "vocals_whisper_large_en.json"
+    word = te.TranscriptionWord(start=0.1, end=0.2, text="hello")
+    segments = [te.TranscriptionSegment(start=0.0, end=1.0, text="hello", words=[word])]
+    wc._save_whisper_cache(str(cache_path), segments, [word], "en", "large", False)
+
+    monkeypatch.setattr(wc, "DEFAULT_CACHE_DIR", shared_root)
+
+    result = wc._find_best_cached_whisper_model(str(audio), "en", False, "large")
+    assert result is not None
+    found_path, found_model = result
+    assert found_model == "large"
+    assert found_path == str(cache_path)
+
+
 def test_align_dtw_whisper_falls_back_without_fastdtw():
     from y2karaoke.core.models import Line, Word
 
