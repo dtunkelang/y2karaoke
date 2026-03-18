@@ -23,7 +23,7 @@ This repository organizes tests by scope and subsystem.
 Run all tests:
 
 ```bash
-PYTHONPATH=src pytest tests -v
+pytest tests -v
 ```
 
 Run the fast local gate (format/lint/type/unit+perf smoke):
@@ -35,23 +35,25 @@ make check
 Run fast unit tests only:
 
 ```bash
-PYTHONPATH=src pytest tests/unit -v
+pytest tests/unit -v
 ```
 
 Or via marker:
 
 ```bash
-PYTHONPATH=src pytest -m unit -v
+pytest -m unit -v
 ```
 
 Run integration tests (normally skipped unless opted in):
 
 ```bash
-PYTHONPATH=src pytest tests/integration -v --run-network
+pytest tests/integration -v --run-network
 ```
 
 Run end-to-end tests only:
 
 ```bash
-PYTHONPATH=src pytest -m e2e -v
+pytest -m e2e -v
 ```
+
+If you are running direct one-off interpreter commands outside the normal test entrypoints and your editable install may be stale, use `PYTHONPATH=src`.

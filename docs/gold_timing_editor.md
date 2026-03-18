@@ -1,5 +1,7 @@
 # Gold Timing Editor
 
+Last updated: 2026-03-18
+
 The Gold Timing Editor is a local web application for manual refinement of word-level karaoke timings.
 
 ## Features
@@ -51,3 +53,9 @@ You can pre-load the editor by passing query parameters:
 - `save`: Absolute path where changes should be saved.
 - `autoscroll`: Optional (`1/0`, `true/false`) initial follow-scroll setting.
 - `tapmode`: Optional (`1/0`, `true/false`) initial tap-pass mode setting.
+
+## Related Docs
+
+- `docs/karaoke_visual_bootstrap.md`
+- `docs/check_visual_suitability.md`
+- `README.md`

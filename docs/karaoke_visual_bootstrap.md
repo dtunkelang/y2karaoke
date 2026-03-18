@@ -1,6 +1,8 @@
 # Karaoke Visual Bootstrap Tool
 
-The `tools/bootstrap_gold_from_karaoke.py` tool is used to generate or refine word-level "gold" timings by visually analyzing existing karaoke videos from YouTube using a **Glyph-Core Departure** strategy.
+Last updated: 2026-03-18
+
+The `tools/bootstrap_gold_from_karaoke.py` tool generates or refines word-level gold timings by visually analyzing existing karaoke videos from YouTube using a glyph-core departure strategy.
 
 ## Overview
 
@@ -71,3 +73,9 @@ Implementation note:
 - The CLI wrapper delegates core logic to shared modules under `src/y2karaoke/core/visual/`:
   `bootstrap_candidates.py`, `bootstrap_selection.py`, `bootstrap_media.py`,
   `bootstrap_ocr.py`, `bootstrap_postprocess.py`, and `bootstrap_runtime.py`.
+
+## Related Docs
+
+- `docs/check_visual_suitability.md`
+- `docs/gold_timing_editor.md`
+- `README.md`

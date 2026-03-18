@@ -19,9 +19,10 @@ Generate karaoke videos from YouTube URLs or song titles with word-by-word highl
 
 ## Project Docs
 
-- Current project status and artifact policy: `docs/project_status.md`
+- Documentation index: `docs/README.md`
 - Architecture overview: `ARCHITECTURE.md`
 - Development workflow: `docs/development.md`
+- Tech debt and cleanup status: `docs/tech_debt_backlog.md`
 - Pipeline docs: `docs/pipelines/`
 
 ## Installation
@@ -530,26 +531,15 @@ Intermediate files are cached in `~/.cache/karaoke/{video_id}/` by default, incl
 
 ## Technical Documentation
 
-For detailed technical architecture, see [ARCHITECTURE.md](ARCHITECTURE.md). This document covers:
-- Overall pipeline and orchestration
-- Track identification (artist/title) from URLs and search queries
-- Lyrics and timing fetching from multiple providers
-- Audio retrieval and vocal separation
-- Alignment algorithms and audio analysis
-- Timing quality evaluation
+Detailed documentation is organized under [docs/README.md](docs/README.md).
 
-Subsystem facades now live under `src/y2karaoke/pipeline/`:
-- `pipeline/identify` for track metadata resolution and candidate selection
-- `pipeline/lyrics` for lyrics acquisition + quality-aware timing flows
-- `pipeline/audio` for media download, separation, and audio transforms
-- `pipeline/alignment` for timing evaluation + Whisper alignment orchestration
-- `pipeline/render` for video/background rendering entrypoints
-
-For subsystem documentation and development workflow, see:
+Start with:
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [docs/development.md](docs/development.md)
+- [docs/tech_debt_backlog.md](docs/tech_debt_backlog.md)
 - [docs/pipelines/karaoke.md](docs/pipelines/karaoke.md)
 - [docs/pipelines/lyrics.md](docs/pipelines/lyrics.md)
 - [docs/pipelines/whisper.md](docs/pipelines/whisper.md)
-- [docs/development.md](docs/development.md)
 
 ## License
 

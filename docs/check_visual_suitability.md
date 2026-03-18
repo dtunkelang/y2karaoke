@@ -1,6 +1,8 @@
 # Visual Suitability Checker
 
-The `tools/check_visual_suitability.py` tool evaluates whether a karaoke video is suitable for automated "gold" timing bootstrapping. It analyzes the video for clear word-level highlighting and high OCR reliability.
+Last updated: 2026-03-18
+
+The `tools/check_visual_suitability.py` tool evaluates whether a karaoke video is suitable for automated gold-timing bootstrapping. It analyzes the video for clear word-level highlighting and high OCR reliability.
 
 ## Overview
 
@@ -57,3 +59,9 @@ Prints a per-frame breakdown of what the "robot" sees:
 - **GOOD (>0.5):** Reliable, though may have minor OCR noise.
 - **FAIR (>0.3):** Likely only useful for line-level alignment.
 - **POOR (≤0.3):** Unsuitable; manual timing or a different source is recommended.
+
+## Related Docs
+
+- `docs/karaoke_visual_bootstrap.md`
+- `docs/gold_timing_editor.md`
+- `README.md`

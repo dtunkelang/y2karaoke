@@ -1,6 +1,8 @@
 # Alignment Policy Layer
 
-This project now uses an explicit policy layer for high-level alignment decisions.
+Last updated: 2026-03-18
+
+This project uses an explicit policy layer for high-level alignment decisions.
 
 ## Purpose
 
@@ -37,3 +39,9 @@ easier to review.
 1. New global heuristics should be added to the policy module first.
 2. Pipeline code should call policy functions instead of duplicating threshold logic.
 3. Policy functions must have unit tests independent of full pipeline tests.
+
+## Related Docs
+
+- `docs/pipelines/lyrics.md`
+- `docs/pipelines/whisper.md`
+- `ARCHITECTURE.md`

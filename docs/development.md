@@ -1,29 +1,29 @@
 # Development Workflow
 
+Last updated: 2026-03-18
+
 ## Bootstrap
 
-Use the project bootstrap script to create/update `venv` and install dependencies from `pyproject.toml`:
+Create or refresh the local environment with:
 
 ```bash
 ./tools/bootstrap_dev.sh
 source venv/bin/activate
 ```
 
-**System Dependencies:**
-- ffmpeg (for audio/video processing)
-- Tesseract OCR (required for the Karaoke bootstrap tool)
+Core system dependencies:
+- `ffmpeg`
+- `tesseract` for the visual bootstrap workflow
 
 ## Daily Commands
 
-Run the standard checks:
+Primary local gate:
 
 ```bash
 make check
 ```
 
-`make check` now starts with `pip check` to catch dependency conflicts early.
-
-Run individual steps:
+Useful focused commands:
 
 ```bash
 make fmt
@@ -36,24 +36,42 @@ make perf-smoke
 make quality-guardrails
 ```
 
-Tests automatically prioritize local `src/` imports via `tests/conftest.py`, so
-you do not need to set `PYTHONPATH=src` for normal local runs.
+Notes:
+- `make check` starts with `pip check`.
+- Normal pytest runs do not require `PYTHONPATH=src`; the test configuration prefers the local source tree automatically.
+- For direct one-off script or interpreter commands where the editable install may be stale, prefer `PYTHONPATH=src`.
 
-## CI Lanes
+## CI Expectations
 
-- Fast lane: formatting/linting/types + fast unit tests + perf smoke.
-- Fast lane also enforces `tools/quality_guardrails.py` to prevent oversized files
-  and monkeypatch-specific production seams.
-- Full lane: full non-network test suite with coverage.
+Fast lane:
+- formatting
+- lint
+- types
+- fast unit tests
+- perf smoke
+- `tools/quality_guardrails.py`
+
+Full lane:
+- broader non-network test coverage with coverage reporting
+
+The custom guardrail script is expected to catch:
+- oversized source files
+- excessive complexity
+- certain test-seam / production-boundary regressions
 
 ## Generated Artifacts
 
-- `src/y2karaoke.egg-info/` is generated packaging metadata.
-- Keep it out of version control; it is ignored via `.gitignore`.
-- If you need to refresh metadata locally, reinstall with `pip install -e .`.
-- Benchmark run outputs are generated under `benchmarks/results/` and should remain untracked.
-- Experiment scratch outputs belong in `benchmarks/experiments/` and should remain untracked.
-- Transient logs (`*.log`) are ignored and should not be committed.
+Keep these out of version control:
+- `src/y2karaoke.egg-info/`
+- benchmark results under `benchmarks/results/`
+- scratch experiments under `benchmarks/experiments/`
+- transient logs such as `*.log`
+
+If the editable install or metadata is stale:
+
+```bash
+pip install -e ".[dev]"
+```
 
 Cleanup example:
 
@@ -62,8 +80,11 @@ rm -rf benchmarks/experiments
 find . -maxdepth 1 -name "*.log" -delete
 ```
 
-## Perf Smoke Thresholds
+## Documentation Maintenance
 
-- `tools/perf_smoke.py` has conservative per-test time budgets.
-- Tune thresholds only after reviewing at least a week of CI runtimes.
-- Prefer widening by small increments (for example, `+0.5s`) to avoid masking regressions.
+When structural work lands, update:
+- `ARCHITECTURE.md`
+- `docs/tech_debt_backlog.md`
+- `docs/README.md`
+
+Use `NEXT_SESSION_TODO.md` only as a lightweight handoff, not as a second backlog.
