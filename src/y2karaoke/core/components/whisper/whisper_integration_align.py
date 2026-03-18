@@ -1312,9 +1312,11 @@ def _apply_baseline_restore_shift_passes(
     )
 
     if not apply_baseline_constraint:
-        mapped_lines, restored_late_runs = _restore_consistently_late_runs_from_baseline(
-            mapped_lines,
-            baseline_lines,
+        mapped_lines, restored_late_runs = (
+            _restore_consistently_late_runs_from_baseline(
+                mapped_lines,
+                baseline_lines,
+            )
         )
         _append_correction_if_any(
             corrections,
@@ -1340,10 +1342,12 @@ def _apply_baseline_restore_cleanup_passes(
     trace_snapshots: list[dict[str, Any]],
     trace_line_range: Any,
 ) -> tuple[List[models.Line], List[str]]:
-    mapped_lines, restored_early_duplicates = _restore_unsupported_early_duplicate_shifts(
-        mapped_lines,
-        baseline_lines,
-        all_words,
+    mapped_lines, restored_early_duplicates = (
+        _restore_unsupported_early_duplicate_shifts(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+        )
     )
     _append_correction_if_any(
         corrections,
@@ -1474,11 +1478,13 @@ def _apply_audio_reanchor_corrections(
 
     restored_run_onset_shifts = 0
     if runtime_config.restored_run_onset_shift:
-        mapped_lines, restored_run_onset_shifts = _shift_restored_low_support_runs_to_onset(
-            mapped_lines,
-            baseline_lines,
-            all_words,
-            audio_features,
+        mapped_lines, restored_run_onset_shifts = (
+            _shift_restored_low_support_runs_to_onset(
+                mapped_lines,
+                baseline_lines,
+                all_words,
+                audio_features,
+            )
         )
     _append_correction_if_any(
         corrections,
@@ -1512,11 +1518,13 @@ def _apply_audio_reanchor_corrections(
 
     low_support_reanchors = 0
     if runtime_config.low_support_onset_reanchor:
-        mapped_lines, low_support_reanchors = _reanchor_low_support_lines_to_later_onset(
-            mapped_lines,
-            baseline_lines,
-            all_words,
-            audio_features,
+        mapped_lines, low_support_reanchors = (
+            _reanchor_low_support_lines_to_later_onset(
+                mapped_lines,
+                baseline_lines,
+                all_words,
+                audio_features,
+            )
         )
     _append_correction_if_any(
         corrections,

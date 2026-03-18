@@ -31,9 +31,7 @@ _finalize_segment_selection_trace = _segment._finalize_segment_selection_trace
 _init_segment_selection_trace = _segment._init_segment_selection_trace
 _merged_segment_candidate = _segment._merged_segment_candidate
 _parse_trace_line_range_env = _segment._parse_trace_line_range_env
-_rescue_terminal_stall_line_assignment = (
-    _segment._rescue_terminal_stall_line_assignment
-)
+_rescue_terminal_stall_line_assignment = _segment._rescue_terminal_stall_line_assignment
 _rescue_zero_score_repeated_line_assignment = (
     _segment._rescue_zero_score_repeated_line_assignment
 )

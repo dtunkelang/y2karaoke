@@ -142,9 +142,7 @@ def _build_correct_timing_hooks() -> CorrectTimingHooks:
             _apply_low_quality_segment_postpasses_impl
         ),
         finalize_whisper_line_set_fn=_finalize_whisper_line_set_impl,
-        constrain_line_starts_to_baseline_fn=(
-            _constrain_line_starts_to_baseline_impl
-        ),
+        constrain_line_starts_to_baseline_fn=(_constrain_line_starts_to_baseline_impl),
         should_rollback_short_line_degradation_fn=(
             _should_rollback_short_line_degradation_impl
         ),
@@ -177,7 +175,9 @@ def _build_correct_timing_hooks() -> CorrectTimingHooks:
         pull_lines_to_best_segments_fn=_resolve_integration_attr(
             "_pull_lines_to_best_segments"
         ),
-        fix_ordering_violations_fn=_resolve_integration_attr("_fix_ordering_violations"),
+        fix_ordering_violations_fn=_resolve_integration_attr(
+            "_fix_ordering_violations"
+        ),
         normalize_line_word_timings_fn=_resolve_integration_attr(
             "_normalize_line_word_timings"
         ),

@@ -103,8 +103,7 @@ def test_write_markdown_summary_includes_lexical_review_hotspots(tmp_path):
     assert "Lexical-review hotspots" in markdown
     assert (
         "`1` song(s), hook-boundary songs `1`, hook-boundary ratio `0.214`, "
-        "truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`"
-        in markdown
+        "truncation-pattern ratio `0.369`, repetitive-phrase ratio `0.029`" in markdown
     )
     assert (
         "Hook-normalized agreement signal: eligibility `0.714`, text similarity `0.944`"
