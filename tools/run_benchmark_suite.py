@@ -7419,6 +7419,8 @@ def _run_song_command(
     heartbeat_sec: int,
     run_signature: dict[str, Any],
     gold_doc: dict[str, Any] | None = None,
+    offline: bool = False,
+    auto_offline_suppressed: bool = False,
 ) -> dict[str, Any]:
     record: dict[str, Any] = {
         "artist": song.artist,
@@ -7661,6 +7663,8 @@ def _run_single_song_generation(
         heartbeat_sec=args.heartbeat_sec,
         run_signature=run_signature,
         gold_doc=gold_doc,
+        offline=offline,
+        auto_offline_suppressed=auto_offline_suppressed,
     )
     if gold_doc is not None:
         gold_path = _gold_path_for_song(index=index, song=song, gold_root=gold_root)
