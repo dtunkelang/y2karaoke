@@ -10,6 +10,9 @@ from y2karaoke.core.components.whisper.whisper_integration_pipeline import (
 from y2karaoke.core.components.whisper.whisper_integration_hooks import (
     AlignmentPassHooks,
 )
+from y2karaoke.core.components.whisper.whisper_runtime_config import (
+    WhisperRuntimeConfig,
+)
 from y2karaoke.core.components.whisper import whisper_mapping as wm
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
@@ -122,6 +125,7 @@ def test_build_alignment_pass_kwargs_uses_hook_bundle():
         lenient_vocal_activity_threshold=0.3,
         lenient_activity_bonus=0.4,
         low_word_confidence_threshold=0.5,
+        runtime_config=WhisperRuntimeConfig(profile="safe"),
         transcribe_vocals_fn=lambda *_a, **_k: ([], [], "en", "base"),
         extract_audio_features_fn=lambda *_a, **_k: None,
         dedupe_whisper_segments_fn=lambda s: s,
@@ -152,6 +156,7 @@ def test_build_alignment_pass_kwargs_uses_hook_bundle():
 
     assert "hooks" in kwargs
     assert isinstance(kwargs["hooks"], AlignmentPassHooks)
+    assert kwargs["runtime_config"] == WhisperRuntimeConfig(profile="safe")
     assert "transcribe_vocals_fn" not in kwargs
 
 
@@ -227,7 +232,6 @@ def test_align_lrc_text_pipeline_uses_whisperx_for_sparse_transcript(monkeypatch
 def test_align_lrc_text_pipeline_uses_whisperx_for_tail_shortfall_experiment(
     monkeypatch,
 ):
-    monkeypatch.setenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", "1")
     lines = [
         Line(words=[Word(text="a", start_time=10.0, end_time=10.2)]),
         Line(words=[Word(text="b", start_time=195.0, end_time=195.2)]),
@@ -283,6 +287,7 @@ def test_align_lrc_text_pipeline_uses_whisperx_for_tail_shortfall_experiment(
         lenient_vocal_activity_threshold=0.3,
         lenient_activity_bonus=0.4,
         low_word_confidence_threshold=0.5,
+        runtime_config=WhisperRuntimeConfig(tail_shortfall_forced_fallback=True),
         transcribe_vocals_fn=lambda *_a, **_k: (segments, whisper_words, "fr", "base"),
         extract_audio_features_fn=lambda *_a, **_k: None,
         dedupe_whisper_segments_fn=lambda s: s,

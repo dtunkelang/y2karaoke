@@ -1,335 +1,108 @@
-# Next Session TODO (Post-0.35 Baseline Refresh)
+# Next Session TODO
 
-## 0. Current Baseline (frozen reference)
-- Latest strong run: `benchmarks/results/20260305T231015Z`
-- Strategy: `hybrid_whisper`
-- Current default agreement thresholds:
-  - `Y2KARAOKE_BENCH_AGREEMENT_MIN_TEXT_SIM=0.58`
-  - `Y2KARAOKE_BENCH_AGREEMENT_MIN_TOKEN_OVERLAP=0.50`
-- Key aggregate metrics:
-  - `agreement_coverage_ratio_total=0.3524`
-  - `agreement_start_p95_abs_sec_mean=1.0675`
-  - `agreement_bad_ratio_mean=0.049`
-  - `timing_quality_score_line_weighted_mean=0.7907`
-  - `dtw_line_coverage_line_weighted_mean=0.9342`
-  - `dtw_word_coverage_line_weighted_mean=0.8522`
+Last updated: 2026-03-18
 
-## 1. Primary Quality Goals
-- [ ] Reduce benchmark warning pressure while preserving >=`0.35` agreement coverage total.
-- [ ] Improve `agreement_start_p95_abs_sec_mean` from ~`1.07` toward <=`0.95` without reducing coverage.
-- [ ] Keep `agreement_bad_ratio_mean` <=`0.050` while improving timing quality.
-- [ ] Raise `agreement_coverage_ratio_mean` from current ~`0.329` toward >=`0.350`.
+## Current State
 
-## 2. Human-Guided Correction Execution
-- [x] Generate current correction handoff artifacts:
-  - `benchmarks/results/human_guidance_tasks_20260305T231015Z.md`
-  - `benchmarks/results/human_guidance_ready_20260305T231015Z.tsv`
-- [x] Generate proxy delta report artifact to validate comparison pipeline wiring:
-  - `benchmarks/results/20260305T231015Z/human_correction_delta_proxy.md`
-  - Baseline `20260305T225648Z` vs candidate `20260305T231015Z` (non-human proxy).
-- [ ] Run a focused manual-correction pass for current top priority songs:
-  - `J Balvin - Mi Gente`
-- [x] Curate additional canary gold songs:
-  - `benchmarks/gold_set_candidate/20260305T231015Z/05_bruno-mars-uptown-funk.gold.json`
-  - `benchmarks/gold_set_candidate/20260305T231015Z/09_rosalia-despecha.gold.json`
-  - `Uptown Funk` now drives lexical hook-boundary review/reporting.
-  - `DESPECHA` now drives downstream timing-regression diagnosis.
-- [x] Complete first curated canary pair:
-  - `benchmarks/gold_set_candidate/20260305T231015Z/08_indila-derniere-danse.gold.json`
-  - `benchmarks/gold_set_candidate/20260305T231015Z/06_the-weeknd-blinding-lights.gold.json`
-- [x] Produce a focused auto-vs-corrected canary comparison using `tools/compare_benchmark_correction.py`.
-  - Artifacts:
-    - `benchmarks/results/20260306T_two_song_curated_fresh/human_correction_delta.json`
-    - `benchmarks/results/20260306T_two_song_curated_fresh/human_correction_delta.md`
-  - Current 2-song canary outcome:
-    - `avg_abs_word_start_delta_sec_word_weighted_mean: 2.57s -> 1.019s`
-    - `agreement_start_p95_abs_sec_mean: 0.880s -> 0.8473s`
-    - `agreement_bad_ratio_mean: 0.1177 -> 0.0732`
-    - `agreement_coverage_ratio_mean: 0.2206 -> 0.2236`
-    - tradeoff to investigate: `dtw_word_coverage_line_weighted_mean: 0.9422 -> 0.7887`
-- [ ] Quantify human edit ROI:
-  - coverage delta
-  - p95 delta
-  - bad-ratio delta
-  - edits-per-minute / snap-usage from editor telemetry
+Recent high-value architecture cleanup completed:
 
-## 3. Pipeline Improvement Goals
-- [x] Investigate large-anchor-span mismatch behavior (especially songs with long noisy anchor segments).
-  - Findings artifact: `benchmarks/results/20260305T231015Z/anchor_span_investigation.md`
-  - Highest-risk cases by long-anchor + low-sim count: `The Weeknd - Blinding Lights`, `Queen - Bohemian Rhapsody`, `Indila - Derniere danse`, `J Balvin - Mi Gente`.
-- [x] Add/validate another conservative agreement rescue that improves comparability only under tight timing constraints.
-  - Implemented weak-lexical tight-timing rescue; validated on `20260305T231015Z` (`agreement_coverage_ratio_total=0.3524`, guard pass).
-- [x] Add a regression test fixture for long noisy `nearest_segment_start_text` anchors (Blinding Lights-like behavior).
-- [ ] Explore syllable-level alignment signal as a fallback for lexical-comparability gaps.
-  - Hypothesis: syllable overlap can recover valid matches when word-level text similarity is low but timing is close.
-  - Scope: fallback-only path behind a feature flag (do not replace primary word-level logic).
-  - Guardrails for accepting syllable-based matches:
-    - tight start delta (e.g., <=`0.20s`)
-    - strong local Whisper evidence
-    - preserve/avoid regression in `agreement_bad_ratio_mean` and p95.
-  - Evaluation plan:
-    - add focused unit tests for syllable fallback acceptance/rejection branches
-    - run 10-song benchmark A/B (`flag off` vs `flag on`)
-    - require tradeoff guard pass (`min_coverage_gain=0.005`, `max_bad_ratio_increase=0.002`) before promotion.
-- [ ] Explore repetition-aware timing transfer within a song.
-  - Hypothesis: repeated chorus/refrain lines can borrow or regularize timing from other occurrences when local Whisper evidence is sparse.
-  - Initial targets:
-    - repeated chorus pairs in `The Weeknd - Blinding Lights`
-    - repeated refrain blocks in `Indila - Derniere danse`
-  - Candidate approaches:
-    - align repeated lyric blocks and compare inter-line spacing consistency
-    - use high-confidence repeated occurrences as timing priors for low-support repeats
-    - detect verse/chorus block structure and preserve relative cadence within repeated sections
-  - Guardrails:
-    - only apply when text match is strong and local structure is clearly repeated
-    - do not let repetition transfer override strong local Whisper/onset evidence
-    - measure both main curated canary metrics and interjection/repetition-specific deltas
-- [ ] Investigate gold-vs-audio interpretation gaps on repeated chorus lines.
-  - Earlier source-vs-gold comparison suggested `Blinding Lights` chorus starts were about `0.7s-1.2s` earlier than curated gold.
-  - Artifact:
-    - `benchmarks/results/20260308T_canary_eval_interjection_markdown/blinding_lights_chorus_start_comparison.md`
-    - `benchmarks/results/20260308T_canary_eval_interjection_markdown/gold_onset_bias.md`
-  - Updated finding:
-    - measured curated gold for `Blinding Lights` is not globally late against nearby onsets
-    - aggregate onset-minus-gold-start is about `0.168s`
-    - remaining chorus lines are also close to onset (`~0.01s-0.41s`)
-  - Next question:
-    - why is the pipeline still early on those lines relative to both gold and onset evidence?
-  - Favor pipeline-stage diagnosis over more gold-target skepticism here.
-- [ ] Instrument and patch the audio-only LRC refinement path before Whisper.
-  - Current strongest evidence: the remaining late-chorus distortion for `Blinding Lights` is introduced before Whisper alignment.
-  - Trace tool:
-    - `tools/analyze_lrc_refinement_stages.py`
-  - Current diagnostic artifacts:
-    - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_lrc_refinement_trace.json`
-    - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_lrc_refinement_trace.md`
-  - Confirmed stage-level finding:
-    - `fix_spurious_gaps()` collapses the late `Blinding Lights` chorus block from `35` lines to `24` by merging lines like `I said, ooh, I'm drowning in the night`, `Oh, when I'm like this, you're the one I trust`, and `(Hey, hey, hey)`.
-  - Next branch should patch the first refinement-stage divergence that survives the real offline benchmark path, not add more Whisper-side heuristics.
-  - Update from live benchmark-path trace:
-    - `tools/analyze_pre_whisper_live_path.py` shows the actual pre-Whisper `get_lyrics_with_quality` path stays structurally intact for the same late chorus block.
-    - Artifacts:
-      - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_live_pre_whisper_trace.json`
-      - `benchmarks/results/20260309T_canary_eval_no_before_i_said/blinding_lights_live_pre_whisper_trace.md`
-    - This means the helper-path `fix_spurious_gaps()` collapse is real, but it is not currently the active blocker in the offline curated-canary benchmark.
-    - The remaining benchmark miss is therefore downstream of the live pre-Whisper path, likely in Whisper alignment / post-alignment handling.
-    - Direct comparison of live pre-Whisper vs current best final output shows Whisper already fixes most of this block:
-      - lines `23-24` move from `115.38/121.32` to `117.73/123.67`, essentially matching gold `117.70/123.75`
-      - line `25` remains the main residual miss, moving from `126.51` pre-Whisper to `130.01` final while gold is `128.65`
-    - Next downstream branch should target why `I said, ooh, I'm drowning in the night` is still shifted late after Whisper/post-alignment handling.
-    - Additional tracing note:
-      - `tools/analyze_whisper_postpasses.py` can replay `align_lrc_text_to_whisper_timings`, but direct replay is not fidelity-equal to the offline benchmark path because it may enter a different Whisper/WhisperX fallback branch.
-      - Future line-25 tracing should hook the actual benchmark subprocess path or force the same cached branch before trusting stage-level deltas.
-    - Fidelity-correct benchmark-path trace:
-      - using the real separated vocals stem (`.cache/fHI8X4OXluQ/The Weeknd - Blinding Lights (Official Audio)_(Vocals)_htdemucs_ft.wav`), the live pre-Whisper path keeps line `25` at `128.174s`, close to gold `128.65s`.
-      - the exact replayed offline benchmark output then moves that same line to `130.010s`.
-      - artifact:
-        - `benchmarks/results/20260309T_blinding_exact_replay_delta/blinding_lights_pre_vs_final_delta_vocals.md`
-      - active downstream delta on line `25` is therefore `+1.836s`, and the next branch should focus specifically on which Whisper/post-alignment stage applies that late shift.
-    - Mapper-stage update:
-      - new env-controlled trace hooks now expose per-line accepted matches, per-word candidate scores, and per-word preselected assignments:
-        - `Y2K_TRACE_MAPPER_DETAILS_JSON`
-        - `Y2K_TRACE_MAPPER_CANDIDATES_JSON`
-        - `Y2K_TRACE_MAPPER_LINE_RANGE`
-      - latest focused trace on `Blinding Lights` lines `9-10` shows the main issue is upstream of candidate scoring:
-        - line `9` lexical words (`Sin`, `City's`, `cold`, `and`, `empty`) are pre-assigned only to `[VOCAL]` pseudo-words around `61.66-66.66s`
-        - line `10` words are pre-assigned to far-ahead unrelated words like `maybe`, `clearly`, `didn't`, `don't`, `long,`, `me` around `97-112s`
-      - candidate selection is therefore not the primary bug on those lines; it only receives one assigned word per lyric word in the `assigned_words` phase
-      - segment-overlap trace now shows the active live source of those bad assignments:
-        - `build_segment_text_overlap_assignments()` assigns line `10-12` to segment `5`
-        - that segment spans Whisper words `176-520` (`345` words) for only `18` lyric words
-        - the positional distributor was therefore manufacturing absurd far-ahead assignments before mapper scoring
-      - kept fix:
-        - skip positional distribution when a segment is pathologically wider than the grouped lyric payload (`>8x` words-per-lyric-word)
-        - current canary after that guard: `gold_start_abs_word=0.4976`, `gold_start_p95_abs_sec=1.1369`
-      - additional segment-selection trace (`Y2K_TRACE_SEGMENT_SELECTION_JSON`) now shows the remaining line-9 problem is earlier still:
-        - line `9` (`Sin City's cold and empty`) gets `0.0` overlap across the searched segments
-        - final segment choice still advances to segment `3`, whose bag is entirely `[vocal]`
-        - this happens because zero-score lines are forced forward past the cursor
-      - cursor-trace update:
-        - `seg_cursor` reaches segment `7` by line `14` and then never advances again through lines `20-25`
-        - those late chorus lines all score `0.0` or `0.1667` against the same mixed segment-7 bag
-        - line-9 placeholder heuristics can therefore regress the canary indirectly by changing cursor progression before the late chorus block
-        - `tools/analyze_segment_cursor_stall.py` summarizes the current live trace as two low-score stall runs on segment `7`:
-          - lines `15-26`
-          - lines `28-35`
-        - artifact:
-          - `benchmarks/results/20260310T_blinding_cursor_trace/segment_cursor_stall.md`
-      - assignment-confidence groundwork:
-        - new helper: `whisper_assignment_confidence.py`
-        - new analysis tool: `tools/analyze_mapper_assignment_confidence.py`
-        - mapper trace now records per-line assignment confidence:
-          - `total_assigned`
-          - `lexical_overlap_ratio`
-          - `placeholder_ratio`
-          - `median_start_drift_sec`
-          - `max_start_drift_sec`
-          - `unique_segment_count`
-          - `low_confidence`
-        - exact replay on current best behavior shows line `9` is correctly flagged as pathological:
-          - `placeholder_ratio=1.0`
-          - `lexical_overlap_ratio=0.0`
-          - `median_start_drift_sec=13.44`
-        - artifact:
-          - `benchmarks/results/20260310T_blinding_assignment_conf_diag/mapper_assignment_confidence.md`
-        - first attempt to suppress low-confidence assignments regressed the canary badly; keep this layer diagnostic-only until segment-choice handling is explicit
-      - segment-selection mode scaffold:
-        - `_select_segment_for_line_mode()` now cleanly separates `default` from `experimental_terminal_stall_lookback`
-        - env flag:
-          - `Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE=experimental_terminal_stall_lookback`
-        - current exact replay result:
-          - experimental mode stays on the stable cached branch
-          - but it is effectively a no-op on the main late `Blinding Lights` target lines (`20-31`)
-        - lookback-score trace now makes the reason explicit:
-          - lines `21/23/25/30` only tie the stalled segment at `0.1667`
-          - lines `20/24/31` have no better score than `0.0`
-          - only line `28` crosses the rescue threshold (`0.0833 -> 0.4167`)
-        - tie-mode trace clarified the remaining mismatch:
-          - the problematic live segment is `7`, but it is not the terminal segment
-          - so `experimental_terminal_stall_tie_break` stays a no-op because its guard only fires on `seg_cursor == n_segs - 1`
-        - implication:
-          - the next useful branch is not more canary scoring yet
-          - it is designing a mode that can act on ties or zero-score lines within a low-score stall run without falling out of the stable cached branch
-        - loose stalled-segment replay moved real lines but regressed curated gold badly:
-          - default `Blinding Lights` one-song eval: `gold_start_abs_mean_weighted = 0.467s`
-          - loose stalled-segment mode: `0.625s`
-        - stalled-segment opportunity summary explains why:
-          - lines `21`, `22`, and `27` show local score gains
-          - but the “better” candidate bags are still placeholder-dominated `[vocal]` segments
-          - artifact:
-            - `benchmarks/results/20260310T_blinding_low_score_stall_trace/stalled_segment_opportunities.md`
-        - experimental placeholder-penalty scoring has leverage but is not viable as a simple overlap penalty:
-          - default penalty mode was a no-op
-          - aggressive penalty (`0.3`) moved the late chorus block, but obviously distorted spans and starts
-          - example:
-            - line `26` `135.12-139.03 -> 133.61-142.96`
-        - scorer-only simulation on the normal segment-choice trace shows a deeper limit:
-          - even with aggressive placeholder penalties, no line would change
-          - artifact:
-            - `benchmarks/results/20260310T_blinding_segment_score_trace/segment_selection_scorer.md`
-          - implication:
-            - the default candidate set is already too narrow
-            - next redesign must change candidate generation / search, not only scoring
-        - richer default trace shows why the scorer cannot move anything:
-          - for lines `20-31`, the normal candidate set contains only segment `7`
-          - no merged candidates are generated at all in the live default path
-          - segment `7` has `placeholder_ratio ~= 0.9477` and `bag_size = 172`
-          - implication:
-            - next branch must widen candidate generation during stalled runs before any confidence-weighted scorer can matter
-        - experimental widened stalled-search mode now proves the next bottleneck:
-          - it widens candidate generation and changes line-to-segment choices for lines `21/23/25/27/29`
-          - but the final timing report remains unchanged
-          - implication:
-            - downstream assignment/distribution is neutralizing the alternate segment choices
-        - prepare-line-context and mapper-override trace now narrow that handoff further:
-          - for lines `20-31`, `prepare_context.text_choice_segment` and `time_fallback_segment` are both `None`
-          - `pre_override_segment` is also `None`
-          - the mapper is therefore not starting from any propagated segment choice on those lines
-        - widened-search segment trace vs mapper trace shows the stronger mismatch:
-          - `line_to_seg` alternates between stalled segments `5` and `7` for lines `20-31`
-          - but the distributed assigned words seen by the mapper still all vote for mapper segment `5`
-          - implication:
-            - widened segment selection is only affecting positional distribution
-            - it is not reaching mapper line context in a form that changes the effective segment used by mapping
-            - next branch should trace the assignment/distribution handoff, not segment scoring again
-        - segment-span trace now explains why:
-          - segment `5` spans `97.28-195.28` with first-enclosing word range `200-520`
-          - segment `6` spans `104.42-111.42` with first-enclosing word range `[-1, -1]`
-          - segment `7` spans `112.67-194.17` with first-enclosing word range `[-1, -1]`
-          - so segments `6/7` are nested inside segment `5` and own no words under the mapper's current first-enclosing ownership rule
-          - this is why `line_to_seg=7` can still distribute words whose mapper segment is `5`
-        - aggressive experiment result:
-          - an env-gated `most_specific_enclosing` word-to-segment ownership mode stayed on the stable cached branch but regressed `Blinding Lights` one-song gold metrics (`0.467s -> 0.530s`)
-          - so the right next branch is not to flip global ownership; it is to make stalled-run segment assignment and mapper ownership consistent only where the nested-segment pathology occurs
-        - successful local handoff experiment:
-          - initial env mode: `Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE=experimental_stall_nested_vote_handoff`
-          - behavior:
-            - keep global first-enclosing word ownership unchanged
-            - but when a selected stalled-run segment is nested, has no first-enclosing words, and still owns the assigned word by positional range, override voting prefers the selected nested segment locally
-          - results:
-            - `Blinding Lights` one-song gold start mean improved: `0.467s -> 0.436s`
-            - curated canary improved:
-              - `gold_start_abs_word: 0.4976 -> 0.4829`
-              - `gold_start_p95_abs_sec: 1.1369 -> 1.0951`
-              - `gold_line_duration_abs_sec: 0.2746 -> 0.2607`
-          - promoted result:
-            - this local nested-vote handoff now runs in default mode
-            - default curated canary matches the experimental result:
-              - `gold_start_abs_word = 0.4829`
-              - `gold_start_p95_abs_sec = 1.0951`
-              - `gold_line_duration_abs_sec = 0.2607`
-          - implication:
-            - the stalled-run handoff bug is real and partially fixable without a global ownership redesign
-            - next step should stay in the same structural area: improve stalled-run assignment consistency further, not reopen downstream heuristics
-        - pre-Whisper branch check:
-          - `tools/analyze_pre_whisper_live_path.py` now supports `--offline`, so its trace can match the benchmark fetch mode
-          - offline trace confirms the benchmark `whisper_map_lrc_dtw` path is skipping `_refine_timing_with_quality()` entirely before Whisper
-          - attempted env-gated experiment:
-            - `Y2K_PREREFINE_BEFORE_WHISPER_MAP=1`
-          - result on `Blinding Lights` one-song eval:
-            - regressed `gold_start_abs_mean_weighted: 0.467s -> 0.509s`
-          - implication:
-            - blindly inserting audio pre-refinement before `whisper_map_lrc_dtw` is not a valid fix
-            - remaining pre-Whisper work should target narrower source/refinement interactions, not wholesale prerefinement
-            - next branch must inspect positional distribution / lrc assignments after widened search, not just selection scores
-        - direct mapper override trace refined that diagnosis further:
-          - for lines `20-31`, mapper `pre_override_segment` is already `None`
-          - lines `20-23` then get overridden to segment `5`
-          - lines `24-31` already stay `None`, with votes for segment `5` but no override applied
-          - implication:
-            - widened segment selection is not feeding into mapper line context at all
-            - next branch must trace the handoff between segment-selection output and `prepare_line_context`, not only mapper override
-        - implication:
-          - next upstream redesign needs assignment-confidence weighting on segment bags, not just overlap-based rescue
-      - next branch should target segment-cursor stall / oversized stalled-segment handling, not another downstream/postpass heuristic
-- [ ] Use multi-source timed-lyrics disagreement as a routing signal.
-  - Hypothesis: provider disagreement is useful evidence that line timestamps are untrustworthy and we should rely more on audio/Whisper scoring.
-  - Initial evidence:
-    - `Blinding Lights`: `lyriq`, `NetEase`, and `Lrclib` agree closely, but `Lrclib` still scores slightly better against audio than `lyriq`.
-    - `Derniere danse`: sources disagree structurally (`41` vs `44` lines), suggesting provider choice matters.
-    - `Mi Gente`: sources disagree heavily on duration, line count, tail timing, and text structure.
-  - Artifacts:
-    - `benchmarks/results/20260308T_source_disagreement/blinding_lights.json`
-    - `benchmarks/results/20260308T_source_disagreement/derniere_danse.json`
-    - `benchmarks/results/20260308T_source_disagreement/mi_gente.json`
-  - Candidate routing:
-    - low disagreement: run cheap audio scoring across candidates and pick the best source
-    - high disagreement: distrust provider timing and lean harder on Whisper/audio alignment
-    - extremely high disagreement: flag as likely reference-divergence/watchlist case
+- `lyrics_whisper_quality.py`
+  - Split the quality flow into explicit submodules:
+    - `lyrics_quality_sources.py`
+    - `lyrics_quality_alignment.py`
+    - `lyrics_quality_tail_guardrail.py`
+  - Kept compatibility by re-exporting the old private helper names from `lyrics_whisper_quality.py`.
+  - Preserved existing monkeypatch seams used by tests by routing internal helper calls back through `lyrics_whisper.py` wrappers where needed.
+- `lyrics_whisper.py`
+  - Hooks now support explicit `hooks=` injection plus `ContextVar`-backed compatibility.
+  - Source-routing policy is already extracted to `lyrics_source_routing.py`.
+  - Offset / quality policy is already extracted to `lyrics_offset_quality.py`.
+- `sync.py`
+  - Mutable process-wide default state was replaced with `ContextVar`-backed state and compatibility proxies.
+- `runtime_config.py`
+  - Lyrics provider / duration-tolerance env reads now live behind `LyricsRuntimeConfig`.
+- `whisper_runtime_config.py`
+  - Profile and major Whisper runtime toggles now live behind `WhisperRuntimeConfig`.
+- `whisper_mapping_runtime_config.py`
+  - Segment-assignment and trace config now live behind typed runtime config.
+- `whisper_integration_align.py`
+  - Main aligner orchestration was decomposed heavily and the entrypoint is much smaller.
+- `lyrics/api.py`
+  - Public API surface is now explicit, with private compatibility exports resolved lazily.
+- `whisper_integration.py`, `whisper_mapping.py`, `whisper_mapping_post.py`
+  - Eager alias-installation / eager import-facade behavior was replaced with lazy compatibility facades.
 
-## 4. Gold Set and Benchmark Data Quality
-- [ ] Increase gold comparable-word coverage from ~`0.747` toward >=`0.800`.
-- [ ] Prioritize gold-set expansion for songs with highest human-guidance priority and poor comparability.
-- [x] Establish curated canary slice for hard-song analysis.
-  - Current trusted canaries: `Indila - Derniere danse`, `The Weeknd - Blinding Lights`, `ROSALIA - DESPECHA`
-  - Current watchlist: `J Balvin - Mi Gente`
-  - Best current canary run: `benchmarks/results/20260310T_curated_canary_with_despecha_block_guard_v2`
-    - `curated_canary_avg_abs_word_start_delta_sec_word_weighted_mean = 0.5512`
-    - `curated_canary_gold_start_p95_abs_sec_mean = 1.2393`
-    - `curated_canary_gold_line_duration_mean_abs_sec_mean = 0.3182`
-    - `curated_canary_gold_downstream_regression_line_count_total = 3`
-  - Use curated-gold metrics as a separate promotion lens for difficult songs.
-- [ ] Keep gold updates traceable (song-level changelog note per rebaseline).
+## Most Recent Changes
 
-## 5. Runtime and Efficiency
-- [ ] Keep full 10-song offline benchmark wall-time <=`110s` while applying quality changes.
-- [ ] Track runtime regressions when agreement diagnostics change (candidate vs baseline runtime diff report).
-- [ ] Continue avoiding recomputation for diagnostics-only iterations.
+1. Lyrics quality boundary split:
 
-## 6. Tooling and UX Improvements
-- [x] Extend human-guidance report with direct “first 2 suggested correction targets” per song (line index + reason).
-- [x] Add optional JSON schema validation for `human_guidance_tasks.json` artifacts.
-- [x] Add a compact “ready-to-edit” export list for editor workflow handoff.
+- `lyrics_whisper_quality.py` is now mostly orchestration.
+- Source acquisition / trust policy / offset detection moved to `lyrics_quality_sources.py`.
+- Whisper alignment / fallback / LRC mapping moved to `lyrics_quality_alignment.py`.
+- Tail-completeness guardrail and duration clipping moved to `lyrics_quality_tail_guardrail.py`.
+- Compatibility-sensitive helpers like `_apply_whisper_with_quality` and `_fetch_genius_with_quality_tracking` still behave correctly when patched through either `lyrics_whisper.py` or `lyrics_whisper_quality.py`.
 
-## 7. CI/CD Checklist (reset for next push cycle)
-- [x] `black --check src tests`
-- [x] `flake8 src/y2karaoke --count --max-complexity=15 --max-line-length=127 --statistics`
-- [x] `mypy src`
-- [x] targeted unit tests for touched modules
-- [x] `python tools/quality_guardrails.py`
-- [x] if benchmark logic changed: run `tools/main_benchmark_guardrails.py`
+2. `whisper_blocks.py` ownership split:
 
-## 8. Success Criteria for This New Queue
-- [ ] At least one new run that keeps `agreement_coverage_ratio_total >= 0.35` and improves p95 meaningfully.
-- [ ] At least one validated human-corrected run demonstrating measurable quality lift vs auto baseline.
-- [ ] No net regression in bad-ratio or major runtime regressions.
+- Segment-level text-overlap assignment logic moved to `whisper_segment_assignments.py`.
+- Block-scoped syllable-DTW assignment logic moved to `whisper_block_dtw_assignments.py`.
+- Shared trace serialization moved to `whisper_assignment_trace.py`.
+- `whisper_blocks.py` is now a compatibility facade that re-exports the old private helpers instead of owning both subsystems directly.
+
+3. `sync.py` cache-layer split:
+
+- Disk-cache and all-sources-cache behavior moved to `sync_cache.py`.
+- `sync.py` now keeps state/runtime/provider orchestration while re-exporting the old cache helpers as compatibility aliases.
+- Focused sync regression coverage stayed green after the split.
+
+Focused verification that passed after these splits:
+
+- `./.venv/bin/python -m flake8 src/y2karaoke/core/components/lyrics/lyrics_quality_tail_guardrail.py src/y2karaoke/core/components/lyrics/lyrics_quality_sources.py src/y2karaoke/core/components/lyrics/lyrics_quality_alignment.py src/y2karaoke/core/components/lyrics/lyrics_whisper_quality.py`
+- `./.venv/bin/pytest tests/unit/lyrics/test_lyrics_quality_unit.py tests/unit/lyrics/test_lyrics_additional.py tests/unit/lyrics/test_lyrics_pipeline.py tests/unit/lyrics/test_lyrics_api.py tests/unit/pipeline/test_compat_monkeypatch_seams.py -q`
+  - `63 passed`
+- `./.venv/bin/python -m flake8 src/y2karaoke/core/components/whisper/whisper_assignment_trace.py src/y2karaoke/core/components/whisper/whisper_segment_assignments.py src/y2karaoke/core/components/whisper/whisper_block_dtw_assignments.py src/y2karaoke/core/components/whisper/whisper_blocks.py`
+- `./.venv/bin/pytest tests/unit/whisper/test_whisper_mapping_post.py tests/unit/whisper/test_whisper_segment_assignment_experimental.py tests/unit/whisper/test_whisper_integration_pipeline_unit.py tests/unit/whisper/test_whisper_integration_align_stage_unit.py tests/unit/whisper/test_whisper_integration_align_stage_followup_unit.py -q`
+  - `66 passed`
+- `./.venv/bin/python -m flake8 src/y2karaoke/core/components/lyrics/sync_cache.py src/y2karaoke/core/components/lyrics/sync.py`
+- `./.venv/bin/pytest tests/unit/lyrics/test_sync.py tests/unit/lyrics/test_sync_providers.py tests/unit/lyrics/test_sync_quality_unit.py tests/unit/lyrics/test_sync_unit.py tests/unit/lyrics/test_sync_additional.py tests/unit/lyrics/test_sync_more.py tests/unit/lyrics/test_sync_lyriq.py tests/unit/lyrics/test_lyrics_pipeline.py -q`
+  - `90 passed`
+
+## Current Priorities
+
+1. **`sync.py` remaining ownership cleanup**
+- Why:
+  - State/config cleanup is done, and the cache layer is now extracted, but the file still mixes state container behavior, provider orchestration, and compatibility proxy surface.
+  - It remains large enough that future changes will still have high navigation cost.
+- Goal:
+  - Only continue if there is still a clean split between provider routing and compatibility/state plumbing.
+
+2. **`helpers.py` / `lrc.py` review only if the above stop paying off**
+- Why:
+  - They are still large, but some of that size may be legitimate utility density rather than boundary confusion.
+- Goal:
+  - Only refactor if there is real concern mixing, not just line count.
+
+## Recommended Next Pass
+
+1. Read:
+- `src/y2karaoke/core/components/lyrics/sync.py`
+- `src/y2karaoke/core/components/lyrics/helpers.py`
+- `src/y2karaoke/core/components/lyrics/lrc.py`
+- the related sync-focused tests under `tests/unit/lyrics/`
+
+2. Decide whether the next pass is still worthwhile in `sync.py` or whether the bigger remaining return has moved to `helpers.py` / `lrc.py`.
+
+3. Keep compatibility and current runtime-config flow intact.
+
+4. Verify with focused Whisper suites before widening coverage.
+
+## Guardrails
+
+- Keep heuristic behavior unchanged.
+- Do not reintroduce process-global mutable state.
+- Do not add new ad hoc `os.getenv()` reads in core logic.
+- Preserve compatibility seams that tests still rely on unless the tests are updated in the same pass.
+- Leave unrelated dirty files alone:
+  - `tools/run_benchmark_suite.py`
+  - `1`
+  - `benchmarks/gold_set_candidate/...`

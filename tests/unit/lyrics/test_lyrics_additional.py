@@ -270,7 +270,15 @@ def test_get_lyrics_with_quality_drops_severely_mismatched_lrc_timestamps(
     line_timings = [(1.0, "First"), (3.0, "Second")]
 
     monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.0,
+    )
+    monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 100
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
+        lambda *a, **k: (None, SongMetadata(singers=[], is_duet=False)),
     )
     monkeypatch.setattr(
         lw,
@@ -278,17 +286,21 @@ def test_get_lyrics_with_quality_drops_severely_mismatched_lrc_timestamps(
         lambda lines, *a, quality_report, **k: (lines, quality_report),
     )
 
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, line_timings, "src"),
-    ):
-        lines, _meta, report = lw.get_lyrics_with_quality(
-            "Title",
-            "Artist",
-            vocals_path="vocals.wav",
-            use_whisper=True,
-            target_duration=130,
-            romanize=False,
-        )
+    lines, _meta, report = lw.get_lyrics_with_quality(
+        "Title",
+        "Artist",
+        vocals_path="vocals.wav",
+        use_whisper=True,
+        target_duration=130,
+        romanize=False,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *a, **k: (
+                lrc_text,
+                line_timings,
+                "src",
+            )
+        ),
+    )
 
     assert lines
     assert report["lrc_timing_trust"] == "dropped_duration_mismatch"
@@ -302,7 +314,16 @@ def test_get_lyrics_with_quality_marks_moderate_lrc_mismatch_as_degraded(monkeyp
     line_timings = [(1.0, "First"), (3.0, "Second")]
 
     monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.0,
+    )
+    monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 100
+    )
+    monkeypatch.setattr(
+        lw,
+        "_fetch_genius_with_quality_tracking",
+        lambda *a, **k: (None, SongMetadata(singers=[], is_duet=False)),
     )
     monkeypatch.setattr(
         lh, "create_lines_from_lrc", lambda *a, **k: [_line("First"), _line("Second")]
@@ -313,16 +334,20 @@ def test_get_lyrics_with_quality_marks_moderate_lrc_mismatch_as_degraded(monkeyp
         lambda *a, **k: ([_line("First"), _line("Second")], "onset_refined"),
     )
 
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, line_timings, "src"),
-    ):
-        lines, _meta, report = lw.get_lyrics_with_quality(
-            "Title",
-            "Artist",
-            vocals_path="vocals.wav",
-            target_duration=109,
-            romanize=False,
-        )
+    lines, _meta, report = lw.get_lyrics_with_quality(
+        "Title",
+        "Artist",
+        vocals_path="vocals.wav",
+        target_duration=109,
+        romanize=False,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *a, **k: (
+                lrc_text,
+                line_timings,
+                "src",
+            )
+        ),
+    )
 
     assert lines
     assert report["lrc_timing_trust"] == "degraded_duration_mismatch"
@@ -336,7 +361,16 @@ def test_get_lyrics_with_quality_keeps_lrc_timestamps_for_likely_outro_padding(
     line_timings = [(12.0, "First"), (213.0, "Last")]
 
     monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.0,
+    )
+    monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.sync.get_lrc_duration", lambda *_: 214
+    )
+    monkeypatch.setattr(
+        lw,
+        "_fetch_genius_with_quality_tracking",
+        lambda *a, **k: (None, SongMetadata(singers=[], is_duet=False)),
     )
     monkeypatch.setattr(
         lh, "create_lines_from_lrc", lambda *a, **k: [_line("First"), _line("Last")]
@@ -347,17 +381,21 @@ def test_get_lyrics_with_quality_keeps_lrc_timestamps_for_likely_outro_padding(
         lambda *a, **k: ([_line("First"), _line("Last")], "onset_refined"),
     )
 
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, line_timings, "src"),
-    ):
-        lines, _meta, report = lw.get_lyrics_with_quality(
-            "Title",
-            "Artist",
-            vocals_path="vocals.wav",
-            use_whisper=True,
-            target_duration=228,
-            romanize=False,
-        )
+    lines, _meta, report = lw.get_lyrics_with_quality(
+        "Title",
+        "Artist",
+        vocals_path="vocals.wav",
+        use_whisper=True,
+        target_duration=228,
+        romanize=False,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *a, **k: (
+                lrc_text,
+                line_timings,
+                "src",
+            )
+        ),
+    )
 
     assert lines
     assert report["lrc_timing_trust"] == "degraded_outro_padding"
@@ -410,6 +448,10 @@ def test_get_lyrics_with_quality_auto_enables_whisper_without_line_timings(
     captured = {"called": False}
 
     monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
+        lambda *a, **k: (None, SongMetadata(singers=[], is_duet=False)),
+    )
+    monkeypatch.setattr(
         lw,
         "_fetch_genius_with_quality_tracking",
         lambda *a, **k: (None, SongMetadata(singers=[], is_duet=False)),
@@ -428,15 +470,15 @@ def test_get_lyrics_with_quality_auto_enables_whisper_without_line_timings(
         _fake_apply,
     )
 
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, None, "src"),
-    ):
-        lines, _meta, report = lw.get_lyrics_with_quality(
-            "Title",
-            "Artist",
-            vocals_path="vocals.wav",
-            romanize=False,
-        )
+    lines, _meta, report = lw.get_lyrics_with_quality(
+        "Title",
+        "Artist",
+        vocals_path="vocals.wav",
+        romanize=False,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, None, "src")
+        ),
+    )
 
     assert lines
     assert captured["called"] is True
@@ -451,6 +493,10 @@ def test_get_lyrics_with_quality_can_drop_lrc_timings_by_configuration(monkeypat
     captured = {"called": False}
 
     monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.genius.fetch_genius_lyrics_with_singers",
+        lambda *a, **k: (None, SongMetadata(singers=[], is_duet=False)),
+    )
+    monkeypatch.setattr(
         lw,
         "_fetch_genius_with_quality_tracking",
         lambda *a, **k: (None, SongMetadata(singers=[], is_duet=False)),
@@ -469,16 +515,20 @@ def test_get_lyrics_with_quality_can_drop_lrc_timings_by_configuration(monkeypat
         _fake_apply,
     )
 
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, line_timings, "src"),
-    ):
-        lines, _meta, report = lw.get_lyrics_with_quality(
-            "Title",
-            "Artist",
-            vocals_path="vocals.wav",
-            romanize=False,
-            drop_lrc_line_timings=True,
-        )
+    lines, _meta, report = lw.get_lyrics_with_quality(
+        "Title",
+        "Artist",
+        vocals_path="vocals.wav",
+        romanize=False,
+        drop_lrc_line_timings=True,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *a, **k: (
+                lrc_text,
+                line_timings,
+                "src",
+            )
+        ),
+    )
 
     assert lines
     assert captured["called"] is True
@@ -504,16 +554,16 @@ def test_get_lyrics_simple_auto_enables_whisper_without_line_timings(monkeypatch
         captured["called"] = True
         return lines, [], {}
 
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, None, "src"),
-        apply_whisper_alignment_fn=_fake_apply,
-    ):
-        lines, _meta = lw.get_lyrics_simple(
-            "Title",
-            "Artist",
-            vocals_path="vocals.wav",
-            romanize=False,
-        )
+    lines, _meta = lw.get_lyrics_simple(
+        "Title",
+        "Artist",
+        vocals_path="vocals.wav",
+        romanize=False,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *a, **k: (lrc_text, None, "src"),
+            apply_whisper_alignment_fn=_fake_apply,
+        ),
+    )
 
     assert lines
     assert captured["called"] is True

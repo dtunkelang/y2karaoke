@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import re
-import os
 import statistics
 from typing import Any, Callable, List, Optional, Set, Tuple
 
 from ... import models
 from ..alignment import timing_models
+from .whisper_runtime_config import WhisperRuntimeConfig, load_whisper_runtime_config
 
 
 def _group_repeated_line_indices(lines_in: List[models.Line]) -> dict[str, list[int]]:
@@ -69,8 +69,10 @@ def _normalize_repeated_line_durations(
     lines_in: List[models.Line],
     *,
     min_repeats: int = 2,
+    runtime_config: WhisperRuntimeConfig | None = None,
 ) -> List[models.Line]:
-    if os.getenv("Y2K_REPEAT_DURATION_NORMALIZE", "0") != "1":
+    resolved_runtime_config = runtime_config or load_whisper_runtime_config()
+    if not resolved_runtime_config.repeat_duration_normalize:
         return lines_in
 
     adjusted = list(lines_in)

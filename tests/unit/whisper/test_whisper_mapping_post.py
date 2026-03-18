@@ -2,6 +2,12 @@ import pytest
 
 from y2karaoke.core.components.whisper import whisper_mapping as wm
 from y2karaoke.core.components.whisper import whisper_mapping_post as wmp
+from y2karaoke.core.components.whisper.whisper_runtime_config import (
+    WhisperRuntimeConfig,
+)
+from y2karaoke.core.components.whisper.whisper_mapping_runtime_config import (
+    SegmentAssignmentRuntimeConfig,
+)
 from y2karaoke.core.components.whisper import whisper_blocks
 from y2karaoke.core.components.whisper import (
     whisper_mapping_pipeline_orchestration as mpo,
@@ -58,7 +64,7 @@ def test_distribute_words_within_segments_skips_extremely_wide_segments() -> Non
 
 
 def test_select_segment_for_line_mode_default_keeps_existing_choice() -> None:
-    config = whisper_blocks._segment_assignment_config_from_env()
+    config = SegmentAssignmentRuntimeConfig()
     seg, score = whisper_blocks._select_segment_for_line_mode(
         words=["the", "city's", "cold", "and", "empty"],
         repeated_phrase_like=False,
@@ -98,13 +104,11 @@ def test_select_segment_for_line_mode_default_keeps_existing_choice() -> None:
 def test_segment_search_window_widens_for_stalled_run(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv(
-        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
-        "experimental_stall_widened_search",
+    config = SegmentAssignmentRuntimeConfig(
+        selection_mode="experimental_stall_widened_search",
+        stalled_search_min_run=1,
+        stalled_search_lookback_segs=4,
     )
-    monkeypatch.setenv("Y2K_WHISPER_SEGMENT_ASSIGN_STALLED_SEARCH_MIN_RUN", "1")
-    monkeypatch.setenv("Y2K_WHISPER_SEGMENT_ASSIGN_STALLED_SEARCH_LOOKBACK_SEGS", "4")
-    config = whisper_blocks._segment_assignment_config_from_env()
 
     search_start, search_end = whisper_blocks._segment_search_window(
         seg_cursor=7,
@@ -120,11 +124,9 @@ def test_segment_search_window_widens_for_stalled_run(
 def test_select_segment_for_line_mode_experimental_terminal_stall_looks_back(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv(
-        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
-        "experimental_terminal_stall_lookback",
+    config = SegmentAssignmentRuntimeConfig(
+        selection_mode="experimental_terminal_stall_lookback"
     )
-    config = whisper_blocks._segment_assignment_config_from_env()
     seg, score = whisper_blocks._select_segment_for_line_mode(
         words=["the", "city's", "cold", "and", "empty"],
         repeated_phrase_like=False,
@@ -164,11 +166,9 @@ def test_select_segment_for_line_mode_experimental_terminal_stall_looks_back(
 def test_select_segment_for_line_mode_experimental_terminal_stall_tie_break_traces(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv(
-        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
-        "experimental_terminal_stall_tie_break",
+    config = SegmentAssignmentRuntimeConfig(
+        selection_mode="experimental_terminal_stall_tie_break"
     )
-    config = whisper_blocks._segment_assignment_config_from_env()
     trace = {}
     seg, score = whisper_blocks._select_segment_for_line_mode(
         words=["said", "i'm", "blinded", "by", "the", "lights"],
@@ -245,10 +245,6 @@ def test_line_override_segment_votes_prefers_selected_nested_segment(
 def test_line_override_segment_votes_can_disable_selected_nested_segment(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setenv(
-        "Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE",
-        "experimental_terminal_stall_lookback",
-    )
     assignments = whisper_blocks._SegmentAssignments(
         {10: [300]},
         selected_segment_by_lrc_idx={10: 7},
@@ -264,6 +260,9 @@ def test_line_override_segment_votes_can_disable_selected_nested_segment(
         lrc_index_by_loc={(0, 0): 10},
         lrc_assignments=assignments,
         word_segment_idx={300: 5},
+        segment_assignment_config=SegmentAssignmentRuntimeConfig(
+            selection_mode="experimental_terminal_stall_lookback"
+        ),
     )
 
     assert votes == {5: 1}
@@ -727,3 +726,15 @@ def test_shift_repeated_lines_toggle_disables_repeat_shift(monkeypatch) -> None:
     adjusted = wmp._shift_repeated_lines_to_next_whisper(lines, whisper_words)
 
     assert adjusted == lines
+
+
+def test_postprocess_toggle_config_accepts_explicit_runtime_config() -> None:
+    cfg = wmp._default_postprocess_toggle_config(
+        WhisperRuntimeConfig(
+            disable_repeat_shift=True,
+            disable_monotonic_start_enforce=True,
+        )
+    )
+
+    assert cfg.disable_repeat_shift is True
+    assert cfg.disable_monotonic_start_enforce is True

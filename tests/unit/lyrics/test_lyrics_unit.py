@@ -66,17 +66,17 @@ def test_get_lyrics_simple_uses_lrc_and_singer_info(monkeypatch):
         )
         return [("First", "A"), ("Second", "B")], metadata
 
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=fake_fetch_lrc,
-        fetch_genius_lyrics_with_singers_fn=fake_genius,
-    ):
-        lines, metadata = lw.get_lyrics_simple(
-            title="Hello",
-            artist="Tester",
-            vocals_path=None,
-            romanize=False,
-            filter_promos=False,
-        )
+    lines, metadata = lw.get_lyrics_simple(
+        title="Hello",
+        artist="Tester",
+        vocals_path=None,
+        romanize=False,
+        filter_promos=False,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=fake_fetch_lrc,
+            fetch_genius_lyrics_with_singers_fn=fake_genius,
+        ),
+    )
 
     assert metadata is not None
     assert metadata.is_duet is True
@@ -87,15 +87,15 @@ def test_get_lyrics_simple_uses_lrc_and_singer_info(monkeypatch):
 
 
 def test_get_lyrics_simple_fallback_placeholder(monkeypatch):
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=lambda *a, **k: (None, None, ""),
-        fetch_genius_lyrics_with_singers_fn=lambda *a, **k: (None, None),
-    ):
-        lines, metadata = lw.get_lyrics_simple(
-            title="Missing",
-            artist="Artist",
-            vocals_path=None,
-        )
+    lines, metadata = lw.get_lyrics_simple(
+        title="Missing",
+        artist="Artist",
+        vocals_path=None,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *a, **k: (None, None, ""),
+            fetch_genius_lyrics_with_singers_fn=lambda *a, **k: (None, None),
+        ),
+    )
 
     assert metadata is not None
     assert len(lines) == 1

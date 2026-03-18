@@ -24,6 +24,7 @@ from .whisper_integration_retry import (
 from .whisper_integration_stages import (
     _run_mapped_line_postpasses as _run_mapped_line_postpasses_impl,
 )
+from .whisper_runtime_config import WhisperRuntimeConfig
 
 _MIN_SEGMENT_OVERLAP_COVERAGE = 0.45
 
@@ -40,6 +41,7 @@ def _build_alignment_pass_kwargs(
     lenient_vocal_activity_threshold: float,
     lenient_activity_bonus: float,
     low_word_confidence_threshold: float,
+    runtime_config: WhisperRuntimeConfig | None,
     transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
     extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
     dedupe_whisper_segments_fn: Callable[..., Any],
@@ -105,6 +107,7 @@ def _build_alignment_pass_kwargs(
         lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
         lenient_activity_bonus=lenient_activity_bonus,
         low_word_confidence_threshold=low_word_confidence_threshold,
+        runtime_config=runtime_config,
         hooks=hooks,
         logger=logger,
     )
@@ -129,7 +132,11 @@ def _run_alignment_with_optional_aggressive_retry(
         aggressive=True,
         **pass_kwargs,
     )
-    if _retry_improves_alignment(metrics, retry_metrics):
+    if _retry_improves_alignment(
+        metrics,
+        retry_metrics,
+        runtime_config=pass_kwargs.get("runtime_config"),
+    ):
         merged_metrics = dict(retry_metrics)
         merged_metrics["aggressive_retry_applied"] = 1.0
         retry_corrections = list(retry_corrections)
@@ -157,6 +164,7 @@ def _run_alignment_pass(
     lenient_vocal_activity_threshold: float,
     lenient_activity_bonus: float,
     low_word_confidence_threshold: float,
+    runtime_config: WhisperRuntimeConfig | None,
     hooks: AlignmentPassHooks,
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
@@ -204,6 +212,7 @@ def _run_alignment_pass(
         clone_lines_for_fallback_fn=_clone_lines_for_fallback_impl,
         filter_low_confidence_whisper_words_fn=_filter_low_confidence_whisper_words_impl,
         min_segment_overlap_coverage=_MIN_SEGMENT_OVERLAP_COVERAGE,
+        runtime_config=runtime_config,
         logger=logger,
     )
 
@@ -220,6 +229,7 @@ def align_lrc_text_to_whisper_timings_impl(
     lenient_vocal_activity_threshold: float,
     lenient_activity_bonus: float,
     low_word_confidence_threshold: float,
+    runtime_config: WhisperRuntimeConfig | None = None,
     *,
     transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
     extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
@@ -259,6 +269,7 @@ def align_lrc_text_to_whisper_timings_impl(
         lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
         lenient_activity_bonus=lenient_activity_bonus,
         low_word_confidence_threshold=low_word_confidence_threshold,
+        runtime_config=runtime_config,
         transcribe_vocals_fn=transcribe_vocals_fn,
         extract_audio_features_fn=extract_audio_features_fn,
         dedupe_whisper_segments_fn=dedupe_whisper_segments_fn,

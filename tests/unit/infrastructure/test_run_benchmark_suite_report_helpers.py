@@ -340,8 +340,6 @@ def test_persist_final_report_outputs_markdown_can_include_interjection_canary_m
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     md_path = run_dir / "benchmark_report.md"
-    args = _sample_args(tmp_path)
-
     report_json = {
         "run_id": "run-xyz",
         "status": "finished",

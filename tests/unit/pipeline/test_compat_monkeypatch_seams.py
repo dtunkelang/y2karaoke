@@ -26,3 +26,18 @@ def test_lyrics_whisper_hooks_restore_fetch():
         ) == (None, None, "")
 
     assert lw._fetch_lrc_text_and_timings_for_state is original
+
+
+def test_get_lyrics_simple_accepts_explicit_hooks():
+    lines, metadata = lw.get_lyrics_simple(
+        title="Song",
+        artist="Artist",
+        vocals_path=None,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=lambda *_a, **_k: (None, None, ""),
+            fetch_genius_lyrics_with_singers_fn=lambda *_a, **_k: (None, None),
+        ),
+    )
+
+    assert metadata is not None
+    assert lines

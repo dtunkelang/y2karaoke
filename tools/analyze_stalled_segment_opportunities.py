@@ -15,7 +15,9 @@ def _load_rows(path: Path) -> list[dict[str, Any]]:
     return [row for row in rows if isinstance(row, dict)]
 
 
-def _candidate_gain(row: dict[str, Any], key: str) -> tuple[float | None, dict[str, Any] | None]:
+def _candidate_gain(
+    row: dict[str, Any], key: str
+) -> tuple[float | None, dict[str, Any] | None]:
     current = float(row.get("final_score", 0.0) or 0.0)
     best_gain: float | None = None
     best_item: dict[str, Any] | None = None

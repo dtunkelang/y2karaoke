@@ -14,9 +14,6 @@ from ..alignment import timing_models
 from .whisper_forced_alignment import align_lines_with_whisperx
 from .whisper_integration_align_experimental import (
     count_non_vocal_words_near_time as _count_non_vocal_words_near_time,
-    enable_low_support_onset_reanchor as _enable_low_support_onset_reanchor,
-    enable_repeat_cadence_reanchor as _enable_repeat_cadence_reanchor,
-    enable_restored_run_onset_shift as _enable_restored_run_onset_shift,
     local_lexical_overlap_ratio as _local_lexical_overlap_ratio,
     normalized_prefix_tokens as _normalized_prefix_tokens,
     normalized_tokens as _normalized_tokens,
@@ -46,7 +43,7 @@ from .whisper_integration_weak_evidence import (
     restore_weak_evidence_large_start_shifts as _restore_weak_evidence_large_start_shifts,
     restore_unsupported_early_duplicate_shifts as _restore_unsupported_early_duplicate_shifts,
 )
-from .whisper_profile import get_whisper_profile
+from .whisper_runtime_config import WhisperRuntimeConfig, load_whisper_runtime_config
 from . import whisper_utils
 
 _MIN_FORCED_WORD_COVERAGE = 0.2
@@ -63,8 +60,25 @@ class _WhisperMappingDecisionConfig:
     snap_first_word_max_shift: float = 2.5
 
 
-def _default_mapping_decision_config() -> _WhisperMappingDecisionConfig:
-    profile = get_whisper_profile()
+@dataclass
+class _PreparedAlignmentInputs:
+    baseline_lines: List[models.Line]
+    transcription: List[timing_models.TranscriptionSegment]
+    all_words: List[timing_models.TranscriptionWord]
+    detected_lang: str
+    used_model: str
+    audio_features: Optional[timing_models.AudioFeatures]
+    trace_path: str
+    trace_line_range: Any
+    trace_snapshots: list[dict[str, Any]]
+    before_low_conf_filter: int
+    whisper_words_after_filter: int
+
+
+def _default_mapping_decision_config(
+    runtime_config: WhisperRuntimeConfig | None = None,
+) -> _WhisperMappingDecisionConfig:
+    profile = (runtime_config or load_whisper_runtime_config()).profile
     if profile == "safe":
         return _WhisperMappingDecisionConfig(
             sparse_word_threshold=100,
@@ -114,22 +128,19 @@ def _should_ignore_trimmed_transcript(
     )
 
 
-def _enable_tail_shortfall_forced_fallback() -> bool:
-    return os.getenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK") == "1"
-
-
 def _should_force_whisperx_for_tail_shortfall(
     *,
     all_words: List[timing_models.TranscriptionWord],
     lines: List[models.Line],
     language: str | None,
+    runtime_config: WhisperRuntimeConfig,
     detected_lang: str | None = None,
     min_total_words: int = 80,
     min_tail_shortfall_sec: float = 8.0,
     recent_window_sec: float = 20.0,
     max_recent_non_vocal_words: int = 8,
 ) -> bool:
-    if not _enable_tail_shortfall_forced_fallback():
+    if not runtime_config.tail_shortfall_forced_fallback:
         return False
     lang_code = (language or detected_lang or "").split("-", 1)[0].strip().lower()
     if lang_code not in {"fr"}:
@@ -651,6 +662,1124 @@ def _extend_misaligned_lines_before_i_said(
     return updated, applied
 
 
+def _return_alignment_result_with_trace(
+    *,
+    result: Tuple[List[models.Line], List[str], Dict[str, float]],
+    trace_snapshots: list[dict[str, Any]],
+    trace_path: str,
+) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
+    _maybe_write_trace_snapshot_file(
+        snapshots=trace_snapshots,
+        trace_path=trace_path,
+    )
+    return result
+
+
+def _initialize_alignment_trace() -> tuple[str, Any, list[dict[str, Any]]]:
+    return (
+        os.environ.get("Y2K_TRACE_WHISPER_STAGES_JSON", "").strip(),
+        _parse_trace_line_range(),
+        [],
+    )
+
+
+def _attempt_forced_alignment_for_reason(
+    *,
+    enabled: bool,
+    lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    vocals_path: str,
+    language: Optional[str],
+    detected_lang: str,
+    logger,
+    used_model: str,
+    reason: str,
+    should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+    trace_snapshots: list[dict[str, Any]],
+    trace_path: str,
+) -> Optional[Tuple[List[models.Line], List[str], Dict[str, float]]]:
+    if not enabled:
+        return None
+    forced_result = attempt_whisperx_forced_alignment(
+        lines=lines,
+        baseline_lines=baseline_lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
+        logger=logger,
+        used_model=used_model,
+        reason=reason,
+        align_lines_with_whisperx_fn=align_lines_with_whisperx,
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
+        min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
+    )
+    if forced_result is None:
+        return None
+    return _return_alignment_result_with_trace(
+        result=forced_result,
+        trace_snapshots=trace_snapshots,
+        trace_path=trace_path,
+    )
+
+
+def _transcribe_and_trim_alignment_inputs(
+    *,
+    lines: List[models.Line],
+    vocals_path: str,
+    language: Optional[str],
+    model_size: str,
+    aggressive: bool,
+    temperature: float,
+    audio_features: Optional[timing_models.AudioFeatures],
+    transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
+    extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
+    dedupe_whisper_segments_fn: Callable[..., Any],
+    trim_whisper_transcription_by_lyrics_fn: Callable[..., Any],
+    logger,
+) -> tuple[
+    List[timing_models.TranscriptionSegment],
+    List[timing_models.TranscriptionWord],
+    str,
+    str,
+    Optional[timing_models.AudioFeatures],
+]:
+    transcription, all_words, detected_lang, used_model = transcribe_vocals_fn(
+        vocals_path, language, model_size, aggressive, temperature
+    )
+    if not audio_features:
+        audio_features = extract_audio_features_fn(vocals_path)
+    transcription = dedupe_whisper_segments_fn(transcription)
+    original_transcription = transcription
+    original_all_words = all_words
+
+    line_texts = [line.text for line in lines if line.text.strip()]
+    transcription, all_words, trimmed_end = trim_whisper_transcription_by_lyrics_fn(
+        transcription, all_words, line_texts
+    )
+    if _should_ignore_trimmed_transcript(
+        trimmed_end=trimmed_end,
+        original_transcription=original_transcription,
+        lines=lines,
+    ):
+        transcription = original_transcription
+        all_words = original_all_words
+        trimmed_end = None
+    if trimmed_end:
+        logger.info(
+            "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
+        )
+    return transcription, all_words, detected_lang, used_model, audio_features
+
+
+def _finalize_prepared_alignment_inputs(
+    *,
+    baseline_lines: List[models.Line],
+    transcription: List[timing_models.TranscriptionSegment],
+    all_words: List[timing_models.TranscriptionWord],
+    detected_lang: str,
+    used_model: str,
+    audio_features: Optional[timing_models.AudioFeatures],
+    lenient_vocal_activity_threshold: float,
+    low_word_confidence_threshold: float,
+    fill_vocal_activity_gaps_fn: Callable[..., Any],
+    filter_low_confidence_whisper_words_fn: Callable[..., Any],
+    dedupe_whisper_words_fn: Callable[..., Any],
+    trace_path: str,
+    trace_line_range: Any,
+    trace_snapshots: list[dict[str, Any]],
+    logger,
+) -> tuple[
+    Optional[_PreparedAlignmentInputs],
+    Optional[Tuple[List[models.Line], List[str], Dict[str, float]]],
+]:
+    if not transcription or not all_words:
+        logger.warning("No transcription available, skipping Whisper timing map")
+        return None, _return_alignment_result_with_trace(
+            result=(baseline_lines, [], {}),
+            trace_snapshots=trace_snapshots,
+            trace_path=trace_path,
+        )
+
+    if audio_features:
+        all_words, filled_segments = fill_vocal_activity_gaps_fn(
+            all_words,
+            audio_features,
+            lenient_vocal_activity_threshold,
+            segments=transcription,
+        )
+        if filled_segments is not None:
+            transcription = filled_segments
+
+    before_low_conf_filter = len(all_words)
+    all_words = filter_low_confidence_whisper_words_fn(
+        all_words,
+        low_word_confidence_threshold,
+    )
+    if len(all_words) != before_low_conf_filter:
+        logger.debug(
+            "Filtered low-confidence Whisper words: %d -> %d (threshold=%.2f)",
+            before_low_conf_filter,
+            len(all_words),
+            low_word_confidence_threshold,
+        )
+    all_words = dedupe_whisper_words_fn(all_words)
+
+    return (
+        _PreparedAlignmentInputs(
+            baseline_lines=baseline_lines,
+            transcription=transcription,
+            all_words=all_words,
+            detected_lang=detected_lang,
+            used_model=used_model,
+            audio_features=audio_features,
+            trace_path=trace_path,
+            trace_line_range=trace_line_range,
+            trace_snapshots=trace_snapshots,
+            before_low_conf_filter=before_low_conf_filter,
+            whisper_words_after_filter=len(all_words),
+        ),
+        None,
+    )
+
+
+def _prepare_alignment_inputs(
+    *,
+    lines: List[models.Line],
+    vocals_path: str,
+    language: Optional[str],
+    model_size: str,
+    aggressive: bool,
+    temperature: float,
+    audio_features: Optional[timing_models.AudioFeatures],
+    lenient_vocal_activity_threshold: float,
+    low_word_confidence_threshold: float,
+    transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
+    extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
+    dedupe_whisper_segments_fn: Callable[..., Any],
+    trim_whisper_transcription_by_lyrics_fn: Callable[..., Any],
+    fill_vocal_activity_gaps_fn: Callable[..., Any],
+    dedupe_whisper_words_fn: Callable[..., Any],
+    clone_lines_for_fallback_fn: Callable[..., Any],
+    filter_low_confidence_whisper_words_fn: Callable[..., Any],
+    should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+    config: _WhisperMappingDecisionConfig,
+    runtime_config: WhisperRuntimeConfig,
+    logger,
+) -> tuple[
+    Optional[_PreparedAlignmentInputs],
+    Optional[Tuple[List[models.Line], List[str], Dict[str, float]]],
+]:
+    baseline_lines = clone_lines_for_fallback_fn(lines)
+    ensure_local_lex_lookup()
+    (
+        transcription,
+        all_words,
+        detected_lang,
+        used_model,
+        audio_features,
+    ) = _transcribe_and_trim_alignment_inputs(
+        lines=lines,
+        vocals_path=vocals_path,
+        language=language,
+        model_size=model_size,
+        aggressive=aggressive,
+        temperature=temperature,
+        audio_features=audio_features,
+        transcribe_vocals_fn=transcribe_vocals_fn,
+        extract_audio_features_fn=extract_audio_features_fn,
+        dedupe_whisper_segments_fn=dedupe_whisper_segments_fn,
+        trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,
+        logger=logger,
+    )
+    trace_path, trace_line_range, trace_snapshots = _initialize_alignment_trace()
+
+    forced_result = _attempt_forced_alignment_for_reason(
+        enabled=_should_force_whisperx_for_tail_shortfall(
+            all_words=all_words,
+            lines=lines,
+            language=language,
+            runtime_config=runtime_config,
+            detected_lang=detected_lang,
+        ),
+        lines=lines,
+        baseline_lines=baseline_lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
+        logger=logger,
+        used_model=used_model,
+        reason="early Whisper transcript tail shortfall",
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        trace_snapshots=trace_snapshots,
+        trace_path=trace_path,
+    )
+    if forced_result is not None:
+        return None, forced_result
+
+    sparse_whisper_output = (
+        len(all_words) < config.sparse_word_threshold
+        or len(transcription) <= config.sparse_segment_threshold
+    )
+    forced_result = _attempt_forced_alignment_for_reason(
+        enabled=sparse_whisper_output,
+        lines=lines,
+        baseline_lines=baseline_lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
+        logger=logger,
+        used_model=used_model,
+        reason="sparse Whisper transcript",
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        trace_snapshots=trace_snapshots,
+        trace_path=trace_path,
+    )
+    if forced_result is not None:
+        return None, forced_result
+
+    return _finalize_prepared_alignment_inputs(
+        baseline_lines=baseline_lines,
+        transcription=transcription,
+        all_words=all_words,
+        detected_lang=detected_lang,
+        used_model=used_model,
+        audio_features=audio_features,
+        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+        low_word_confidence_threshold=low_word_confidence_threshold,
+        fill_vocal_activity_gaps_fn=fill_vocal_activity_gaps_fn,
+        filter_low_confidence_whisper_words_fn=filter_low_confidence_whisper_words_fn,
+        dedupe_whisper_words_fn=dedupe_whisper_words_fn,
+        trace_path=trace_path,
+        trace_line_range=trace_line_range,
+        trace_snapshots=trace_snapshots,
+        logger=logger,
+    )
+
+
+def _build_lrc_assignments(
+    *,
+    lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    transcription: List[timing_models.TranscriptionSegment],
+    extract_lrc_words_all_fn: Callable[..., Any],
+    build_phoneme_tokens_from_lrc_words_fn: Callable[..., Any],
+    build_phoneme_tokens_from_whisper_words_fn: Callable[..., Any],
+    build_syllable_tokens_from_phonemes_fn: Callable[..., Any],
+    build_segment_text_overlap_assignments_fn: Callable[..., Any],
+    build_phoneme_dtw_path_fn: Callable[..., Any],
+    build_word_assignments_from_phoneme_path_fn: Callable[..., Any],
+    build_block_segmented_syllable_assignments_fn: Callable[..., Any],
+    min_segment_overlap_coverage: float,
+    epitran_lang: str,
+    logger,
+) -> tuple[List[Any], Any]:
+    lrc_words = extract_lrc_words_all_fn(lines)
+    if not lrc_words:
+        return [], {}
+
+    logger.debug(
+        "DTW-phonetic: Pre-computing IPA for %d Whisper words...", len(all_words)
+    )
+    phonetic_utils._prewarm_ipa_cache(
+        [ww.text for ww in all_words] + [lw["text"] for lw in lrc_words],
+        epitran_lang,
+    )
+
+    logger.debug(
+        "DTW-phonetic: Preparing phoneme sequences for %d lyrics words and %d Whisper words...",
+        len(lrc_words),
+        len(all_words),
+    )
+    lrc_phonemes = build_phoneme_tokens_from_lrc_words_fn(lrc_words, epitran_lang)
+    whisper_phonemes = build_phoneme_tokens_from_whisper_words_fn(
+        all_words, epitran_lang
+    )
+    lrc_syllables = build_syllable_tokens_from_phonemes_fn(lrc_phonemes)
+    whisper_syllables = build_syllable_tokens_from_phonemes_fn(whisper_phonemes)
+
+    lrc_assignments = build_segment_text_overlap_assignments_fn(
+        lrc_words,
+        all_words,
+        transcription,
+    )
+    seg_coverage = len(lrc_assignments) / len(lrc_words) if lrc_words else 0
+    if seg_coverage >= min_segment_overlap_coverage:
+        return lrc_words, lrc_assignments
+
+    logger.debug(
+        "Segment overlap coverage %.0f%% below %.0f%% threshold, falling back to DTW",
+        seg_coverage * 100,
+        min_segment_overlap_coverage * 100,
+    )
+    if not lrc_syllables or not whisper_syllables:
+        if not lrc_phonemes or not whisper_phonemes:
+            logger.warning("No phoneme/syllable data; skipping mapping")
+            return lrc_words, {}
+        path = build_phoneme_dtw_path_fn(
+            lrc_phonemes,
+            whisper_phonemes,
+            epitran_lang,
+        )
+        return lrc_words, build_word_assignments_from_phoneme_path_fn(
+            path, lrc_phonemes, whisper_phonemes
+        )
+
+    return lrc_words, build_block_segmented_syllable_assignments_fn(
+        lrc_words,
+        all_words,
+        lrc_syllables,
+        whisper_syllables,
+        epitran_lang,
+    )
+
+
+def _finalize_alignment_result(
+    *,
+    baseline_lines: List[models.Line],
+    mapped_lines: List[models.Line],
+    corrections: List[str],
+    metrics: Dict[str, Any],
+    mapped_count: int,
+    should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+    logger,
+) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
+    if mapped_count:
+        corrections.append(f"DTW-phonetic mapped {mapped_count} word(s) to Whisper")
+    rollback, short_before, short_after = should_rollback_short_line_degradation_fn(
+        baseline_lines, mapped_lines
+    )
+    if not rollback:
+        return mapped_lines, corrections, metrics
+
+    repaired_lines, restored_count = restore_implausibly_short_lines_fn(
+        baseline_lines, mapped_lines
+    )
+    repaired_rollback, _, repaired_after = should_rollback_short_line_degradation_fn(
+        baseline_lines, repaired_lines
+    )
+    if restored_count > 0 and not repaired_rollback:
+        logger.info(
+            "Recovered Whisper map by restoring %d short baseline line(s) (%d -> %d)",
+            restored_count,
+            short_after,
+            repaired_after,
+        )
+        corrections.append(
+            f"Restored {restored_count} short compressed lines from baseline timing"
+        )
+        return repaired_lines, corrections, metrics
+
+    logger.warning(
+        "Rolling back Whisper map: implausibly short multi-word lines worsened (%d -> %d)",
+        short_before,
+        short_after,
+    )
+    corrections.append(
+        "Ignored Whisper timing map due to short-line compression artifacts"
+    )
+    return baseline_lines, corrections, metrics
+
+
+def _apply_baseline_restore_corrections(
+    *,
+    lines: List[models.Line],
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    corrections: List[str],
+    constrain_line_starts_to_baseline_fn: Callable[..., Any],
+    snap_first_word_to_whisper_onset_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+    matched_ratio: float,
+    line_coverage: float,
+    config: _WhisperMappingDecisionConfig,
+) -> tuple[List[models.Line], List[str], float, float, float, bool]:
+    whisper_end = max((w.end for w in all_words), default=0.0)
+    baseline_end = _line_set_end(baseline_lines)
+    mapped_end = _line_set_end(mapped_lines)
+    baseline_timeline_ratio = baseline_end / whisper_end if whisper_end > 0.0 else 1.0
+    mapped_timeline_ratio = mapped_end / whisper_end if whisper_end > 0.0 else 1.0
+    apply_baseline_constraint, median_global_shift = _should_apply_baseline_constraint(
+        mapped_lines,
+        baseline_lines,
+        matched_ratio=matched_ratio,
+        line_coverage=line_coverage,
+    )
+    mapped_lines, corrections = _apply_baseline_constraint_and_snap(
+        mapped_lines=mapped_lines,
+        baseline_lines=baseline_lines,
+        all_words=all_words,
+        corrections=corrections,
+        constrain_line_starts_to_baseline_fn=constrain_line_starts_to_baseline_fn,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        apply_baseline_constraint=apply_baseline_constraint,
+        snap_first_word_max_shift=config.snap_first_word_max_shift,
+    )
+    mapped_lines, corrections = _apply_baseline_restore_shift_passes(
+        mapped_lines=mapped_lines,
+        baseline_lines=baseline_lines,
+        all_words=all_words,
+        corrections=corrections,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        apply_baseline_constraint=apply_baseline_constraint,
+    )
+    mapped_lines, corrections = _apply_baseline_restore_cleanup_passes(
+        mapped_lines=mapped_lines,
+        baseline_lines=baseline_lines,
+        all_words=all_words,
+        corrections=corrections,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    return (
+        mapped_lines,
+        corrections,
+        baseline_timeline_ratio,
+        mapped_timeline_ratio,
+        median_global_shift,
+        apply_baseline_constraint,
+    )
+
+
+def _apply_audio_alignment_corrections(
+    *,
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    audio_features: Optional[timing_models.AudioFeatures],
+    corrections: List[str],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+    runtime_config: WhisperRuntimeConfig,
+) -> tuple[List[models.Line], List[str]]:
+    if audio_features is None:
+        return mapped_lines, corrections
+
+    mapped_lines, corrections = _apply_audio_reanchor_corrections(
+        mapped_lines=mapped_lines,
+        baseline_lines=baseline_lines,
+        all_words=all_words,
+        audio_features=audio_features,
+        corrections=corrections,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        runtime_config=runtime_config,
+    )
+    return _apply_audio_extension_corrections(
+        mapped_lines=mapped_lines,
+        all_words=all_words,
+        audio_features=audio_features,
+        corrections=corrections,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+
+
+def _capture_stage_lines(
+    *,
+    mapped_lines: List[models.Line],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+    stage: str,
+) -> None:
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage=stage,
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
+
+
+def _append_correction_if_any(
+    corrections: List[str],
+    count: int,
+    message: str,
+) -> None:
+    if count:
+        corrections.append(message.format(count=count))
+
+
+def _apply_baseline_constraint_and_snap(
+    *,
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    corrections: List[str],
+    constrain_line_starts_to_baseline_fn: Callable[..., Any],
+    snap_first_word_to_whisper_onset_fn: Callable[..., Any],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+    apply_baseline_constraint: bool,
+    snap_first_word_max_shift: float,
+) -> tuple[List[models.Line], List[str]]:
+    if apply_baseline_constraint:
+        mapped_lines = constrain_line_starts_to_baseline_fn(
+            mapped_lines, baseline_lines
+        )
+        _capture_stage_lines(
+            mapped_lines=mapped_lines,
+            trace_snapshots=trace_snapshots,
+            trace_line_range=trace_line_range,
+            stage="after_initial_baseline_constraint",
+        )
+    else:
+        corrections.append(
+            "Skipped baseline start constraint due to strong global Whisper shift evidence"
+        )
+
+    try:
+        mapped_lines = snap_first_word_to_whisper_onset_fn(
+            mapped_lines,
+            all_words,
+            max_shift=snap_first_word_max_shift,
+        )
+    except TypeError:
+        mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_snap_first_word_to_whisper_onset",
+    )
+    if apply_baseline_constraint:
+        mapped_lines = constrain_line_starts_to_baseline_fn(
+            mapped_lines, baseline_lines
+        )
+        _capture_stage_lines(
+            mapped_lines=mapped_lines,
+            trace_snapshots=trace_snapshots,
+            trace_line_range=trace_line_range,
+            stage="after_second_baseline_constraint",
+        )
+    return mapped_lines, corrections
+
+
+def _apply_baseline_restore_shift_passes(
+    *,
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    corrections: List[str],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+    apply_baseline_constraint: bool,
+) -> tuple[List[models.Line], List[str]]:
+    mapped_lines, restored_weak = _restore_weak_evidence_large_start_shifts(
+        mapped_lines,
+        baseline_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_weak,
+        "Restored {count} weak-evidence large start shift line(s) to baseline",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_weak_evidence_large_start_shifts",
+    )
+
+    mapped_lines, restored_adjacent_late = _restore_adjacent_near_threshold_late_shifts(
+        mapped_lines,
+        baseline_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_adjacent_late,
+        "Restored {count} adjacent near-threshold late line(s) to baseline",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_adjacent_near_threshold_late_shifts",
+    )
+
+    if not apply_baseline_constraint:
+        mapped_lines, restored_late_runs = _restore_consistently_late_runs_from_baseline(
+            mapped_lines,
+            baseline_lines,
+        )
+        _append_correction_if_any(
+            corrections,
+            restored_late_runs,
+            "Restored {count} consistently late line(s) from baseline timing",
+        )
+        _capture_stage_lines(
+            mapped_lines=mapped_lines,
+            trace_snapshots=trace_snapshots,
+            trace_line_range=trace_line_range,
+            stage="after_restore_consistently_late_runs_from_baseline",
+        )
+    return mapped_lines, corrections
+
+
+def _apply_baseline_restore_cleanup_passes(
+    *,
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    corrections: List[str],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+) -> tuple[List[models.Line], List[str]]:
+    mapped_lines, restored_early_duplicates = _restore_unsupported_early_duplicate_shifts(
+        mapped_lines,
+        baseline_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_early_duplicates,
+        "Restored {count} unsupported early duplicate line(s) to baseline",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_unsupported_early_duplicate_shifts",
+    )
+
+    mapped_lines, restored_short = restore_implausibly_short_lines_fn(
+        baseline_lines, mapped_lines
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_short,
+        "Restored {count} short compressed lines from baseline timing",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_implausibly_short_lines",
+    )
+
+    mapped_lines, restored_inversions = _restore_pairwise_inversions_from_source(
+        baseline_lines,
+        mapped_lines,
+        min_inversion_gap=0.25,
+        min_ahead_shift=2.5,
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_inversions,
+        "Restored {count} inversion outlier line(s) from baseline timing",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_pairwise_inversions_from_source",
+    )
+
+    mapped_lines, restored_zero_support_late = (
+        _restore_zero_support_parenthetical_late_start_expansions(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_zero_support_late,
+        "Restored {count} zero-support parenthetical late expanded line(s) to baseline starts",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_zero_support_parenthetical_late_start_expansions",
+    )
+
+    mapped_lines, restored_enumerations = _restore_late_enumeration_lines_from_baseline(
+        mapped_lines,
+        baseline_lines,
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_enumerations,
+        "Restored {count} late enumeration line(s) from baseline timing",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_late_enumeration_lines_from_baseline",
+    )
+    return mapped_lines, corrections
+
+
+def _apply_audio_reanchor_corrections(
+    *,
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    audio_features: timing_models.AudioFeatures,
+    corrections: List[str],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+    runtime_config: WhisperRuntimeConfig,
+) -> tuple[List[models.Line], List[str]]:
+    mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
+        mapped_lines,
+        audio_features,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        carryover_fixes,
+        "Shifted {count} weak-opening line(s) past prior-phrase carryover",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_shift_weak_opening_lines_past_phrase_carryover",
+    )
+
+    repeated_cadence_reanchors = 0
+    if runtime_config.repeat_cadence_reanchor:
+        mapped_lines, repeated_cadence_reanchors = _reanchor_repeated_cadence_lines(
+            mapped_lines
+        )
+    _append_correction_if_any(
+        corrections,
+        repeated_cadence_reanchors,
+        "Reanchored {count} repeated-cadence line(s)",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_reanchor_repeated_cadence_lines",
+    )
+
+    restored_run_onset_shifts = 0
+    if runtime_config.restored_run_onset_shift:
+        mapped_lines, restored_run_onset_shifts = _shift_restored_low_support_runs_to_onset(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+            audio_features,
+        )
+    _append_correction_if_any(
+        corrections,
+        restored_run_onset_shifts,
+        "Shifted {count} restored low-support line(s) to nearby onset runs",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_shift_restored_low_support_runs_to_onset",
+    )
+
+    mapped_lines, said_reanchors = _reanchor_unsupported_i_said_lines_to_later_onset(
+        mapped_lines,
+        baseline_lines,
+        all_words,
+        audio_features,
+    )
+    _append_correction_if_any(
+        corrections,
+        said_reanchors,
+        "Reanchored {count} unsupported 'I said' line(s) to later audio onsets",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_reanchor_unsupported_i_said_lines_to_later_onset",
+    )
+
+    low_support_reanchors = 0
+    if runtime_config.low_support_onset_reanchor:
+        mapped_lines, low_support_reanchors = _reanchor_low_support_lines_to_later_onset(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+            audio_features,
+        )
+    _append_correction_if_any(
+        corrections,
+        low_support_reanchors,
+        "Reanchored {count} low-support line(s) to later audio onsets",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_reanchor_low_support_lines_to_later_onset",
+    )
+
+    mapped_lines, interjection_reanchors = (
+        _reanchor_unsupported_interjection_lines_to_onsets(
+            mapped_lines,
+            all_words,
+            audio_features,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        interjection_reanchors,
+        "Reanchored {count} unsupported interjection line(s) to audio onsets",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_reanchor_unsupported_interjection_lines_to_onsets",
+    )
+    return mapped_lines, corrections
+
+
+def _apply_audio_extension_corrections(
+    *,
+    mapped_lines: List[models.Line],
+    all_words: List[timing_models.TranscriptionWord],
+    audio_features: timing_models.AudioFeatures,
+    corrections: List[str],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+) -> tuple[List[models.Line], List[str]]:
+    mapped_lines, tail_extensions = _extend_unsupported_parenthetical_tails(
+        mapped_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        tail_extensions,
+        "Extended {count} unsupported parenthetical tail(s)",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_extend_unsupported_parenthetical_tails",
+    )
+
+    mapped_lines, i_said_tail_extensions = _extend_unsupported_i_said_tails(
+        mapped_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        i_said_tail_extensions,
+        "Extended {count} unsupported 'I said' tail(s)",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_extend_unsupported_i_said_tails",
+    )
+
+    mapped_lines, pre_i_said_extensions = _extend_misaligned_lines_before_i_said(
+        mapped_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        pre_i_said_extensions,
+        "Extended {count} lexically mismatched line(s) before unsupported 'I said' lines",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_extend_misaligned_lines_before_i_said",
+    )
+
+    mapped_lines, pre_weak_opening_extensions = (
+        _extend_unsupported_long_lines_before_weak_opening(
+            mapped_lines,
+            all_words,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        pre_weak_opening_extensions,
+        "Extended {count} unsupported line(s) before weak openings",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_extend_unsupported_long_lines_before_weak_opening",
+    )
+
+    mapped_lines, weak_opening_extensions = _extend_unsupported_weak_opening_lines(
+        mapped_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        weak_opening_extensions,
+        "Extended {count} unsupported weak-opening line(s)",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_extend_unsupported_weak_opening_lines",
+    )
+    return mapped_lines, corrections
+
+
+def _run_initial_mapping_and_postpasses(
+    *,
+    lines: List[models.Line],
+    lrc_words: List[Any],
+    all_words: List[timing_models.TranscriptionWord],
+    lrc_assignments: Any,
+    epitran_lang: str,
+    transcription: List[timing_models.TranscriptionSegment],
+    audio_features: Optional[timing_models.AudioFeatures],
+    vocals_path: str,
+    corrections: List[str],
+    map_lrc_words_to_whisper_fn: Callable[..., Any],
+    run_mapped_line_postpasses_fn: Callable[..., Any],
+    interpolate_unmatched_lines_fn: Callable[..., Any],
+    refine_unmatched_lines_with_onsets_fn: Callable[..., Any],
+    shift_repeated_lines_to_next_whisper_fn: Callable[..., Any],
+    extend_line_to_trailing_whisper_matches_fn: Callable[..., Any],
+    pull_late_lines_to_matching_segments_fn: Callable[..., Any],
+    retime_short_interjection_lines_fn: Callable[..., Any],
+    snap_first_word_to_whisper_onset_fn: Callable[..., Any],
+    pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_whisper_fn: Callable[..., Any],
+    resolve_line_overlaps_fn: Callable[..., Any],
+    trace_snapshots: list[dict[str, Any]],
+    trace_line_range: Any,
+) -> tuple[List[models.Line], int, float, set[int], List[str], float, float]:
+    mapping_start = time.perf_counter()
+    mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
+        map_lrc_words_to_whisper_fn(
+            lines,
+            lrc_words,
+            all_words,
+            lrc_assignments,
+            epitran_lang,
+            transcription,
+        )
+    )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_map_lrc_words_to_whisper",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
+    mapping_elapsed = time.perf_counter() - mapping_start
+
+    postpass_start = time.perf_counter()
+    mapped_lines, corrections = run_mapped_line_postpasses_fn(
+        mapped_lines=mapped_lines,
+        mapped_lines_set=mapped_lines_set,
+        all_words=all_words,
+        transcription=transcription,
+        audio_features=audio_features,
+        vocals_path=vocals_path,
+        epitran_lang=epitran_lang,
+        corrections=corrections,
+        interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
+        refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
+        shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
+        extend_line_to_trailing_whisper_matches_fn=extend_line_to_trailing_whisper_matches_fn,
+        pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
+        retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
+        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+        capture_trace_snapshot_fn=_capture_trace_snapshot,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+    )
+    _capture_trace_snapshot(
+        trace_snapshots,
+        stage="after_run_mapped_line_postpasses",
+        lines=mapped_lines,
+        line_range=trace_line_range,
+    )
+    postpass_elapsed = time.perf_counter() - postpass_start
+    return (
+        mapped_lines,
+        mapped_count,
+        total_similarity,
+        mapped_lines_set,
+        corrections,
+        mapping_elapsed,
+        postpass_elapsed,
+    )
+
+
+def _maybe_force_low_coverage_alignment(
+    *,
+    lines: List[models.Line],
+    lrc_words: List[Any],
+    matched_ratio: float,
+    line_coverage: float,
+    baseline_lines: List[models.Line],
+    vocals_path: str,
+    language: Optional[str],
+    detected_lang: str,
+    used_model: str,
+    should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+    trace_snapshots: list[dict[str, Any]],
+    trace_path: str,
+    config: _WhisperMappingDecisionConfig,
+    logger,
+) -> Optional[Tuple[List[models.Line], List[str], Dict[str, float]]]:
+    if len(lrc_words) < config.low_coverage_lrc_word_min:
+        return None
+    if (
+        matched_ratio >= config.low_coverage_matched_ratio_max
+        and line_coverage >= config.low_coverage_line_coverage_max
+    ):
+        return None
+    forced_result = attempt_whisperx_forced_alignment(
+        lines=lines,
+        baseline_lines=baseline_lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
+        logger=logger,
+        used_model=used_model,
+        reason="low DTW mapping coverage",
+        align_lines_with_whisperx_fn=align_lines_with_whisperx,
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
+        min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
+    )
+    if forced_result is None:
+        return None
+    return _return_alignment_result_with_trace(
+        result=forced_result,
+        trace_snapshots=trace_snapshots,
+        trace_path=trace_path,
+    )
+
+
 def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     lines: List[models.Line],
     vocals_path: str,
@@ -696,227 +1825,101 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     clone_lines_for_fallback_fn: Callable[..., Any],
     filter_low_confidence_whisper_words_fn: Callable[..., Any],
     min_segment_overlap_coverage: float,
+    runtime_config: WhisperRuntimeConfig | None = None,
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings via DTW-style phonetic assignment."""
-    config = _default_mapping_decision_config()
+    resolved_runtime_config = runtime_config or load_whisper_runtime_config()
+    config = _default_mapping_decision_config(resolved_runtime_config)
     _ = min_similarity  # reserved for potential future tuning hooks
     _ = lenient_activity_bonus  # consumed by downstream scoring in related paths
 
-    baseline_lines = clone_lines_for_fallback_fn(lines)
     overall_start = time.perf_counter()
-    ensure_local_lex_lookup()
-    transcription, all_words, detected_lang, used_model = transcribe_vocals_fn(
-        vocals_path, language, model_size, aggressive, temperature
-    )
-    if not audio_features:
-        audio_features = extract_audio_features_fn(vocals_path)
-    transcription = dedupe_whisper_segments_fn(transcription)
-    original_transcription = transcription
-    original_all_words = all_words
-
-    line_texts = [line.text for line in lines if line.text.strip()]
-    transcription, all_words, trimmed_end = trim_whisper_transcription_by_lyrics_fn(
-        transcription, all_words, line_texts
-    )
-    if _should_ignore_trimmed_transcript(
-        trimmed_end=trimmed_end,
-        original_transcription=original_transcription,
+    prepared, early_result = _prepare_alignment_inputs(
         lines=lines,
-    ):
-        transcription = original_transcription
-        all_words = original_all_words
-        trimmed_end = None
-    if trimmed_end:
-        logger.info(
-            "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end
-        )
-
-    trace_path = os.environ.get("Y2K_TRACE_WHISPER_STAGES_JSON", "").strip()
-    trace_line_range = _parse_trace_line_range()
-    trace_snapshots: list[dict[str, Any]] = []
-
-    sparse_whisper_output = (
-        len(all_words) < config.sparse_word_threshold
-        or len(transcription) <= config.sparse_segment_threshold
-    )
-    if _should_force_whisperx_for_tail_shortfall(
-        all_words=all_words,
-        lines=lines,
+        vocals_path=vocals_path,
         language=language,
-        detected_lang=detected_lang,
-    ):
-        forced_result = attempt_whisperx_forced_alignment(
-            lines=lines,
-            baseline_lines=baseline_lines,
-            vocals_path=vocals_path,
-            language=language,
-            detected_lang=detected_lang,
-            logger=logger,
-            used_model=used_model,
-            reason="early Whisper transcript tail shortfall",
-            align_lines_with_whisperx_fn=align_lines_with_whisperx,
-            should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
-            restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
-            min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
-            min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
-        )
-        if forced_result is not None:
-            _maybe_write_trace_snapshot_file(
-                snapshots=trace_snapshots,
-                trace_path=trace_path,
-            )
-            return forced_result
-
-    if sparse_whisper_output:
-        forced_result = attempt_whisperx_forced_alignment(
-            lines=lines,
-            baseline_lines=baseline_lines,
-            vocals_path=vocals_path,
-            language=language,
-            detected_lang=detected_lang,
-            logger=logger,
-            used_model=used_model,
-            reason="sparse Whisper transcript",
-            align_lines_with_whisperx_fn=align_lines_with_whisperx,
-            should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
-            restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
-            min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
-            min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
-        )
-        if forced_result is not None:
-            _maybe_write_trace_snapshot_file(
-                snapshots=trace_snapshots,
-                trace_path=trace_path,
-            )
-            return forced_result
-
-    if not transcription or not all_words:
-        logger.warning("No transcription available, skipping Whisper timing map")
-        _maybe_write_trace_snapshot_file(
-            snapshots=trace_snapshots,
-            trace_path=trace_path,
-        )
-        return lines, [], {}
-
-    if audio_features:
-        all_words, filled_segments = fill_vocal_activity_gaps_fn(
-            all_words,
-            audio_features,
-            lenient_vocal_activity_threshold,
-            segments=transcription,
-        )
-        if filled_segments is not None:
-            transcription = filled_segments
-
-    before_low_conf_filter = len(all_words)
-    all_words = filter_low_confidence_whisper_words_fn(
-        all_words,
-        low_word_confidence_threshold,
+        model_size=model_size,
+        aggressive=aggressive,
+        temperature=temperature,
+        audio_features=audio_features,
+        lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
+        low_word_confidence_threshold=low_word_confidence_threshold,
+        transcribe_vocals_fn=transcribe_vocals_fn,
+        extract_audio_features_fn=extract_audio_features_fn,
+        dedupe_whisper_segments_fn=dedupe_whisper_segments_fn,
+        trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,
+        fill_vocal_activity_gaps_fn=fill_vocal_activity_gaps_fn,
+        dedupe_whisper_words_fn=dedupe_whisper_words_fn,
+        clone_lines_for_fallback_fn=clone_lines_for_fallback_fn,
+        filter_low_confidence_whisper_words_fn=filter_low_confidence_whisper_words_fn,
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        config=config,
+        runtime_config=resolved_runtime_config,
+        logger=logger,
     )
-    if len(all_words) != before_low_conf_filter:
-        logger.debug(
-            "Filtered low-confidence Whisper words: %d -> %d (threshold=%.2f)",
-            before_low_conf_filter,
-            len(all_words),
-            low_word_confidence_threshold,
-        )
+    if early_result is not None:
+        return early_result
 
-    all_words = dedupe_whisper_words_fn(all_words)
-    whisper_words_after_filter = len(all_words)
+    assert prepared is not None
+    baseline_lines = prepared.baseline_lines
+    transcription = prepared.transcription
+    all_words = prepared.all_words
+    detected_lang = prepared.detected_lang
+    used_model = prepared.used_model
+    audio_features = prepared.audio_features
+    trace_path = prepared.trace_path
+    trace_line_range = prepared.trace_line_range
+    trace_snapshots = prepared.trace_snapshots
+    before_low_conf_filter = prepared.before_low_conf_filter
+    whisper_words_after_filter = prepared.whisper_words_after_filter
 
     epitran_lang = phonetic_utils._whisper_lang_to_epitran(detected_lang)
     logger.debug(
         "Using epitran language: %s (from Whisper: %s)", epitran_lang, detected_lang
     )
 
-    lrc_words = extract_lrc_words_all_fn(lines)
+    lrc_words, lrc_assignments = _build_lrc_assignments(
+        lines=lines,
+        all_words=all_words,
+        transcription=transcription,
+        extract_lrc_words_all_fn=extract_lrc_words_all_fn,
+        build_phoneme_tokens_from_lrc_words_fn=build_phoneme_tokens_from_lrc_words_fn,
+        build_phoneme_tokens_from_whisper_words_fn=build_phoneme_tokens_from_whisper_words_fn,
+        build_syllable_tokens_from_phonemes_fn=build_syllable_tokens_from_phonemes_fn,
+        build_segment_text_overlap_assignments_fn=build_segment_text_overlap_assignments_fn,
+        build_phoneme_dtw_path_fn=build_phoneme_dtw_path_fn,
+        build_word_assignments_from_phoneme_path_fn=build_word_assignments_from_phoneme_path_fn,
+        build_block_segmented_syllable_assignments_fn=build_block_segmented_syllable_assignments_fn,
+        min_segment_overlap_coverage=min_segment_overlap_coverage,
+        epitran_lang=epitran_lang,
+        logger=logger,
+    )
     if not lrc_words:
         return lines, [], {}
 
-    logger.debug(
-        "DTW-phonetic: Pre-computing IPA for %d Whisper words...", len(all_words)
-    )
-    phonetic_utils._prewarm_ipa_cache(
-        [ww.text for ww in all_words] + [lw["text"] for lw in lrc_words],
-        epitran_lang,
-    )
-
-    logger.debug(
-        "DTW-phonetic: Preparing phoneme sequences for %d lyrics words and %d Whisper words...",
-        len(lrc_words),
-        len(all_words),
-    )
-    lrc_phonemes = build_phoneme_tokens_from_lrc_words_fn(lrc_words, epitran_lang)
-    whisper_phonemes = build_phoneme_tokens_from_whisper_words_fn(
-        all_words, epitran_lang
-    )
-
-    lrc_syllables = build_syllable_tokens_from_phonemes_fn(lrc_phonemes)
-    whisper_syllables = build_syllable_tokens_from_phonemes_fn(whisper_phonemes)
-
-    lrc_assignments = build_segment_text_overlap_assignments_fn(
-        lrc_words,
-        all_words,
-        transcription,
-    )
-    seg_coverage = len(lrc_assignments) / len(lrc_words) if lrc_words else 0
-    if seg_coverage < min_segment_overlap_coverage:
-        logger.debug(
-            "Segment overlap coverage %.0f%% below %.0f%% threshold, falling back to DTW",
-            seg_coverage * 100,
-            min_segment_overlap_coverage * 100,
-        )
-        if not lrc_syllables or not whisper_syllables:
-            if not lrc_phonemes or not whisper_phonemes:
-                logger.warning("No phoneme/syllable data; skipping mapping")
-                return lines, [], {}
-            path = build_phoneme_dtw_path_fn(
-                lrc_phonemes,
-                whisper_phonemes,
-                epitran_lang,
-            )
-            lrc_assignments = build_word_assignments_from_phoneme_path_fn(
-                path, lrc_phonemes, whisper_phonemes
-            )
-        else:
-            lrc_assignments = build_block_segmented_syllable_assignments_fn(
-                lrc_words,
-                all_words,
-                lrc_syllables,
-                whisper_syllables,
-                epitran_lang,
-            )
-
     corrections: List[str] = []
-    mapping_start = time.perf_counter()
-    mapped_lines, mapped_count, total_similarity, mapped_lines_set = (
-        map_lrc_words_to_whisper_fn(
-            lines,
-            lrc_words,
-            all_words,
-            lrc_assignments,
-            epitran_lang,
-            transcription,
-        )
-    )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_map_lrc_words_to_whisper",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    mapping_elapsed = time.perf_counter() - mapping_start
-    postpass_start = time.perf_counter()
-    mapped_lines, corrections = run_mapped_line_postpasses_fn(
-        mapped_lines=mapped_lines,
-        mapped_lines_set=mapped_lines_set,
+    (
+        mapped_lines,
+        mapped_count,
+        total_similarity,
+        mapped_lines_set,
+        corrections,
+        mapping_elapsed,
+        postpass_elapsed,
+    ) = _run_initial_mapping_and_postpasses(
+        lines=lines,
+        lrc_words=lrc_words,
         all_words=all_words,
+        lrc_assignments=lrc_assignments,
+        epitran_lang=epitran_lang,
         transcription=transcription,
         audio_features=audio_features,
         vocals_path=vocals_path,
-        epitran_lang=epitran_lang,
         corrections=corrections,
+        map_lrc_words_to_whisper_fn=map_lrc_words_to_whisper_fn,
+        run_mapped_line_postpasses_fn=run_mapped_line_postpasses_fn,
         interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
         refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
         shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
@@ -927,415 +1930,67 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
-        capture_trace_snapshot_fn=_capture_trace_snapshot,
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
     )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_run_mapped_line_postpasses",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    postpass_elapsed = time.perf_counter() - postpass_start
 
     matched_ratio = mapped_count / len(lrc_words) if lrc_words else 0.0
     avg_similarity = total_similarity / mapped_count if mapped_count else 0.0
     line_coverage = (
         len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
     )
-    if len(lrc_words) >= config.low_coverage_lrc_word_min and (
-        matched_ratio < config.low_coverage_matched_ratio_max
-        or line_coverage < config.low_coverage_line_coverage_max
-    ):
-        forced_result = attempt_whisperx_forced_alignment(
-            lines=lines,
-            baseline_lines=baseline_lines,
-            vocals_path=vocals_path,
-            language=language,
-            detected_lang=detected_lang,
-            logger=logger,
-            used_model=used_model,
-            reason="low DTW mapping coverage",
-            align_lines_with_whisperx_fn=align_lines_with_whisperx,
-            should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
-            restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
-            min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
-            min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
-        )
-        if forced_result is not None:
-            _maybe_write_trace_snapshot_file(
-                snapshots=trace_snapshots,
-                trace_path=trace_path,
-            )
-            return forced_result
-
-    whisper_end = max((w.end for w in all_words), default=0.0)
-    baseline_end = _line_set_end(baseline_lines)
-    mapped_end = _line_set_end(mapped_lines)
-    baseline_timeline_ratio = baseline_end / whisper_end if whisper_end > 0.0 else 1.0
-    mapped_timeline_ratio = mapped_end / whisper_end if whisper_end > 0.0 else 1.0
-    apply_baseline_constraint, median_global_shift = _should_apply_baseline_constraint(
-        mapped_lines,
-        baseline_lines,
+    forced_result = _maybe_force_low_coverage_alignment(
+        lines=lines,
+        lrc_words=lrc_words,
         matched_ratio=matched_ratio,
         line_coverage=line_coverage,
+        baseline_lines=baseline_lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
+        used_model=used_model,
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        trace_snapshots=trace_snapshots,
+        trace_path=trace_path,
+        config=config,
+        logger=logger,
     )
-    if apply_baseline_constraint:
-        mapped_lines = constrain_line_starts_to_baseline_fn(
-            mapped_lines, baseline_lines
-        )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_initial_baseline_constraint",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-    else:
-        corrections.append(
-            "Skipped baseline start constraint due to strong global Whisper shift evidence"
-        )
+    if forced_result is not None:
+        return forced_result
 
-    try:
-        mapped_lines = snap_first_word_to_whisper_onset_fn(
-            mapped_lines,
-            all_words,
-            max_shift=config.snap_first_word_max_shift,
-        )
-    except TypeError:
-        mapped_lines = snap_first_word_to_whisper_onset_fn(mapped_lines, all_words)
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_snap_first_word_to_whisper_onset",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    if apply_baseline_constraint:
-        mapped_lines = constrain_line_starts_to_baseline_fn(
-            mapped_lines, baseline_lines
-        )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_second_baseline_constraint",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-    mapped_lines, restored_weak = _restore_weak_evidence_large_start_shifts(
+    (
         mapped_lines,
-        baseline_lines,
-        all_words,
+        corrections,
+        baseline_timeline_ratio,
+        mapped_timeline_ratio,
+        median_global_shift,
+        apply_baseline_constraint,
+    ) = _apply_baseline_restore_corrections(
+        lines=lines,
+        mapped_lines=mapped_lines,
+        baseline_lines=baseline_lines,
+        all_words=all_words,
+        corrections=corrections,
+        constrain_line_starts_to_baseline_fn=constrain_line_starts_to_baseline_fn,
+        snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        matched_ratio=matched_ratio,
+        line_coverage=line_coverage,
+        config=config,
     )
-    if restored_weak:
-        corrections.append(
-            f"Restored {restored_weak} weak-evidence large start shift line(s) to baseline"
-        )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_weak_evidence_large_start_shifts",
-        lines=mapped_lines,
-        line_range=trace_line_range,
+    mapped_lines, corrections = _apply_audio_alignment_corrections(
+        mapped_lines=mapped_lines,
+        baseline_lines=baseline_lines,
+        all_words=all_words,
+        audio_features=audio_features,
+        corrections=corrections,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        runtime_config=resolved_runtime_config,
     )
-    mapped_lines, restored_adjacent_late = _restore_adjacent_near_threshold_late_shifts(
-        mapped_lines,
-        baseline_lines,
-        all_words,
-    )
-    if restored_adjacent_late:
-        corrections.append(
-            "Restored "
-            f"{restored_adjacent_late} adjacent near-threshold late line(s) to baseline"
-        )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_adjacent_near_threshold_late_shifts",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    if not apply_baseline_constraint:
-        mapped_lines, restored_late_runs = (
-            _restore_consistently_late_runs_from_baseline(
-                mapped_lines,
-                baseline_lines,
-            )
-        )
-        if restored_late_runs:
-            corrections.append(
-                "Restored "
-                f"{restored_late_runs} consistently late line(s) from baseline timing"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_restore_consistently_late_runs_from_baseline",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-    mapped_lines, restored_early_duplicates = (
-        _restore_unsupported_early_duplicate_shifts(
-            mapped_lines,
-            baseline_lines,
-            all_words,
-        )
-    )
-    if restored_early_duplicates:
-        corrections.append(
-            "Restored "
-            f"{restored_early_duplicates} unsupported early duplicate line(s) to baseline"
-        )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_unsupported_early_duplicate_shifts",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    mapped_lines, restored_short = restore_implausibly_short_lines_fn(
-        baseline_lines, mapped_lines
-    )
-    if restored_short:
-        corrections.append(
-            f"Restored {restored_short} short compressed lines from baseline timing"
-        )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_implausibly_short_lines",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    mapped_lines, restored_inversions = _restore_pairwise_inversions_from_source(
-        baseline_lines,
-        mapped_lines,
-        min_inversion_gap=0.25,
-        min_ahead_shift=2.5,
-    )
-    if restored_inversions:
-        corrections.append(
-            f"Restored {restored_inversions} inversion outlier line(s) from baseline timing"
-        )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_pairwise_inversions_from_source",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    mapped_lines, restored_zero_support_late = (
-        _restore_zero_support_parenthetical_late_start_expansions(
-            mapped_lines,
-            baseline_lines,
-            all_words,
-        )
-    )
-    if restored_zero_support_late:
-        corrections.append(
-            "Restored "
-            f"{restored_zero_support_late} zero-support parenthetical late expanded line(s) to baseline starts"
-        )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_zero_support_parenthetical_late_start_expansions",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    mapped_lines, restored_enumerations = _restore_late_enumeration_lines_from_baseline(
-        mapped_lines,
-        baseline_lines,
-    )
-    if restored_enumerations:
-        corrections.append(
-            "Restored "
-            f"{restored_enumerations} late enumeration line(s) from baseline timing"
-        )
-    _capture_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_late_enumeration_lines_from_baseline",
-        lines=mapped_lines,
-        line_range=trace_line_range,
-    )
-    if audio_features is not None:
-        mapped_lines, carryover_fixes = _shift_weak_opening_lines_past_phrase_carryover(
-            mapped_lines,
-            audio_features,
-            all_words,
-        )
-        if carryover_fixes:
-            corrections.append(
-                "Shifted "
-                f"{carryover_fixes} weak-opening line(s) past prior-phrase carryover"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_shift_weak_opening_lines_past_phrase_carryover",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        repeated_cadence_reanchors = 0
-        if _enable_repeat_cadence_reanchor():
-            mapped_lines, repeated_cadence_reanchors = _reanchor_repeated_cadence_lines(
-                mapped_lines
-            )
-            if repeated_cadence_reanchors:
-                corrections.append(
-                    "Reanchored "
-                    f"{repeated_cadence_reanchors} repeated-cadence line(s)"
-                )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_reanchor_repeated_cadence_lines",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        restored_run_onset_shifts = 0
-        if _enable_restored_run_onset_shift():
-            mapped_lines, restored_run_onset_shifts = (
-                _shift_restored_low_support_runs_to_onset(
-                    mapped_lines,
-                    baseline_lines,
-                    all_words,
-                    audio_features,
-                )
-            )
-            if restored_run_onset_shifts:
-                corrections.append(
-                    "Shifted "
-                    f"{restored_run_onset_shifts} restored low-support line(s) to nearby onset runs"
-                )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_shift_restored_low_support_runs_to_onset",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        mapped_lines, said_reanchors = (
-            _reanchor_unsupported_i_said_lines_to_later_onset(
-                mapped_lines,
-                baseline_lines,
-                all_words,
-                audio_features,
-            )
-        )
-        if said_reanchors:
-            corrections.append(
-                "Reanchored "
-                f"{said_reanchors} unsupported 'I said' line(s) to later audio onsets"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_reanchor_unsupported_i_said_lines_to_later_onset",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        low_support_reanchors = 0
-        if _enable_low_support_onset_reanchor():
-            mapped_lines, low_support_reanchors = (
-                _reanchor_low_support_lines_to_later_onset(
-                    mapped_lines,
-                    baseline_lines,
-                    all_words,
-                    audio_features,
-                )
-            )
-            if low_support_reanchors:
-                corrections.append(
-                    "Reanchored "
-                    f"{low_support_reanchors} low-support line(s) to later audio onsets"
-                )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_reanchor_low_support_lines_to_later_onset",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        mapped_lines, tail_extensions = _extend_unsupported_parenthetical_tails(
-            mapped_lines,
-            all_words,
-        )
-        if tail_extensions:
-            corrections.append(
-                "Extended " f"{tail_extensions} unsupported parenthetical tail(s)"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_extend_unsupported_parenthetical_tails",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        mapped_lines, i_said_tail_extensions = _extend_unsupported_i_said_tails(
-            mapped_lines,
-            all_words,
-        )
-        if i_said_tail_extensions:
-            corrections.append(
-                "Extended " f"{i_said_tail_extensions} unsupported 'I said' tail(s)"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_extend_unsupported_i_said_tails",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        mapped_lines, interjection_reanchors = (
-            _reanchor_unsupported_interjection_lines_to_onsets(
-                mapped_lines,
-                all_words,
-                audio_features,
-            )
-        )
-        if interjection_reanchors:
-            corrections.append(
-                "Reanchored "
-                f"{interjection_reanchors} unsupported interjection line(s) to audio onsets"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_reanchor_unsupported_interjection_lines_to_onsets",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        mapped_lines, pre_i_said_extensions = _extend_misaligned_lines_before_i_said(
-            mapped_lines,
-            all_words,
-        )
-        if pre_i_said_extensions:
-            corrections.append(
-                "Extended "
-                f"{pre_i_said_extensions} lexically mismatched line(s) before unsupported 'I said' lines"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_extend_misaligned_lines_before_i_said",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        mapped_lines, pre_weak_opening_extensions = (
-            _extend_unsupported_long_lines_before_weak_opening(
-                mapped_lines,
-                all_words,
-            )
-        )
-        if pre_weak_opening_extensions:
-            corrections.append(
-                "Extended "
-                f"{pre_weak_opening_extensions} unsupported line(s) before weak openings"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_extend_unsupported_long_lines_before_weak_opening",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
-        mapped_lines, weak_opening_extensions = _extend_unsupported_weak_opening_lines(
-            mapped_lines,
-            all_words,
-        )
-        if weak_opening_extensions:
-            corrections.append(
-                "Extended "
-                f"{weak_opening_extensions} unsupported weak-opening line(s)"
-            )
-        _capture_trace_snapshot(
-            trace_snapshots,
-            stage="after_extend_unsupported_weak_opening_lines",
-            lines=mapped_lines,
-            line_range=trace_line_range,
-        )
     _maybe_write_trace_snapshot_file(
         snapshots=trace_snapshots,
         trace_path=trace_path,
@@ -1365,36 +2020,13 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         "mapped_postpasses_sec": float(postpass_elapsed),
         "alignment_total_sec": float(time.perf_counter() - overall_start),
     }
-    if mapped_count:
-        corrections.append(f"DTW-phonetic mapped {mapped_count} word(s) to Whisper")
-    rollback, short_before, short_after = should_rollback_short_line_degradation_fn(
-        baseline_lines, mapped_lines
+    return _finalize_alignment_result(
+        baseline_lines=baseline_lines,
+        mapped_lines=mapped_lines,
+        corrections=corrections,
+        metrics=metrics,
+        mapped_count=mapped_count,
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        logger=logger,
     )
-    if rollback:
-        repaired_lines, restored_count = restore_implausibly_short_lines_fn(
-            baseline_lines, mapped_lines
-        )
-        repaired_rollback, _, repaired_after = (
-            should_rollback_short_line_degradation_fn(baseline_lines, repaired_lines)
-        )
-        if restored_count > 0 and not repaired_rollback:
-            logger.info(
-                "Recovered Whisper map by restoring %d short baseline line(s) (%d -> %d)",
-                restored_count,
-                short_after,
-                repaired_after,
-            )
-            corrections.append(
-                f"Restored {restored_count} short compressed lines from baseline timing"
-            )
-            return repaired_lines, corrections, metrics
-        logger.warning(
-            "Rolling back Whisper map: implausibly short multi-word lines worsened (%d -> %d)",
-            short_before,
-            short_after,
-        )
-        corrections.append(
-            "Ignored Whisper timing map due to short-line compression artifacts"
-        )
-        return baseline_lines, corrections, metrics
-    return mapped_lines, corrections, metrics

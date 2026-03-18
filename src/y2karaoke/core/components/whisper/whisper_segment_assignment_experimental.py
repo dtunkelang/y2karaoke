@@ -7,12 +7,17 @@ generation, ownership, and distribution from the default live path.
 from __future__ import annotations
 
 import json
-import os
 from typing import Any, Dict, List, Tuple, cast
 
 from ..alignment import timing_models
 from . import whisper_blocks
 from . import whisper_utils
+from .whisper_mapping_runtime_config import (
+    SegmentAssignmentRuntimeConfig,
+    WhisperMappingTraceConfig,
+    load_segment_assignment_runtime_config,
+    load_whisper_mapping_trace_config,
+)
 
 _EXPERIMENTAL_ASSIGNER_MODE = "parallel_experimental"
 _MIN_PLACEHOLDER_POSITIVE_LINE_RATIO = 0.15
@@ -295,9 +300,7 @@ def _assign_lrc_lines_to_segments_experimental(  # noqa: C901
 
 
 def _segment_assign_pipeline_mode() -> str:
-    return (
-        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_PIPELINE", "default").strip() or "default"
-    )
+    return load_segment_assignment_runtime_config().pipeline_mode
 
 
 def build_segment_text_overlap_assignments(
@@ -325,14 +328,17 @@ def _build_segment_text_overlap_assignments_experimental(
     lrc_words: List[Dict],
     all_words: List[timing_models.TranscriptionWord],
     segments: List[timing_models.TranscriptionSegment],
+    config: SegmentAssignmentRuntimeConfig | None = None,
+    trace_config: WhisperMappingTraceConfig | None = None,
 ) -> Dict[int, List[int]]:
     """Experimental assigner with content-word-aware segment selection."""
     if not segments or not lrc_words:
         return {}
 
-    config = whisper_blocks._segment_assignment_config_from_env()
-    trace_path = os.environ.get("Y2K_TRACE_SEGMENT_SELECTION_JSON", "").strip()
-    trace_line_range = whisper_blocks._parse_trace_line_range_env()
+    resolved_config = config or load_segment_assignment_runtime_config()
+    resolved_trace_config = trace_config or load_whisper_mapping_trace_config()
+    trace_path = resolved_trace_config.segment_selection_path
+    trace_line_range = resolved_trace_config.line_range
     seg_word_ranges, seg_word_bags, seg_durations = (
         whisper_blocks._build_segment_word_info(
             all_words,
@@ -356,7 +362,7 @@ def _build_segment_text_overlap_assignments_experimental(
         lrc_lines_words=lrc_lines_words,
         seg_word_bags=seg_word_bags,
         seg_durations=seg_durations,
-        config=config,
+        config=resolved_config,
         trace_rows=trace_rows,
     )
     if not _should_keep_experimental_assignments(trace_rows, len(lrc_lines_words)):
@@ -364,6 +370,8 @@ def _build_segment_text_overlap_assignments_experimental(
             lrc_words=lrc_words,
             all_words=all_words,
             segments=segments,
+            config=resolved_config,
+            trace_config=resolved_trace_config,
         )
     assignments = whisper_blocks._distribute_words_within_segments(
         line_to_seg,

@@ -7,117 +7,207 @@ from ....utils.logging import get_logger
 from ... import models
 from ...audio_analysis import extract_audio_features
 from ..alignment import timing_models
-from .whisper_integration_aliases import ALIAS_EXPORTS, build_aliases
+from .whisper_integration_aliases import build_aliases
 from .whisper_integration_pipeline import (
     align_lrc_text_to_whisper_timings_impl,
     correct_timing_with_whisper_impl,
     transcribe_vocals_impl,
 )
+from .whisper_integration_baseline import (
+    _clone_lines_for_fallback as _clone_lines_for_fallback_impl,
+    _constrain_line_starts_to_baseline as _constrain_line_starts_to_baseline_impl,
+    _restore_implausibly_short_lines as _restore_implausibly_short_lines_impl,
+    _should_rollback_short_line_degradation as _should_rollback_short_line_degradation_impl,
+)
+from .whisper_integration_finalize import (
+    _apply_low_quality_segment_postpasses as _apply_low_quality_segment_postpasses_impl,
+    _finalize_whisper_line_set as _finalize_whisper_line_set_impl,
+)
+from .whisper_integration_hooks import (
+    AlignmentPassHooks,
+    CorrectTimingHooks,
+    entrypoint_correct_timing_hook_kwargs,
+)
+from .whisper_runtime_config import WhisperRuntimeConfig
 
 logger = get_logger(__name__)
 
 _ALIASES = build_aliases()
-globals().update(_ALIASES)
-
-_get_whisper_cache_path = _ALIASES["_get_whisper_cache_path"]
-_find_best_cached_whisper_model = _ALIASES["_find_best_cached_whisper_model"]
-_load_whisper_cache = _ALIASES["_load_whisper_cache"]
-_save_whisper_cache = _ALIASES["_save_whisper_cache"]
-align_lyrics_to_transcription = _ALIASES["align_lyrics_to_transcription"]
-align_dtw_whisper = _ALIASES["align_dtw_whisper"]
-align_words_to_whisper = _ALIASES["align_words_to_whisper"]
-_dedupe_whisper_segments = _ALIASES["_dedupe_whisper_segments"]
-_trim_whisper_transcription_by_lyrics = _ALIASES[
-    "_trim_whisper_transcription_by_lyrics"
-]
-_fill_vocal_activity_gaps = _ALIASES["_fill_vocal_activity_gaps"]
-_dedupe_whisper_words = _ALIASES["_dedupe_whisper_words"]
-_extract_lrc_words_all = _ALIASES["_extract_lrc_words_all"]
-_build_phoneme_tokens_from_lrc_words = _ALIASES["_build_phoneme_tokens_from_lrc_words"]
-_build_phoneme_tokens_from_whisper_words = _ALIASES[
-    "_build_phoneme_tokens_from_whisper_words"
-]
-_build_syllable_tokens_from_phonemes = _ALIASES["_build_syllable_tokens_from_phonemes"]
-_build_segment_text_overlap_assignments = _ALIASES[
-    "_build_segment_text_overlap_assignments"
-]
-_build_phoneme_dtw_path = _ALIASES["_build_phoneme_dtw_path"]
-_build_word_assignments_from_phoneme_path = _ALIASES[
-    "_build_word_assignments_from_phoneme_path"
-]
-_build_block_segmented_syllable_assignments = _ALIASES[
-    "_build_block_segmented_syllable_assignments"
-]
-_map_lrc_words_to_whisper = _ALIASES["_map_lrc_words_to_whisper"]
-_shift_repeated_lines_to_next_whisper = _ALIASES[
-    "_shift_repeated_lines_to_next_whisper"
-]
-_enforce_monotonic_line_starts_whisper = _ALIASES[
-    "_enforce_monotonic_line_starts_whisper"
-]
-_resolve_line_overlaps = _ALIASES["_resolve_line_overlaps"]
-_extend_line_to_trailing_whisper_matches = _ALIASES[
-    "_extend_line_to_trailing_whisper_matches"
-]
-_pull_late_lines_to_matching_segments = _ALIASES[
-    "_pull_late_lines_to_matching_segments"
-]
-_retime_short_interjection_lines = _ALIASES["_retime_short_interjection_lines"]
-_snap_first_word_to_whisper_onset = _ALIASES["_snap_first_word_to_whisper_onset"]
-_interpolate_unmatched_lines = _ALIASES["_interpolate_unmatched_lines"]
-_refine_unmatched_lines_with_onsets = _ALIASES["_refine_unmatched_lines_with_onsets"]
-_assess_lrc_quality = _ALIASES["_assess_lrc_quality"]
-align_hybrid_lrc_whisper = _ALIASES["align_hybrid_lrc_whisper"]
-_align_dtw_whisper_with_data = _ALIASES["_align_dtw_whisper_with_data"]
-_extract_alignments_from_path = _ALIASES["_extract_alignments_from_path"]
-_compute_phonetic_costs = _ALIASES["_compute_phonetic_costs"]
-_apply_dtw_alignments = _ALIASES["_apply_dtw_alignments"]
-_apply_offset_to_line = _ALIASES["_apply_offset_to_line"]
-_calculate_drift_correction = _ALIASES["_calculate_drift_correction"]
-_find_best_whisper_match = _ALIASES["_find_best_whisper_match"]
-_retime_lines_from_dtw_alignments = _ALIASES["_retime_lines_from_dtw_alignments"]
-_merge_first_two_lines_if_segment_matches = _ALIASES[
-    "_merge_first_two_lines_if_segment_matches"
-]
-_retime_adjacent_lines_to_whisper_window = _ALIASES[
-    "_retime_adjacent_lines_to_whisper_window"
-]
-_retime_adjacent_lines_to_segment_window = _ALIASES[
-    "_retime_adjacent_lines_to_segment_window"
-]
-_pull_next_line_into_segment_window = _ALIASES["_pull_next_line_into_segment_window"]
-_pull_lines_near_segment_end = _ALIASES["_pull_lines_near_segment_end"]
-_pull_next_line_into_same_segment = _ALIASES["_pull_next_line_into_same_segment"]
-_merge_lines_to_whisper_segments = _ALIASES["_merge_lines_to_whisper_segments"]
-_tighten_lines_to_whisper_segments = _ALIASES["_tighten_lines_to_whisper_segments"]
-_pull_lines_to_best_segments = _ALIASES["_pull_lines_to_best_segments"]
-_fix_ordering_violations = _ALIASES["_fix_ordering_violations"]
-_normalize_line_word_timings = _ALIASES["_normalize_line_word_timings"]
-_enforce_monotonic_line_starts = _ALIASES["_enforce_monotonic_line_starts"]
-_enforce_non_overlapping_lines = _ALIASES["_enforce_non_overlapping_lines"]
-_merge_short_following_line_into_segment = _ALIASES[
-    "_merge_short_following_line_into_segment"
-]
-_clamp_repeated_line_duration = _ALIASES["_clamp_repeated_line_duration"]
-_drop_duplicate_lines = _ALIASES["_drop_duplicate_lines"]
-_drop_duplicate_lines_by_timing = _ALIASES["_drop_duplicate_lines_by_timing"]
-_pull_lines_forward_for_continuous_vocals = _ALIASES[
-    "_pull_lines_forward_for_continuous_vocals"
-]
-_get_ipa = _ALIASES["_get_ipa"]
 
 __all__ = [
     "transcribe_vocals",
     "correct_timing_with_whisper",
     "align_lrc_text_to_whisper_timings",
-] + ALIAS_EXPORTS
+]
+
+_MISSING = object()
+
+
+def _resolve_integration_attr(name: str):
+    override = globals().get(name, _MISSING)
+    if override is not _MISSING:
+        return override
+    return _ALIASES[name]
+
+
+def _build_alignment_hooks() -> AlignmentPassHooks:
+    return AlignmentPassHooks(
+        transcribe_vocals_fn=transcribe_vocals,
+        extract_audio_features_fn=extract_audio_features,
+        dedupe_whisper_segments_fn=_resolve_integration_attr(
+            "_dedupe_whisper_segments"
+        ),
+        trim_whisper_transcription_by_lyrics_fn=_resolve_integration_attr(
+            "_trim_whisper_transcription_by_lyrics"
+        ),
+        fill_vocal_activity_gaps_fn=_resolve_integration_attr(
+            "_fill_vocal_activity_gaps"
+        ),
+        dedupe_whisper_words_fn=_resolve_integration_attr("_dedupe_whisper_words"),
+        extract_lrc_words_all_fn=_resolve_integration_attr("_extract_lrc_words_all"),
+        build_phoneme_tokens_from_lrc_words_fn=_resolve_integration_attr(
+            "_build_phoneme_tokens_from_lrc_words"
+        ),
+        build_phoneme_tokens_from_whisper_words_fn=_resolve_integration_attr(
+            "_build_phoneme_tokens_from_whisper_words"
+        ),
+        build_syllable_tokens_from_phonemes_fn=_resolve_integration_attr(
+            "_build_syllable_tokens_from_phonemes"
+        ),
+        build_segment_text_overlap_assignments_fn=_resolve_integration_attr(
+            "_build_segment_text_overlap_assignments"
+        ),
+        build_phoneme_dtw_path_fn=_resolve_integration_attr("_build_phoneme_dtw_path"),
+        build_word_assignments_from_phoneme_path_fn=_resolve_integration_attr(
+            "_build_word_assignments_from_phoneme_path"
+        ),
+        build_block_segmented_syllable_assignments_fn=_resolve_integration_attr(
+            "_build_block_segmented_syllable_assignments"
+        ),
+        map_lrc_words_to_whisper_fn=_resolve_integration_attr(
+            "_map_lrc_words_to_whisper"
+        ),
+        shift_repeated_lines_to_next_whisper_fn=_resolve_integration_attr(
+            "_shift_repeated_lines_to_next_whisper"
+        ),
+        enforce_monotonic_line_starts_whisper_fn=_resolve_integration_attr(
+            "_enforce_monotonic_line_starts_whisper"
+        ),
+        resolve_line_overlaps_fn=_resolve_integration_attr("_resolve_line_overlaps"),
+        extend_line_to_trailing_whisper_matches_fn=_resolve_integration_attr(
+            "_extend_line_to_trailing_whisper_matches"
+        ),
+        pull_late_lines_to_matching_segments_fn=_resolve_integration_attr(
+            "_pull_late_lines_to_matching_segments"
+        ),
+        retime_short_interjection_lines_fn=_resolve_integration_attr(
+            "_retime_short_interjection_lines"
+        ),
+        snap_first_word_to_whisper_onset_fn=_resolve_integration_attr(
+            "_snap_first_word_to_whisper_onset"
+        ),
+        interpolate_unmatched_lines_fn=_resolve_integration_attr(
+            "_interpolate_unmatched_lines"
+        ),
+        refine_unmatched_lines_with_onsets_fn=_resolve_integration_attr(
+            "_refine_unmatched_lines_with_onsets"
+        ),
+        pull_lines_forward_for_continuous_vocals_fn=_resolve_integration_attr(
+            "_pull_lines_forward_for_continuous_vocals"
+        ),
+    )
+
+
+def _build_correct_timing_hooks() -> CorrectTimingHooks:
+    return CorrectTimingHooks(
+        transcribe_vocals_fn=transcribe_vocals,
+        extract_audio_features_fn=extract_audio_features,
+        trim_whisper_transcription_by_lyrics_fn=_resolve_integration_attr(
+            "_trim_whisper_transcription_by_lyrics"
+        ),
+        fill_vocal_activity_gaps_fn=_resolve_integration_attr(
+            "_fill_vocal_activity_gaps"
+        ),
+        assess_lrc_quality_fn=_resolve_integration_attr("_assess_lrc_quality"),
+        align_hybrid_lrc_whisper_fn=_resolve_integration_attr(
+            "align_hybrid_lrc_whisper"
+        ),
+        align_dtw_whisper_with_data_fn=_resolve_integration_attr(
+            "_align_dtw_whisper_with_data"
+        ),
+        retime_lines_from_dtw_alignments_fn=_resolve_integration_attr(
+            "_retime_lines_from_dtw_alignments"
+        ),
+        apply_low_quality_segment_postpasses_fn=(
+            _apply_low_quality_segment_postpasses_impl
+        ),
+        finalize_whisper_line_set_fn=_finalize_whisper_line_set_impl,
+        constrain_line_starts_to_baseline_fn=(
+            _constrain_line_starts_to_baseline_impl
+        ),
+        should_rollback_short_line_degradation_fn=(
+            _should_rollback_short_line_degradation_impl
+        ),
+        restore_implausibly_short_lines_fn=_restore_implausibly_short_lines_impl,
+        clone_lines_for_fallback_fn=_clone_lines_for_fallback_impl,
+        merge_first_two_lines_if_segment_matches_fn=_resolve_integration_attr(
+            "_merge_first_two_lines_if_segment_matches"
+        ),
+        retime_adjacent_lines_to_whisper_window_fn=_resolve_integration_attr(
+            "_retime_adjacent_lines_to_whisper_window"
+        ),
+        retime_adjacent_lines_to_segment_window_fn=_resolve_integration_attr(
+            "_retime_adjacent_lines_to_segment_window"
+        ),
+        pull_next_line_into_segment_window_fn=_resolve_integration_attr(
+            "_pull_next_line_into_segment_window"
+        ),
+        pull_lines_near_segment_end_fn=_resolve_integration_attr(
+            "_pull_lines_near_segment_end"
+        ),
+        pull_next_line_into_same_segment_fn=_resolve_integration_attr(
+            "_pull_next_line_into_same_segment"
+        ),
+        merge_lines_to_whisper_segments_fn=_resolve_integration_attr(
+            "_merge_lines_to_whisper_segments"
+        ),
+        tighten_lines_to_whisper_segments_fn=_resolve_integration_attr(
+            "_tighten_lines_to_whisper_segments"
+        ),
+        pull_lines_to_best_segments_fn=_resolve_integration_attr(
+            "_pull_lines_to_best_segments"
+        ),
+        fix_ordering_violations_fn=_resolve_integration_attr("_fix_ordering_violations"),
+        normalize_line_word_timings_fn=_resolve_integration_attr(
+            "_normalize_line_word_timings"
+        ),
+        enforce_monotonic_line_starts_fn=_resolve_integration_attr(
+            "_enforce_monotonic_line_starts"
+        ),
+        enforce_non_overlapping_lines_fn=_resolve_integration_attr(
+            "_enforce_non_overlapping_lines"
+        ),
+        merge_short_following_line_into_segment_fn=_resolve_integration_attr(
+            "_merge_short_following_line_into_segment"
+        ),
+        clamp_repeated_line_duration_fn=_resolve_integration_attr(
+            "_clamp_repeated_line_duration"
+        ),
+        drop_duplicate_lines_fn=_resolve_integration_attr("_drop_duplicate_lines"),
+        drop_duplicate_lines_by_timing_fn=_resolve_integration_attr(
+            "_drop_duplicate_lines_by_timing"
+        ),
+        pull_lines_forward_for_continuous_vocals_fn=_resolve_integration_attr(
+            "_pull_lines_forward_for_continuous_vocals"
+        ),
+    )
 
 
 def _set_global_overrides(overrides: dict[str, object]) -> dict[str, object]:
     previous: dict[str, object] = {}
     module_globals = globals()
     for name, new_value in overrides.items():
-        previous[name] = module_globals[name]
+        previous[name] = module_globals.get(name, _MISSING)
         module_globals[name] = new_value
     return previous
 
@@ -125,6 +215,9 @@ def _set_global_overrides(overrides: dict[str, object]) -> dict[str, object]:
 def _restore_global_overrides(previous: dict[str, object]) -> None:
     module_globals = globals()
     for name, value in previous.items():
+        if value is _MISSING:
+            module_globals.pop(name, None)
+            continue
         module_globals[name] = value
 
 
@@ -193,10 +286,12 @@ def transcribe_vocals(
         model_size,
         aggressive,
         temperature,
-        get_whisper_cache_path_fn=_get_whisper_cache_path,
-        find_best_cached_whisper_model_fn=_find_best_cached_whisper_model,
-        load_whisper_cache_fn=_load_whisper_cache,
-        save_whisper_cache_fn=_save_whisper_cache,
+        get_whisper_cache_path_fn=_resolve_integration_attr("_get_whisper_cache_path"),
+        find_best_cached_whisper_model_fn=_resolve_integration_attr(
+            "_find_best_cached_whisper_model"
+        ),
+        load_whisper_cache_fn=_resolve_integration_attr("_load_whisper_cache"),
+        save_whisper_cache_fn=_resolve_integration_attr("_save_whisper_cache"),
         load_whisper_model_class_fn=_load_whisper_model_class,
         logger=logger,
     )
@@ -217,8 +312,10 @@ def align_lrc_text_to_whisper_timings(
     lenient_vocal_activity_threshold: float = 0.3,
     lenient_activity_bonus: float = 0.4,
     low_word_confidence_threshold: float = 0.5,
+    runtime_config: Optional[WhisperRuntimeConfig] = None,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings using phonetic DTW."""
+    hooks = _build_alignment_hooks()
     return align_lrc_text_to_whisper_timings_impl(
         lines,
         vocals_path,
@@ -231,44 +328,57 @@ def align_lrc_text_to_whisper_timings(
         lenient_vocal_activity_threshold,
         lenient_activity_bonus,
         low_word_confidence_threshold,
-        transcribe_vocals_fn=transcribe_vocals,
-        extract_audio_features_fn=extract_audio_features,
-        dedupe_whisper_segments_fn=_dedupe_whisper_segments,
-        trim_whisper_transcription_by_lyrics_fn=_trim_whisper_transcription_by_lyrics,
-        fill_vocal_activity_gaps_fn=_fill_vocal_activity_gaps,
-        dedupe_whisper_words_fn=_dedupe_whisper_words,
-        extract_lrc_words_all_fn=_extract_lrc_words_all,
-        build_phoneme_tokens_from_lrc_words_fn=_build_phoneme_tokens_from_lrc_words,
+        runtime_config=runtime_config,
+        transcribe_vocals_fn=hooks.transcribe_vocals_fn,
+        extract_audio_features_fn=hooks.extract_audio_features_fn,
+        dedupe_whisper_segments_fn=hooks.dedupe_whisper_segments_fn,
+        trim_whisper_transcription_by_lyrics_fn=(
+            hooks.trim_whisper_transcription_by_lyrics_fn
+        ),
+        fill_vocal_activity_gaps_fn=hooks.fill_vocal_activity_gaps_fn,
+        dedupe_whisper_words_fn=hooks.dedupe_whisper_words_fn,
+        extract_lrc_words_all_fn=hooks.extract_lrc_words_all_fn,
+        build_phoneme_tokens_from_lrc_words_fn=(
+            hooks.build_phoneme_tokens_from_lrc_words_fn
+        ),
         build_phoneme_tokens_from_whisper_words_fn=(
-            _build_phoneme_tokens_from_whisper_words
+            hooks.build_phoneme_tokens_from_whisper_words_fn
         ),
-        build_syllable_tokens_from_phonemes_fn=_build_syllable_tokens_from_phonemes,
+        build_syllable_tokens_from_phonemes_fn=(
+            hooks.build_syllable_tokens_from_phonemes_fn
+        ),
         build_segment_text_overlap_assignments_fn=(
-            _build_segment_text_overlap_assignments
+            hooks.build_segment_text_overlap_assignments_fn
         ),
-        build_phoneme_dtw_path_fn=_build_phoneme_dtw_path,
+        build_phoneme_dtw_path_fn=hooks.build_phoneme_dtw_path_fn,
         build_word_assignments_from_phoneme_path_fn=(
-            _build_word_assignments_from_phoneme_path
+            hooks.build_word_assignments_from_phoneme_path_fn
         ),
         build_block_segmented_syllable_assignments_fn=(
-            _build_block_segmented_syllable_assignments
+            hooks.build_block_segmented_syllable_assignments_fn
         ),
-        map_lrc_words_to_whisper_fn=_map_lrc_words_to_whisper,
-        shift_repeated_lines_to_next_whisper_fn=_shift_repeated_lines_to_next_whisper,
+        map_lrc_words_to_whisper_fn=hooks.map_lrc_words_to_whisper_fn,
+        shift_repeated_lines_to_next_whisper_fn=(
+            hooks.shift_repeated_lines_to_next_whisper_fn
+        ),
         enforce_monotonic_line_starts_whisper_fn=(
-            _enforce_monotonic_line_starts_whisper
+            hooks.enforce_monotonic_line_starts_whisper_fn
         ),
-        resolve_line_overlaps_fn=_resolve_line_overlaps,
+        resolve_line_overlaps_fn=hooks.resolve_line_overlaps_fn,
         extend_line_to_trailing_whisper_matches_fn=(
-            _extend_line_to_trailing_whisper_matches
+            hooks.extend_line_to_trailing_whisper_matches_fn
         ),
-        pull_late_lines_to_matching_segments_fn=(_pull_late_lines_to_matching_segments),
-        retime_short_interjection_lines_fn=_retime_short_interjection_lines,
-        snap_first_word_to_whisper_onset_fn=_snap_first_word_to_whisper_onset,
-        interpolate_unmatched_lines_fn=_interpolate_unmatched_lines,
-        refine_unmatched_lines_with_onsets_fn=_refine_unmatched_lines_with_onsets,
+        pull_late_lines_to_matching_segments_fn=(
+            hooks.pull_late_lines_to_matching_segments_fn
+        ),
+        retime_short_interjection_lines_fn=hooks.retime_short_interjection_lines_fn,
+        snap_first_word_to_whisper_onset_fn=hooks.snap_first_word_to_whisper_onset_fn,
+        interpolate_unmatched_lines_fn=hooks.interpolate_unmatched_lines_fn,
+        refine_unmatched_lines_with_onsets_fn=(
+            hooks.refine_unmatched_lines_with_onsets_fn
+        ),
         pull_lines_forward_for_continuous_vocals_fn=(
-            _pull_lines_forward_for_continuous_vocals
+            hooks.pull_lines_forward_for_continuous_vocals_fn
         ),
         logger=logger,
     )
@@ -288,8 +398,10 @@ def correct_timing_with_whisper(
     lenient_vocal_activity_threshold: float = 0.3,
     lenient_activity_bonus: float = 0.4,
     low_word_confidence_threshold: float = 0.5,
+    runtime_config: Optional[WhisperRuntimeConfig] = None,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Correct lyrics timing using Whisper transcription (adaptive approach)."""
+    hooks = _build_correct_timing_hooks()
     return correct_timing_with_whisper_impl(
         lines,
         vocals_path,
@@ -304,41 +416,17 @@ def correct_timing_with_whisper(
         lenient_vocal_activity_threshold,
         lenient_activity_bonus,
         low_word_confidence_threshold,
-        transcribe_vocals_fn=transcribe_vocals,
-        extract_audio_features_fn=extract_audio_features,
-        trim_whisper_transcription_by_lyrics_fn=_trim_whisper_transcription_by_lyrics,
-        fill_vocal_activity_gaps_fn=_fill_vocal_activity_gaps,
-        assess_lrc_quality_fn=_assess_lrc_quality,
-        align_hybrid_lrc_whisper_fn=align_hybrid_lrc_whisper,
-        align_dtw_whisper_with_data_fn=_align_dtw_whisper_with_data,
-        retime_lines_from_dtw_alignments_fn=_retime_lines_from_dtw_alignments,
-        merge_first_two_lines_if_segment_matches_fn=(
-            _merge_first_two_lines_if_segment_matches
-        ),
-        retime_adjacent_lines_to_whisper_window_fn=(
-            _retime_adjacent_lines_to_whisper_window
-        ),
-        retime_adjacent_lines_to_segment_window_fn=(
-            _retime_adjacent_lines_to_segment_window
-        ),
-        pull_next_line_into_segment_window_fn=_pull_next_line_into_segment_window,
-        pull_lines_near_segment_end_fn=_pull_lines_near_segment_end,
-        pull_next_line_into_same_segment_fn=_pull_next_line_into_same_segment,
-        merge_lines_to_whisper_segments_fn=_merge_lines_to_whisper_segments,
-        tighten_lines_to_whisper_segments_fn=_tighten_lines_to_whisper_segments,
-        pull_lines_to_best_segments_fn=_pull_lines_to_best_segments,
-        fix_ordering_violations_fn=_fix_ordering_violations,
-        normalize_line_word_timings_fn=_normalize_line_word_timings,
-        enforce_monotonic_line_starts_fn=_enforce_monotonic_line_starts,
-        enforce_non_overlapping_lines_fn=_enforce_non_overlapping_lines,
-        merge_short_following_line_into_segment_fn=(
-            _merge_short_following_line_into_segment
-        ),
-        clamp_repeated_line_duration_fn=_clamp_repeated_line_duration,
-        drop_duplicate_lines_fn=_drop_duplicate_lines,
-        drop_duplicate_lines_by_timing_fn=_drop_duplicate_lines_by_timing,
-        pull_lines_forward_for_continuous_vocals_fn=(
-            _pull_lines_forward_for_continuous_vocals
-        ),
+        runtime_config=runtime_config,
+        **entrypoint_correct_timing_hook_kwargs(hooks),
         logger=logger,
     )
+
+
+def __getattr__(name: str):
+    if name in _ALIASES:
+        return _resolve_integration_attr(name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:
+    return sorted(list(globals().keys()) + list(_ALIASES.keys()))

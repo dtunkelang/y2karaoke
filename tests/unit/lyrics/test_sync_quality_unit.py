@@ -6,7 +6,7 @@ pytestmark = pytest.mark.usefixtures("isolated_sync_state")
 
 
 def test_search_single_provider_tracks_failures(isolated_sync_state):
-    sync._failed_providers.clear()
+    isolated_sync_state.failed_providers.clear()
 
     class FakeSync:
         def search(self, *args, **kwargs):
@@ -16,23 +16,31 @@ def test_search_single_provider_tracks_failures(isolated_sync_state):
     isolated_sync_state.syncedlyrics_available = True
     isolated_sync_state.sleep_fn = lambda *_: None
 
-    assert sync._search_single_provider("term", "Provider", max_retries=0) is None
-    assert sync._failed_providers["Provider"] == 1
+    assert (
+        sync._search_single_provider(
+            "term", "Provider", max_retries=0, state=isolated_sync_state
+        )
+        is None
+    )
+    assert isolated_sync_state.failed_providers["Provider"] == 1
 
 
 def test_search_single_provider_skips_after_threshold(isolated_sync_state):
-    sync._failed_providers.clear()
-    sync._failed_providers["Provider"] = 3
-    assert sync._search_single_provider("term", "Provider") is None
+    isolated_sync_state.failed_providers.clear()
+    isolated_sync_state.failed_providers["Provider"] = 3
+    assert (
+        sync._search_single_provider("term", "Provider", state=isolated_sync_state)
+        is None
+    )
 
 
 def test_search_with_fallback_caches_result(monkeypatch, isolated_sync_state):
-    sync._search_cache.clear()
+    isolated_sync_state.search_cache.clear()
     monkeypatch.setattr(sync, "PROVIDER_ORDER", ["Provider"])
     isolated_sync_state.search_single_provider_fn = lambda *a, **k: "[00:01.00]A"
     isolated_sync_state.sleep_fn = lambda *_: None
 
-    lrc, provider = sync._search_with_fallback("term")
+    lrc, provider = sync._search_with_fallback("term", state=isolated_sync_state)
     assert lrc
     assert provider == "Provider"
 
@@ -40,13 +48,13 @@ def test_search_with_fallback_caches_result(monkeypatch, isolated_sync_state):
     isolated_sync_state.search_single_provider_fn = lambda *a, **k: (
         _ for _ in ()
     ).throw(AssertionError("should not call"))
-    lrc2, provider2 = sync._search_with_fallback("term")
+    lrc2, provider2 = sync._search_with_fallback("term", state=isolated_sync_state)
     assert lrc2 == lrc
     assert provider2 == provider
 
 
 def test_fetch_from_lyriq_caches_result(isolated_sync_state):
-    sync._lyriq_cache.clear()
+    isolated_sync_state.lyriq_cache.clear()
     isolated_sync_state.lyriq_available = True
 
     class Lyrics:
@@ -55,9 +63,9 @@ def test_fetch_from_lyriq_caches_result(isolated_sync_state):
     isolated_sync_state.lyriq_get_lyrics_fn = lambda *a, **k: Lyrics()
     isolated_sync_state.sleep_fn = lambda *_: None
 
-    lrc = sync._fetch_from_lyriq("Song", "Artist")
+    lrc = sync._fetch_from_lyriq("Song", "Artist", state=isolated_sync_state)
     assert lrc == "[00:01.00]A"
-    assert sync._lyriq_cache[("artist", "song")] == "[00:01.00]A"
+    assert isolated_sync_state.lyriq_cache[("artist", "song")] == "[00:01.00]A"
 
 
 def test_fetch_lyrics_for_duration_alt_search(monkeypatch, isolated_sync_state):
@@ -80,7 +88,7 @@ def test_fetch_lyrics_for_duration_alt_search(monkeypatch, isolated_sync_state):
     isolated_sync_state.sleep_fn = lambda *_: None
 
     lrc, is_synced, source, duration = sync.fetch_lyrics_for_duration(
-        "Title", "Artist", target_duration=14, tolerance=5
+        "Title", "Artist", target_duration=14, tolerance=5, state=isolated_sync_state
     )
     assert lrc is not None
     assert is_synced is True

@@ -14,7 +14,7 @@ class FakeLyrics:
 
 def test_fetch_from_lyriq_disabled(monkeypatch, isolated_sync_state):
     isolated_sync_state.lyriq_available = False
-    assert sync._fetch_from_lyriq("Title", "Artist") is None
+    assert sync._fetch_from_lyriq("Title", "Artist", state=isolated_sync_state) is None
 
 
 def test_fetch_from_lyriq_returns_synced(monkeypatch, isolated_sync_state):
@@ -23,7 +23,7 @@ def test_fetch_from_lyriq_returns_synced(monkeypatch, isolated_sync_state):
         synced="[00:00.00]hi"
     )
 
-    result = sync._fetch_from_lyriq("Title", "Artist")
+    result = sync._fetch_from_lyriq("Title", "Artist", state=isolated_sync_state)
 
     assert result == "[00:00.00]hi"
 
@@ -34,7 +34,7 @@ def test_fetch_from_lyriq_plain_only_returns_none(monkeypatch, isolated_sync_sta
         synced=None, plain="plain"
     )
 
-    result = sync._fetch_from_lyriq("Title", "Artist")
+    result = sync._fetch_from_lyriq("Title", "Artist", state=isolated_sync_state)
 
     assert result is None
 
@@ -43,7 +43,7 @@ def test_fetch_from_lyriq_no_results(monkeypatch, isolated_sync_state):
     isolated_sync_state.lyriq_available = True
     isolated_sync_state.lyriq_get_lyrics_fn = lambda *_a, **_k: None
 
-    result = sync._fetch_from_lyriq("Title", "Artist")
+    result = sync._fetch_from_lyriq("Title", "Artist", state=isolated_sync_state)
 
     assert result is None
 
@@ -62,19 +62,21 @@ def test_fetch_from_lyriq_retries_transient(monkeypatch, isolated_sync_state):
     isolated_sync_state.lyriq_get_lyrics_fn = fake_get
     isolated_sync_state.sleep_fn = lambda *_a, **_k: None
 
-    result = sync._fetch_from_lyriq("Title", "Artist", max_retries=1, retry_delay=0)
+    result = sync._fetch_from_lyriq(
+        "Title", "Artist", max_retries=1, retry_delay=0, state=isolated_sync_state
+    )
 
     assert result == "[00:00.00]hi"
     assert calls["count"] == 2
 
 
 def test_search_single_provider_skips_failed(monkeypatch, isolated_sync_state):
-    sync._failed_providers["Provider"] = sync._FAILURE_THRESHOLD
+    isolated_sync_state.failed_providers["Provider"] = sync._FAILURE_THRESHOLD
     isolated_sync_state.syncedlyrics_mod = types.SimpleNamespace(
         search=lambda *_a, **_k: "LRC"
     )
 
-    result = sync._search_single_provider("term", "Provider")
+    result = sync._search_single_provider("term", "Provider", state=isolated_sync_state)
 
     assert result is None
 
@@ -95,6 +97,7 @@ def test_search_single_provider_retries_transient(monkeypatch, isolated_sync_sta
         "Provider",
         max_retries=1,
         retry_delay=0,
+        state=isolated_sync_state,
     )
 
     assert result == "[00:00.00]hi"
@@ -109,7 +112,9 @@ def test_search_single_provider_permanent_error_tracks_failure(
 
     isolated_sync_state.syncedlyrics_mod = types.SimpleNamespace(search=fake_search)
 
-    result = sync._search_single_provider("term", "Provider", max_retries=0)
+    result = sync._search_single_provider(
+        "term", "Provider", max_retries=0, state=isolated_sync_state
+    )
 
     assert result is None
-    assert sync._failed_providers["Provider"] == 1
+    assert isolated_sync_state.failed_providers["Provider"] == 1

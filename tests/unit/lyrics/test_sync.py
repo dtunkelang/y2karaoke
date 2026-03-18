@@ -17,7 +17,7 @@ LRC_TEXT = "\n".join(
 
 
 def test_search_single_provider_skips_after_failures(monkeypatch, isolated_sync_state):
-    sync._failed_providers["Test"] = sync._FAILURE_THRESHOLD
+    isolated_sync_state.failed_providers["Test"] = sync._FAILURE_THRESHOLD
 
     called = {"count": 0}
 
@@ -26,7 +26,7 @@ def test_search_single_provider_skips_after_failures(monkeypatch, isolated_sync_
         return "LRC"
 
     isolated_sync_state.syncedlyrics_mod = types.SimpleNamespace(search=fake_search)
-    result = sync._search_single_provider("query", "Test")
+    result = sync._search_single_provider("query", "Test", state=isolated_sync_state)
     assert result is None
     assert called["count"] == 0
 
@@ -50,10 +50,11 @@ def test_search_single_provider_retries_on_transient_error(
         "Test",
         max_retries=1,
         retry_delay=0.01,
+        state=isolated_sync_state,
     )
 
     assert result == "LRC"
-    assert sync._failed_providers.get("Test", 0) == 0
+    assert isolated_sync_state.failed_providers.get("Test", 0) == 0
     assert calls["count"] == 2
 
 
@@ -68,8 +69,8 @@ def test_search_with_fallback_caches_result(monkeypatch, isolated_sync_state):
     isolated_sync_state.search_single_provider_fn = fake_search
     isolated_sync_state.sleep_fn = lambda *_: None
 
-    first = sync._search_with_fallback("Song Artist")
-    second = sync._search_with_fallback("Song Artist")
+    first = sync._search_with_fallback("Song Artist", state=isolated_sync_state)
+    second = sync._search_with_fallback("Song Artist", state=isolated_sync_state)
 
     assert first == ("LRC", "A")
     assert second == ("LRC", "A")
@@ -84,7 +85,7 @@ def test_fetch_from_lyriq_returns_synced(monkeypatch, isolated_sync_state):
     isolated_sync_state.lyriq_available = True
     isolated_sync_state.lyriq_get_lyrics_fn = lambda *a, **k: Lyrics()
 
-    result = sync._fetch_from_lyriq("Title", "Artist")
+    result = sync._fetch_from_lyriq("Title", "Artist", state=isolated_sync_state)
     assert result == LRC_TEXT
 
 
@@ -96,7 +97,7 @@ def test_fetch_from_lyriq_returns_none_for_plain(monkeypatch, isolated_sync_stat
     isolated_sync_state.lyriq_available = True
     isolated_sync_state.lyriq_get_lyrics_fn = lambda *a, **k: Lyrics()
 
-    result = sync._fetch_from_lyriq("Title", "Artist")
+    result = sync._fetch_from_lyriq("Title", "Artist", state=isolated_sync_state)
     assert result is None
 
 
@@ -107,7 +108,9 @@ def test_fetch_lyrics_multi_source_uses_lyriq_first(monkeypatch, isolated_sync_s
         synced_lyrics=LRC_TEXT, plain_lyrics=None
     )
 
-    lrc, is_synced, source = sync.fetch_lyrics_multi_source("Title", "Artist")
+    lrc, is_synced, source = sync.fetch_lyrics_multi_source(
+        "Title", "Artist", state=isolated_sync_state
+    )
     assert lrc == LRC_TEXT
     assert is_synced is True
     assert source == "lyriq (LRCLib)"
@@ -164,6 +167,7 @@ def test_fetch_lyrics_for_duration_uses_alternative_search(
         "Artist",
         target_duration=120,
         tolerance=10,
+        state=isolated_sync_state,
     )
 
     assert lrc == LRC_TEXT
@@ -184,7 +188,8 @@ def test_fetch_from_all_sources_collects_results(monkeypatch, isolated_sync_stat
         search=lambda *a, **k: LRC_TEXT
     )
 
-    results = sync.fetch_from_all_sources("Title", "Artist")
+    with sync.use_sync_state(isolated_sync_state):
+        results = sync.fetch_from_all_sources("Title", "Artist")
 
     assert "lyriq (LRCLib)" in results
     assert any(
@@ -197,7 +202,8 @@ def test_fetch_from_all_sources_uses_cached_results_offline(isolated_sync_state)
     cached = {"lyriq (LRCLib)": (LRC_TEXT, 120)}
     isolated_sync_state.all_sources_cache[cache_key] = cached
 
-    results = sync.fetch_from_all_sources("Title", "Artist", offline=True)
+    with sync.use_sync_state(isolated_sync_state):
+        results = sync.fetch_from_all_sources("Title", "Artist", offline=True)
 
     assert results == cached
 
@@ -209,7 +215,8 @@ def test_fetch_from_all_sources_uses_normalized_cached_results_offline(
     cached = {"lyriq (LRCLib)": (LRC_TEXT, 201)}
     isolated_sync_state.all_sources_cache[cache_key] = cached
 
-    results = sync.fetch_from_all_sources("Derniere danse", "Indila", offline=True)
+    with sync.use_sync_state(isolated_sync_state):
+        results = sync.fetch_from_all_sources("Derniere danse", "Indila", offline=True)
 
     assert results == cached
 
@@ -221,8 +228,9 @@ def test_fetch_from_all_sources_uses_primary_artist_cached_results_offline(
     cached = {"lyriq (LRCLib)": (LRC_TEXT, 177)}
     isolated_sync_state.all_sources_cache[cache_key] = cached
 
-    results = sync.fetch_from_all_sources(
-        "Mi Gente", "J Balvin, Willy William", offline=True
-    )
+    with sync.use_sync_state(isolated_sync_state):
+        results = sync.fetch_from_all_sources(
+            "Mi Gente", "J Balvin, Willy William", offline=True
+        )
 
     assert results == cached

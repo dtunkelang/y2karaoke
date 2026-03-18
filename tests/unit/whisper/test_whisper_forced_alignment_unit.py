@@ -1,5 +1,3 @@
-from types import SimpleNamespace
-
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.components.whisper import whisper_forced_alignment as wfa
 

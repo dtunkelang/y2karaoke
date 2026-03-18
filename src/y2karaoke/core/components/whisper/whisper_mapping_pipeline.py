@@ -12,6 +12,10 @@ from . import whisper_mapping_pipeline_candidates as _candidate_helpers
 from . import whisper_mapping_pipeline_line_context as _line_context_helpers
 from . import whisper_mapping_pipeline_matching as _matching_helpers
 from . import whisper_mapping_pipeline_orchestration as _orchestration_helpers
+from .whisper_mapping_runtime_config import (
+    SegmentAssignmentRuntimeConfig,
+    WhisperMappingTraceConfig,
+)
 
 logger = get_logger(__name__)
 _TIME_DRIFT_THRESHOLD = 0.8
@@ -296,6 +300,9 @@ def _map_lrc_words_to_whisper(
     lrc_assignments: Dict[int, List[int]],
     language: str,
     segments: Sequence[Any],
+    *,
+    segment_assignment_config: SegmentAssignmentRuntimeConfig | None = None,
+    trace_config: WhisperMappingTraceConfig | None = None,
 ) -> Tuple[List[models.Line], int, float, set]:
     return _orchestration_helpers._map_lrc_words_to_whisper(
         lines,
@@ -310,5 +317,7 @@ def _map_lrc_words_to_whisper(
         match_assigned_words_fn=_match_assigned_words,
         fill_unmatched_gaps_fn=_fill_unmatched_gaps,
         assemble_mapped_line_fn=_assemble_mapped_line,
+        segment_assignment_config=segment_assignment_config,
+        trace_config=trace_config,
         logger=logger,
     )

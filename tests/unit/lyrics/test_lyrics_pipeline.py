@@ -3,6 +3,7 @@ import pytest
 from y2karaoke.core.components.lyrics import api as lyrics  # noqa: F401
 from y2karaoke.core.components.lyrics import helpers as lh
 from y2karaoke.core import lyrics_whisper as lw
+from y2karaoke.core.components.lyrics.runtime_config import LyricsRuntimeConfig
 from y2karaoke.core.models import Line, Word, SongMetadata
 
 
@@ -228,7 +229,6 @@ def test_fetch_lrc_text_and_timings_prefers_lyriq_sources_during_disagreement(
 
     captured_sources = {}
 
-    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "lyriq")
     monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.sync.fetch_from_all_sources",
         lambda *_args, **_kwargs: {
@@ -260,6 +260,7 @@ def test_fetch_lrc_text_and_timings_prefers_lyriq_sources_during_disagreement(
         "Artist",
         target_duration=120,
         vocals_path="vocals.wav",
+        runtime_config=LyricsRuntimeConfig(preferred_provider="lyriq"),
     )
 
     assert lrc_text == "[00:01.00]hi"
@@ -269,16 +270,19 @@ def test_fetch_lrc_text_and_timings_prefers_lyriq_sources_during_disagreement(
 
 
 def test_fetch_lrc_text_and_timings_marks_offline_skip_reason():
+    from y2karaoke.core.components.lyrics import sync
+
     routing = {}
 
-    lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
-        "Title",
-        "Artist",
-        target_duration=120,
-        vocals_path="vocals.wav",
-        offline=True,
-        routing_diagnostics=routing,
-    )
+    with sync.use_sync_state(sync.create_sync_state(disk_cache_enabled=False)):
+        lrc_text, timings, source = lw._fetch_lrc_text_and_timings(
+            "Title",
+            "Artist",
+            target_duration=120,
+            vocals_path="vocals.wav",
+            offline=True,
+            routing_diagnostics=routing,
+        )
 
     assert lrc_text is None
     assert timings is None
@@ -330,7 +334,6 @@ def test_fetch_lrc_text_and_timings_uses_duration_tolerance_env(monkeypatch):
         captured["tolerance"] = kwargs["tolerance"]
         return ("[00:01.00]hi", True, "provider", 120)
 
-    monkeypatch.setenv("Y2K_LRC_DURATION_TOLERANCE_SEC", "18")
     monkeypatch.setattr(
         "y2karaoke.core.components.lyrics.sync.fetch_lyrics_for_duration",
         _fetch_lyrics_for_duration,
@@ -341,6 +344,7 @@ def test_fetch_lrc_text_and_timings_uses_duration_tolerance_env(monkeypatch):
         "Title",
         "Artist",
         target_duration=120,
+        runtime_config=LyricsRuntimeConfig(lrc_duration_tolerance_sec=18),
     )
 
     assert lrc_text == "[00:01.00]hi"

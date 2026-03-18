@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
 from ... import models
@@ -11,6 +10,12 @@ from ..alignment import timing_models
 from .whisper_assignment_confidence import build_assignment_confidence_profile
 from .whisper_dtw import _LineMappingContext
 from .whisper_mapping_helpers import _SPEECH_BLOCK_GAP, _build_word_to_segment_index
+from .whisper_mapping_runtime_config import (
+    SegmentAssignmentRuntimeConfig,
+    WhisperMappingTraceConfig,
+    load_segment_assignment_runtime_config,
+    load_whisper_mapping_trace_config,
+)
 from . import whisper_utils
 
 
@@ -31,18 +36,7 @@ def _json_safe_value(value: Any) -> Any:
 
 
 def _parse_trace_line_range() -> tuple[int, int] | None:
-    raw = os.environ.get("Y2K_TRACE_MAPPER_LINE_RANGE", "").strip()
-    if not raw:
-        return None
-    try:
-        start_s, end_s = raw.split("-", 1)
-        start = int(start_s)
-        end = int(end_s)
-    except (TypeError, ValueError):
-        return None
-    if start <= 0 or end < start:
-        return None
-    return start, end
+    return load_whisper_mapping_trace_config().line_range
 
 
 def _append_mapper_trace_row(
@@ -131,7 +125,7 @@ def _append_mapper_trace_row(
 
 
 def _maybe_write_mapper_trace(rows: list[dict[str, Any]]) -> None:
-    trace_path = os.environ.get("Y2K_TRACE_MAPPER_DETAILS_JSON", "").strip()
+    trace_path = load_whisper_mapping_trace_config().mapper_details_path
     if not trace_path:
         return
     with open(trace_path, "w", encoding="utf-8") as fh:
@@ -145,11 +139,11 @@ def _line_override_segment_votes(
     lrc_index_by_loc: Dict[tuple[int, int], int],
     lrc_assignments: Dict[int, List[int]],
     word_segment_idx: Dict[int, int],
+    segment_assignment_config: SegmentAssignmentRuntimeConfig | None = None,
 ) -> Dict[int, int]:
     selection_mode = (
-        os.getenv("Y2K_WHISPER_SEGMENT_ASSIGN_SELECTION_MODE", "default").strip()
-        or "default"
-    )
+        segment_assignment_config or load_segment_assignment_runtime_config()
+    ).selection_mode
     prefer_selected_nested = selection_mode in {
         "default",
         "experimental_stall_nested_vote_handoff",
@@ -262,6 +256,8 @@ def _map_lrc_words_to_whisper(
     match_assigned_words_fn: Callable[..., None],
     fill_unmatched_gaps_fn: Callable[..., None],
     assemble_mapped_line_fn: Callable[..., models.Line],
+    segment_assignment_config: SegmentAssignmentRuntimeConfig | None = None,
+    trace_config: WhisperMappingTraceConfig | None = None,
     logger,
 ) -> Tuple[List[models.Line], int, float, set]:
     """Build mapped lines using Whisper timings based on LRC assignments."""
@@ -286,7 +282,8 @@ def _map_lrc_words_to_whisper(
         (lw["line_idx"], lw["word_idx"]): idx for idx, lw in enumerate(lrc_words)
     }
     mapped_lines: List[models.Line] = []
-    mapper_trace_range = _parse_trace_line_range()
+    resolved_trace_config = trace_config or load_whisper_mapping_trace_config()
+    mapper_trace_range = resolved_trace_config.line_range
     mapper_trace_rows: list[dict[str, Any]] = []
 
     for line_idx, line in enumerate(lines):
@@ -315,6 +312,7 @@ def _map_lrc_words_to_whisper(
             lrc_index_by_loc=lrc_index_by_loc,
             lrc_assignments=lrc_assignments,
             word_segment_idx=ctx.word_segment_idx,
+            segment_assignment_config=segment_assignment_config,
         )
         pre_override_segment = line_segment
         (
@@ -398,5 +396,9 @@ def _map_lrc_words_to_whisper(
                 mapped_line=mapped_line,
             )
 
-    _maybe_write_mapper_trace(mapper_trace_rows)
+    if resolved_trace_config.mapper_details_path:
+        with open(
+            resolved_trace_config.mapper_details_path, "w", encoding="utf-8"
+        ) as fh:
+            json.dump(_json_safe_value({"lines": mapper_trace_rows}), fh, indent=2)
     return mapped_lines, ctx.mapped_count, ctx.total_similarity, ctx.mapped_lines_set

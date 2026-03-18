@@ -9,7 +9,7 @@ from ....utils.lex_lookup_installer import ensure_local_lex_lookup
 from ... import models, phonetic_utils
 from ..alignment import timing_models
 from .whisper_forced_alignment import align_lines_with_whisperx
-from .whisper_profile import get_whisper_profile
+from .whisper_runtime_config import WhisperRuntimeConfig, load_whisper_runtime_config
 
 _MIN_FORCED_WORD_COVERAGE = 0.2
 _MIN_FORCED_LINE_COVERAGE = 0.2
@@ -31,8 +31,10 @@ class _WhisperCorrectionDecisionConfig:
     no_evidence_quality_max: float = 0.4
 
 
-def _default_correction_config() -> _WhisperCorrectionDecisionConfig:
-    profile = get_whisper_profile()
+def _default_correction_config(
+    runtime_config: WhisperRuntimeConfig | None = None,
+) -> _WhisperCorrectionDecisionConfig:
+    profile = (runtime_config or load_whisper_runtime_config()).profile
     if profile == "safe":
         return _WhisperCorrectionDecisionConfig(
             quality_good_threshold=0.75,
@@ -193,6 +195,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
     clone_lines_for_fallback_fn: Callable[..., Any],
+    runtime_config: WhisperRuntimeConfig | None = None,
     logger,
     merge_first_two_lines_if_segment_matches_fn: Callable[..., Any],
     retime_adjacent_lines_to_whisper_window_fn: Callable[..., Any],
@@ -214,7 +217,7 @@ def correct_timing_with_whisper_impl(  # noqa: C901
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Correct lyric timing by combining quality gates and Whisper alignments."""
-    config = _default_correction_config()
+    config = _default_correction_config(runtime_config)
     baseline_lines = clone_lines_for_fallback_fn(lines)
     ensure_local_lex_lookup()
     transcription, all_words, detected_lang, _model = transcribe_vocals_fn(

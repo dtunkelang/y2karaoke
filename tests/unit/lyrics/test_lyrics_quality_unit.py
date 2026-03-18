@@ -59,6 +59,10 @@ def test_refine_timing_with_audio_adjusts_on_duration_mismatch(monkeypatch):
         "y2karaoke.core.components.alignment.alignment.adjust_timing_for_duration_mismatch",
         fake_adjust,
     )
+    monkeypatch.setattr(
+        "y2karaoke.core.audio_analysis.extract_audio_features",
+        lambda *_: None,
+    )
 
     result = lh._refine_timing_with_audio(
         lines,
@@ -88,6 +92,10 @@ def test_refine_timing_with_audio_no_adjust_when_close(monkeypatch):
     monkeypatch.setattr(
         "y2karaoke.core.components.alignment.alignment.adjust_timing_for_duration_mismatch",
         lambda *a, **k: (_ for _ in ()).throw(AssertionError("should not adjust")),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.audio_analysis.extract_audio_features",
+        lambda *_: None,
     )
 
     result = lh._refine_timing_with_audio(
@@ -466,15 +474,15 @@ def test_apply_whisper_with_quality_handles_error(monkeypatch):
         raise RuntimeError("whisper down")
 
     report = {"whisper_used": False, "whisper_corrections": 0, "issues": []}
-    with lw.use_lyrics_whisper_hooks(apply_whisper_alignment_fn=raise_error):
-        updated, report = lw._apply_whisper_with_quality(
-            lines,
-            vocals_path="vocals.wav",
-            whisper_language="en",
-            whisper_model="base",
-            whisper_force_dtw=False,
-            quality_report=report,
-        )
+    updated, report = lw._apply_whisper_with_quality(
+        lines,
+        vocals_path="vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+        quality_report=report,
+        hooks=lw.LyricsWhisperHooks(apply_whisper_alignment_fn=raise_error),
+    )
 
     assert updated is lines
     assert report["whisper_used"] is False
@@ -485,21 +493,21 @@ def test_apply_whisper_with_quality_marks_no_evidence_fallback_as_lrc_only():
     lines = [_make_line("hello", 0.0, 0.5)]
     report = {"alignment_method": "onset_refined", "issues": []}
 
-    with lw.use_lyrics_whisper_hooks(
-        apply_whisper_alignment_fn=lambda *args, **kwargs: (
-            lines,
-            ["rolled back"],
-            {"no_evidence_fallback": 1.0},
-        )
-    ):
-        updated, report = lw._apply_whisper_with_quality(
-            lines,
-            vocals_path="vocals.wav",
-            whisper_language="en",
-            whisper_model="base",
-            whisper_force_dtw=False,
-            quality_report=report,
-        )
+    updated, report = lw._apply_whisper_with_quality(
+        lines,
+        vocals_path="vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+        quality_report=report,
+        hooks=lw.LyricsWhisperHooks(
+            apply_whisper_alignment_fn=lambda *args, **kwargs: (
+                lines,
+                ["rolled back"],
+                {"no_evidence_fallback": 1.0},
+            )
+        ),
+    )
 
     assert updated is lines
     assert report["alignment_method"] == "lrc_only"
@@ -538,16 +546,16 @@ def test_apply_whisper_with_quality_tail_guardrail_retries_and_applies():
             },
         )
 
-    with lw.use_lyrics_whisper_hooks(apply_whisper_alignment_fn=fake_apply):
-        updated, report = lw._apply_whisper_with_quality(
-            lines,
-            vocals_path="vocals.wav",
-            whisper_language="en",
-            whisper_model="base",
-            whisper_force_dtw=False,
-            quality_report=report,
-            target_duration=220,
-        )
+    updated, report = lw._apply_whisper_with_quality(
+        lines,
+        vocals_path="vocals.wav",
+        whisper_language="en",
+        whisper_model="base",
+        whisper_force_dtw=False,
+        quality_report=report,
+        target_duration=220,
+        hooks=lw.LyricsWhisperHooks(apply_whisper_alignment_fn=fake_apply),
+    )
 
     assert calls["count"] == 2
     assert updated is retry_lines
@@ -625,13 +633,13 @@ def test_get_lyrics_simple_whisper_only_retries_large_on_low_confidence():
             return [low_seg], [low_word], "en", "base"
         return [hi_seg], [hi_word], "en", "large"
 
-    with lw.use_lyrics_whisper_hooks(transcribe_vocals_fn=fake_transcribe):
-        lines, metadata = lw.get_lyrics_simple(
-            title="Song",
-            artist="Artist",
-            vocals_path="vocals.wav",
-            whisper_only=True,
-        )
+    lines, metadata = lw.get_lyrics_simple(
+        title="Song",
+        artist="Artist",
+        vocals_path="vocals.wav",
+        whisper_only=True,
+        hooks=lw.LyricsWhisperHooks(transcribe_vocals_fn=fake_transcribe),
+    )
 
     assert metadata is not None
     assert calls == ["base", "large"]
@@ -655,18 +663,18 @@ def test_get_lyrics_simple_whisper_map_lrc(monkeypatch):
     monkeypatch.setattr(
         genius, "fetch_genius_lyrics_with_singers", lambda *_a, **_k: (None, None)
     )
-    with lw.use_lyrics_whisper_hooks(
-        fetch_lrc_text_and_timings_fn=fake_fetch,
-        detect_and_apply_offset_fn=lambda v, t, o: (t, 0.0),
-        refine_timing_with_audio_fn=lambda lines, *_a, **_k: lines,
-        transcribe_vocals_fn=lambda *_a, **_k: ([segment], [word], "fr", "base"),
-        whisper_lang_to_epitran_fn=lambda *_a, **_k: "fra-Latn",
-    ):
-        lines, _ = lw.get_lyrics_simple(
-            title="Song",
-            artist="Artist",
-            vocals_path="vocals.wav",
-            whisper_map_lrc=True,
-        )
+    lines, _ = lw.get_lyrics_simple(
+        title="Song",
+        artist="Artist",
+        vocals_path="vocals.wav",
+        whisper_map_lrc=True,
+        hooks=lw.LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=fake_fetch,
+            detect_and_apply_offset_fn=lambda v, t, o: (t, 0.0),
+            refine_timing_with_audio_fn=lambda lines, *_a, **_k: lines,
+            transcribe_vocals_fn=lambda *_a, **_k: ([segment], [word], "fr", "base"),
+            whisper_lang_to_epitran_fn=lambda *_a, **_k: "fra-Latn",
+        ),
+    )
 
     assert lines[0].start_time == pytest.approx(2.0)

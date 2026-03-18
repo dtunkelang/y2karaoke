@@ -1,9 +1,7 @@
 import json
-import numpy as np
 import pytest
 
 from y2karaoke.core.components.alignment.timing_models import (
-    AudioFeatures,
     TranscriptionSegment,
     TranscriptionWord,
 )

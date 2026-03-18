@@ -1,9 +1,9 @@
 """Whisper-related lyrics processing and refinement."""
 
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 import logging
-import os
 from pathlib import Path
 from typing import Callable, Iterator, List, Optional, Tuple
 
@@ -16,7 +16,6 @@ from .lrc import (
 from .helpers import (
     _romanize_lines,
     _detect_and_apply_offset,
-    _select_offset_anchor_timing,
     _refine_timing_with_audio,
     _apply_timing_to_lines,
     _apply_whisper_alignment,
@@ -25,19 +24,26 @@ from .helpers import (
     _extract_text_lines_from_lrc,
     _create_lines_from_plain_text,
 )
+from . import lyrics_offset_quality as _offset_quality_policy
 from .lyrics_whisper_map import (
     _create_lines_from_whisper,
     _map_lrc_lines_to_whisper_segments,
 )
 from .lyrics_whisper_pipeline import get_lyrics_simple_impl
+from .lyrics_source_routing import (
+    _initialize_routing_diagnostics,
+    _select_disagreement_source_if_needed,
+)
+from .runtime_config import LyricsRuntimeConfig, load_lyrics_runtime_config
 
 logger = logging.getLogger(__name__)
 
 __all__ = ["get_lyrics_simple", "get_lyrics_with_quality"]
 
-
-_LYRIQ_PROVIDER_KEYS = {"lyriq", "lrclib", "lyriqlrclib"}
-_DisagreementSourceMap = dict[str, tuple[Optional[str], Optional[int]]]
+_detect_offset_with_issues = _offset_quality_policy._detect_offset_with_issues
+_refine_timing_with_quality = _offset_quality_policy._refine_timing_with_quality
+_calculate_quality_score = _offset_quality_policy._calculate_quality_score
+_score_from_dtw_metrics = _offset_quality_policy._score_from_dtw_metrics
 
 
 @dataclass
@@ -64,7 +70,44 @@ class LyricsWhisperHooks:
     ] = None
 
 
-_ACTIVE_HOOKS = LyricsWhisperHooks()
+_ACTIVE_HOOKS: ContextVar[LyricsWhisperHooks] = ContextVar(
+    "lyrics_whisper_hooks",
+    default=LyricsWhisperHooks(),
+)
+
+
+def resolve_lyrics_whisper_hooks(
+    hooks: Optional[LyricsWhisperHooks] = None,
+) -> LyricsWhisperHooks:
+    current = _ACTIVE_HOOKS.get()
+    if hooks is None:
+        return current
+    return LyricsWhisperHooks(
+        fetch_lrc_text_and_timings_fn=(
+            hooks.fetch_lrc_text_and_timings_fn or current.fetch_lrc_text_and_timings_fn
+        ),
+        detect_and_apply_offset_fn=(
+            hooks.detect_and_apply_offset_fn or current.detect_and_apply_offset_fn
+        ),
+        refine_timing_with_audio_fn=(
+            hooks.refine_timing_with_audio_fn or current.refine_timing_with_audio_fn
+        ),
+        apply_whisper_alignment_fn=(
+            hooks.apply_whisper_alignment_fn or current.apply_whisper_alignment_fn
+        ),
+        fetch_genius_lyrics_with_singers_fn=(
+            hooks.fetch_genius_lyrics_with_singers_fn
+            or current.fetch_genius_lyrics_with_singers_fn
+        ),
+        transcribe_vocals_fn=hooks.transcribe_vocals_fn or current.transcribe_vocals_fn,
+        whisper_lang_to_epitran_fn=(
+            hooks.whisper_lang_to_epitran_fn or current.whisper_lang_to_epitran_fn
+        ),
+        align_lrc_text_to_whisper_timings_fn=(
+            hooks.align_lrc_text_to_whisper_timings_fn
+            or current.align_lrc_text_to_whisper_timings_fn
+        ),
+    )
 
 
 @contextmanager
@@ -90,89 +133,65 @@ def use_lyrics_whisper_hooks(
     ] = None,
 ) -> Iterator[None]:
     """Temporarily override lyrics-whisper collaborators for tests."""
-    global _ACTIVE_HOOKS
-
-    previous = _ACTIVE_HOOKS
-    _ACTIVE_HOOKS = LyricsWhisperHooks(
-        fetch_lrc_text_and_timings_fn=(
-            fetch_lrc_text_and_timings_fn
-            if fetch_lrc_text_and_timings_fn is not None
-            else previous.fetch_lrc_text_and_timings_fn
-        ),
-        detect_and_apply_offset_fn=(
-            detect_and_apply_offset_fn
-            if detect_and_apply_offset_fn is not None
-            else previous.detect_and_apply_offset_fn
-        ),
-        refine_timing_with_audio_fn=(
-            refine_timing_with_audio_fn
-            if refine_timing_with_audio_fn is not None
-            else previous.refine_timing_with_audio_fn
-        ),
-        apply_whisper_alignment_fn=(
-            apply_whisper_alignment_fn
-            if apply_whisper_alignment_fn is not None
-            else previous.apply_whisper_alignment_fn
-        ),
-        fetch_genius_lyrics_with_singers_fn=(
-            fetch_genius_lyrics_with_singers_fn
-            if fetch_genius_lyrics_with_singers_fn is not None
-            else previous.fetch_genius_lyrics_with_singers_fn
-        ),
-        transcribe_vocals_fn=(
-            transcribe_vocals_fn
-            if transcribe_vocals_fn is not None
-            else previous.transcribe_vocals_fn
-        ),
-        whisper_lang_to_epitran_fn=(
-            whisper_lang_to_epitran_fn
-            if whisper_lang_to_epitran_fn is not None
-            else previous.whisper_lang_to_epitran_fn
-        ),
-        align_lrc_text_to_whisper_timings_fn=(
-            align_lrc_text_to_whisper_timings_fn
-            if align_lrc_text_to_whisper_timings_fn is not None
-            else previous.align_lrc_text_to_whisper_timings_fn
-        ),
+    merged_hooks = resolve_lyrics_whisper_hooks(
+        LyricsWhisperHooks(
+            fetch_lrc_text_and_timings_fn=fetch_lrc_text_and_timings_fn,
+            detect_and_apply_offset_fn=detect_and_apply_offset_fn,
+            refine_timing_with_audio_fn=refine_timing_with_audio_fn,
+            apply_whisper_alignment_fn=apply_whisper_alignment_fn,
+            fetch_genius_lyrics_with_singers_fn=fetch_genius_lyrics_with_singers_fn,
+            transcribe_vocals_fn=transcribe_vocals_fn,
+            whisper_lang_to_epitran_fn=whisper_lang_to_epitran_fn,
+            align_lrc_text_to_whisper_timings_fn=(align_lrc_text_to_whisper_timings_fn),
+        )
     )
+    token = _ACTIVE_HOOKS.set(merged_hooks)
     try:
         yield
     finally:
-        _ACTIVE_HOOKS = previous
+        _ACTIVE_HOOKS.reset(token)
 
 
-def _fetch_lrc_text_and_timings_for_state(*args, **kwargs):
-    fn = _ACTIVE_HOOKS.fetch_lrc_text_and_timings_fn
+def _fetch_lrc_text_and_timings_for_state(
+    *args, hooks: Optional[LyricsWhisperHooks] = None, **kwargs
+):
+    fn = resolve_lyrics_whisper_hooks(hooks).fetch_lrc_text_and_timings_fn
     if fn is not None:
         return fn(*args, **kwargs)
     return _fetch_lrc_text_and_timings(*args, **kwargs)
 
 
-def _detect_and_apply_offset_for_state(*args, **kwargs):
-    fn = _ACTIVE_HOOKS.detect_and_apply_offset_fn
+def _detect_and_apply_offset_for_state(
+    *args, hooks: Optional[LyricsWhisperHooks] = None, **kwargs
+):
+    fn = resolve_lyrics_whisper_hooks(hooks).detect_and_apply_offset_fn
     if fn is not None:
         return fn(*args, **kwargs)
     return _detect_and_apply_offset(*args, **kwargs)
 
 
-def _refine_timing_with_audio_for_state(*args, **kwargs):
-    fn = _ACTIVE_HOOKS.refine_timing_with_audio_fn
+def _refine_timing_with_audio_for_state(
+    *args, hooks: Optional[LyricsWhisperHooks] = None, **kwargs
+):
+    fn = resolve_lyrics_whisper_hooks(hooks).refine_timing_with_audio_fn
     if fn is not None:
         return fn(*args, **kwargs)
     return _refine_timing_with_audio(*args, **kwargs)
 
 
-def _apply_whisper_alignment_for_state(*args, **kwargs):
-    fn = _ACTIVE_HOOKS.apply_whisper_alignment_fn
+def _apply_whisper_alignment_for_state(
+    *args, hooks: Optional[LyricsWhisperHooks] = None, **kwargs
+):
+    fn = resolve_lyrics_whisper_hooks(hooks).apply_whisper_alignment_fn
     if fn is not None:
         return fn(*args, **kwargs)
     return _apply_whisper_alignment(*args, **kwargs)
 
 
 def _fetch_genius_lyrics_with_singers_for_state(
-    title: str, artist: str
+    title: str, artist: str, *, hooks: Optional[LyricsWhisperHooks] = None
 ) -> Tuple[Optional[List[Tuple[str, str]]], Optional[SongMetadata]]:
-    fn = _ACTIVE_HOOKS.fetch_genius_lyrics_with_singers_fn
+    fn = resolve_lyrics_whisper_hooks(hooks).fetch_genius_lyrics_with_singers_fn
     if fn is not None:
         return fn(title, artist)
     from .genius import fetch_genius_lyrics_with_singers
@@ -180,8 +199,10 @@ def _fetch_genius_lyrics_with_singers_for_state(
     return fetch_genius_lyrics_with_singers(title, artist)
 
 
-def _transcribe_vocals_for_state(*args, **kwargs):
-    fn = _ACTIVE_HOOKS.transcribe_vocals_fn
+def _transcribe_vocals_for_state(
+    *args, hooks: Optional[LyricsWhisperHooks] = None, **kwargs
+):
+    fn = resolve_lyrics_whisper_hooks(hooks).transcribe_vocals_fn
     if fn is not None:
         return fn(*args, **kwargs)
     from ..whisper.whisper_integration import transcribe_vocals
@@ -189,8 +210,10 @@ def _transcribe_vocals_for_state(*args, **kwargs):
     return transcribe_vocals(*args, **kwargs)
 
 
-def _whisper_lang_to_epitran_for_state(detected_lang: str) -> str:
-    fn = _ACTIVE_HOOKS.whisper_lang_to_epitran_fn
+def _whisper_lang_to_epitran_for_state(
+    detected_lang: str, *, hooks: Optional[LyricsWhisperHooks] = None
+) -> str:
+    fn = resolve_lyrics_whisper_hooks(hooks).whisper_lang_to_epitran_fn
     if fn is not None:
         return fn(detected_lang)
     from ...phonetic_utils import _whisper_lang_to_epitran
@@ -198,8 +221,10 @@ def _whisper_lang_to_epitran_for_state(detected_lang: str) -> str:
     return _whisper_lang_to_epitran(detected_lang)
 
 
-def _align_lrc_text_to_whisper_timings_for_state(*args, **kwargs):
-    fn = _ACTIVE_HOOKS.align_lrc_text_to_whisper_timings_fn
+def _align_lrc_text_to_whisper_timings_for_state(
+    *args, hooks: Optional[LyricsWhisperHooks] = None, **kwargs
+):
+    fn = resolve_lyrics_whisper_hooks(hooks).align_lrc_text_to_whisper_timings_fn
     if fn is not None:
         return fn(*args, **kwargs)
     from ..whisper.whisper_integration import align_lrc_text_to_whisper_timings
@@ -222,226 +247,6 @@ def _apply_singer_info(
                 word.singer = singer_id
 
 
-def _detect_offset_with_issues(
-    vocals_path: str,
-    line_timings: List[Tuple[float, str]],
-    lyrics_offset: Optional[float],
-    issues: List[str],
-    *,
-    auto_offset_scale: float = 1.0,
-    scaled_offset_min_abs_sec: float = 0.0,
-    scaled_offset_max_abs_sec: float = float("inf"),
-    scale_large_negative_offsets: bool = False,
-    allow_suspicious_positive_offset: bool = False,
-    suppress_moderate_negative_offset: bool = False,
-) -> Tuple[List[Tuple[float, str]], float]:
-    """Detect vocal offset, track issues for quality report.
-
-    Returns (updated_line_timings, offset_applied).
-    """
-    from ..alignment.alignment import detect_song_start
-
-    detected_vocal_start = detect_song_start(vocals_path)
-    anchor_time, _anchor_text, used_alternate_anchor = _select_offset_anchor_timing(
-        line_timings
-    )
-    delta = detected_vocal_start - anchor_time
-
-    logger.info(
-        f"Vocal timing: audio_start={detected_vocal_start:.2f}s, "
-        f"LRC_start={anchor_time:.2f}s, delta={delta:+.2f}s"
-    )
-
-    offset = _compute_auto_offset(
-        delta=delta,
-        lyrics_offset=lyrics_offset,
-        used_alternate_anchor=used_alternate_anchor,
-        issues=issues,
-        auto_offset_scale=auto_offset_scale,
-        scaled_offset_min_abs_sec=scaled_offset_min_abs_sec,
-        scaled_offset_max_abs_sec=scaled_offset_max_abs_sec,
-        scale_large_negative_offsets=scale_large_negative_offsets,
-        allow_suspicious_positive_offset=allow_suspicious_positive_offset,
-        suppress_moderate_negative_offset=suppress_moderate_negative_offset,
-    )
-
-    if offset != 0.0:
-        line_timings = [(ts + offset, text) for ts, text in line_timings]
-
-    return line_timings, offset
-
-
-def _should_skip_moderate_negative_offset(
-    *,
-    delta: float,
-    suppress_moderate_negative_offset: bool,
-    used_alternate_anchor: bool,
-    auto_offset_scale: float,
-    scaled_offset_min_abs_sec: float,
-    scaled_offset_max_abs_sec: float,
-    scale_large_negative_offsets: bool,
-) -> bool:
-    if not suppress_moderate_negative_offset or delta >= 0.0:
-        return False
-    scale = 0.6 if used_alternate_anchor else 1.0
-    if scaled_offset_min_abs_sec <= abs(delta) <= scaled_offset_max_abs_sec:
-        scale *= max(0.0, auto_offset_scale)
-    elif scale_large_negative_offsets and abs(delta) >= scaled_offset_min_abs_sec:
-        scale *= max(0.0, auto_offset_scale)
-    effective_offset = abs(delta * scale)
-    return effective_offset <= 1.4
-
-
-def _compute_auto_offset(
-    *,
-    delta: float,
-    lyrics_offset: Optional[float],
-    used_alternate_anchor: bool,
-    issues: List[str],
-    auto_offset_scale: float,
-    scaled_offset_min_abs_sec: float,
-    scaled_offset_max_abs_sec: float,
-    scale_large_negative_offsets: bool,
-    allow_suspicious_positive_offset: bool,
-    suppress_moderate_negative_offset: bool,
-) -> float:
-    auto_offset_max_abs_sec = 5.0
-    if lyrics_offset is not None:
-        return lyrics_offset
-    if allow_suspicious_positive_offset and 2.5 < delta <= auto_offset_max_abs_sec:
-        scale = 0.6 if used_alternate_anchor else 1.0
-        offset = delta * scale
-        logger.info(
-            "Auto-applying suspicious positive vocal offset under disagreement guard: %+.2fs",
-            offset,
-        )
-        return offset
-    if 2.5 < abs(delta) <= auto_offset_max_abs_sec:
-        logger.warning(
-            f"Detected vocal offset ({delta:+.2f}s) matches suspicious range (2.5-5.0s) - NOT auto-applying."
-        )
-        return 0.0
-    if _should_skip_moderate_negative_offset(
-        delta=delta,
-        suppress_moderate_negative_offset=suppress_moderate_negative_offset,
-        used_alternate_anchor=used_alternate_anchor,
-        auto_offset_scale=auto_offset_scale,
-        scaled_offset_min_abs_sec=scaled_offset_min_abs_sec,
-        scaled_offset_max_abs_sec=scaled_offset_max_abs_sec,
-        scale_large_negative_offsets=scale_large_negative_offsets,
-    ):
-        logger.info(
-            "Skipping moderate negative vocal offset under disagreement guard: %+.2fs",
-            delta,
-        )
-        return 0.0
-    if 0.3 < abs(delta) <= 2.5:
-        scale = 0.6 if used_alternate_anchor else 1.0
-        if scaled_offset_min_abs_sec <= abs(delta) <= scaled_offset_max_abs_sec:
-            scale *= max(0.0, auto_offset_scale)
-        elif (
-            scale_large_negative_offsets
-            and delta < 0.0
-            and abs(delta) >= scaled_offset_min_abs_sec
-        ):
-            scale *= max(0.0, auto_offset_scale)
-        offset = delta * scale
-        logger.info(f"Auto-applying vocal offset: {offset:+.2f}s")
-        return offset
-    if abs(delta) > auto_offset_max_abs_sec:
-        logger.warning(
-            "Large timing delta (%+.2fs) exceeds auto-offset clamp (%.1fs) - "
-            "not auto-applying.",
-            delta,
-            auto_offset_max_abs_sec,
-        )
-        issues.append(
-            f"Large timing delta ({delta:+.2f}s) exceeded auto-offset clamp and was not applied"
-        )
-    return 0.0
-
-
-def _refine_timing_with_quality(
-    lines: List[Line],
-    vocals_path: str,
-    line_timings: List[Tuple[float, str]],
-    lrc_text: str,
-    target_duration: Optional[int],
-    issues: List[str],
-) -> Tuple[List[Line], str]:
-    """Refine timing and track issues. Returns (lines, alignment_method)."""
-    from ...refine import refine_word_timing
-    from ..alignment.alignment import adjust_timing_for_duration_mismatch
-    from .sync import get_lrc_duration
-
-    lines = refine_word_timing(lines, vocals_path)
-    alignment_method = "onset_refined"
-    logger.debug("Word-level timing refined using vocals")
-
-    lrc_duration = get_lrc_duration(lrc_text)
-    if target_duration and lrc_duration and abs(target_duration - lrc_duration) > 8:
-        logger.info(f"Duration mismatch: LRC={lrc_duration}s, audio={target_duration}s")
-        issues.append(
-            f"Duration mismatch: LRC={lrc_duration}s vs audio={target_duration}s"
-        )
-        lines = adjust_timing_for_duration_mismatch(
-            lines,
-            line_timings,
-            vocals_path,
-            lrc_duration=lrc_duration,
-            audio_duration=target_duration,
-        )
-
-    return lines, alignment_method
-
-
-def _calculate_quality_score(quality_report: dict) -> float:
-    """Calculate overall quality score from report components."""
-    # Base score on lyrics quality if available
-    if quality_report["lyrics_quality"]:
-        base_score = quality_report["lyrics_quality"].get("quality_score", 50.0)
-    elif quality_report.get("dtw_metrics"):
-        base_score = _score_from_dtw_metrics(quality_report["dtw_metrics"])
-    else:
-        base_score = 30.0  # Genius fallback
-
-    # Adjust for alignment method
-    method_bonus = {
-        "whisper_hybrid": 10,
-        "onset_refined": 5,
-        "lrc_only": 0,
-        "genius_fallback": -20,
-        "none": -50,
-    }
-    base_score += method_bonus.get(quality_report["alignment_method"], 0)
-
-    # Adjust for issues
-    base_score -= len(quality_report["issues"]) * 5
-
-    return max(0.0, min(100.0, base_score))
-
-
-def _score_from_dtw_metrics(metrics: dict) -> float:
-    """Heuristic score derived from Whisper/DTW alignment metrics."""
-    matched_ratio = float(metrics.get("matched_ratio", 0.0))
-    avg_similarity = float(metrics.get("avg_similarity", 0.0))
-    line_coverage = float(metrics.get("line_coverage", 0.0))
-    phonetic_similarity_coverage = float(
-        metrics.get("phonetic_similarity_coverage", matched_ratio * avg_similarity)
-    )
-    high_similarity_ratio = float(metrics.get("high_similarity_ratio", avg_similarity))
-    exact_match_ratio = float(metrics.get("exact_match_ratio", 0.0))
-
-    score = 40.0
-    score += matched_ratio * 20.0
-    score += avg_similarity * 15.0
-    score += line_coverage * 10.0
-    score += phonetic_similarity_coverage * 10.0
-    score += high_similarity_ratio * 3.0
-    score += exact_match_ratio * 2.0
-    return max(20.0, min(100.0, score))
-
-
 def _fetch_lrc_text_and_timings(
     title: str,
     artist: str,
@@ -451,6 +256,7 @@ def _fetch_lrc_text_and_timings(
     filter_promos: bool = True,
     offline: bool = False,
     routing_diagnostics: Optional[dict] = None,
+    runtime_config: Optional[LyricsRuntimeConfig] = None,
 ) -> Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]:
     """Fetch raw LRC text and parsed timings from available sources.
 
@@ -465,7 +271,8 @@ def _fetch_lrc_text_and_timings(
         Tuple of (lrc_text, parsed_timings, source_name)
     """
     try:
-        duration_tolerance = _duration_tolerance_from_env(default=8)
+        runtime_config = runtime_config or load_lyrics_runtime_config()
+        duration_tolerance = runtime_config.lrc_duration_tolerance_sec
         _initialize_routing_diagnostics(
             routing_diagnostics,
             target_duration=target_duration,
@@ -483,6 +290,8 @@ def _fetch_lrc_text_and_timings(
             filter_promos=filter_promos,
             offline=offline,
             routing_diagnostics=routing_diagnostics,
+            runtime_config=runtime_config,
+            logger=logger,
         )
         if disagreement_selection is not None:
             return disagreement_selection
@@ -519,6 +328,7 @@ def _fetch_lrc_text_and_timings(
                 target_duration,
                 tolerance=duration_tolerance,
                 offline=offline,
+                runtime_config=runtime_config,
             )
             if lrc_text and is_synced:
                 lines = parse_lrc_with_timing(
@@ -536,7 +346,7 @@ def _fetch_lrc_text_and_timings(
             from .sync import fetch_lyrics_multi_source
 
             lrc_text, is_synced, source = fetch_lyrics_multi_source(
-                title, artist, offline=offline
+                title, artist, offline=offline, runtime_config=runtime_config
             )
             if lrc_text and is_synced:
                 lines = parse_lrc_with_timing(
@@ -550,179 +360,6 @@ def _fetch_lrc_text_and_timings(
     except Exception as e:
         logger.warning(f"LRC fetch failed: {e}")
         return None, None, ""
-
-
-def _duration_tolerance_from_env(*, default: int) -> int:
-    raw_value = os.getenv("Y2K_LRC_DURATION_TOLERANCE_SEC", "").strip()
-    if not raw_value:
-        return default
-    try:
-        parsed = int(raw_value)
-    except ValueError:
-        logger.warning(
-            "Ignoring invalid Y2K_LRC_DURATION_TOLERANCE_SEC=%r; using %ds",
-            raw_value,
-            default,
-        )
-        return default
-    return max(parsed, 0)
-
-
-def _normalize_provider_key(value: str) -> str:
-    return "".join(ch for ch in value.lower() if ch.isalnum())
-
-
-def _filter_sources_for_preferred_provider(
-    sources: _DisagreementSourceMap,
-) -> _DisagreementSourceMap:
-    preferred = os.getenv("Y2K_PREFERRED_LYRICS_PROVIDER", "").strip().lower()
-    if not preferred:
-        return sources
-
-    normalized_preferred = _normalize_provider_key(preferred)
-    if normalized_preferred in _LYRIQ_PROVIDER_KEYS:
-        filtered = {
-            key: value
-            for key, value in sources.items()
-            if _normalize_provider_key(key) in _LYRIQ_PROVIDER_KEYS
-        }
-        return filtered or sources
-
-    if normalized_preferred == "syncedlyrics":
-        filtered = {
-            key: value
-            for key, value in sources.items()
-            if _normalize_provider_key(key) not in _LYRIQ_PROVIDER_KEYS
-        }
-        return filtered or sources
-
-    filtered = {
-        key: value
-        for key, value in sources.items()
-        if _normalize_provider_key(key) == normalized_preferred
-    }
-    return filtered or sources
-
-
-def _initialize_routing_diagnostics(
-    routing_diagnostics: Optional[dict],
-    *,
-    target_duration: Optional[int],
-    vocals_path: Optional[str],
-    evaluate_sources: bool,
-    offline: bool,
-) -> None:
-    if routing_diagnostics is None:
-        return
-    routing_diagnostics.setdefault("lyrics_source_audio_scoring_used", False)
-    routing_diagnostics.setdefault("lyrics_source_disagreement_flagged", False)
-    routing_diagnostics.setdefault("lyrics_source_disagreement_reasons", [])
-    routing_diagnostics.setdefault("lyrics_source_candidate_count", 0)
-    routing_diagnostics.setdefault("lyrics_source_comparable_candidate_count", 0)
-    routing_diagnostics.setdefault("lyrics_source_selection_mode", "default")
-    routing_diagnostics.setdefault("lyrics_source_routing_skip_reason", "none")
-    if offline:
-        routing_diagnostics["lyrics_source_routing_skip_reason"] = "offline"
-    elif not target_duration:
-        routing_diagnostics["lyrics_source_routing_skip_reason"] = "no_target_duration"
-    elif not vocals_path:
-        routing_diagnostics["lyrics_source_routing_skip_reason"] = "no_vocals_path"
-    elif evaluate_sources:
-        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-            "explicit_audio_scoring"
-        )
-
-
-def _select_disagreement_source_if_needed(
-    *,
-    title: str,
-    artist: str,
-    target_duration: Optional[int],
-    vocals_path: Optional[str],
-    evaluate_sources: bool,
-    filter_promos: bool,
-    offline: bool,
-    routing_diagnostics: Optional[dict],
-) -> Optional[Tuple[Optional[str], Optional[List[Tuple[float, str]]], str]]:
-    if not (target_duration and vocals_path and not evaluate_sources):
-        return None
-    from ..alignment.timing_evaluator import select_best_source
-    from ..alignment.timing_evaluator_comparison import analyze_source_disagreement
-    from .sync import fetch_from_all_sources
-
-    sources = fetch_from_all_sources(title, artist, offline=offline)
-    sources = _filter_sources_for_preferred_provider(sources)
-    disagreement = analyze_source_disagreement(title, artist, sources)
-    _update_routing_diagnostics_from_disagreement(
-        routing_diagnostics,
-        sources=sources,
-        offline=offline,
-        disagreement=disagreement,
-    )
-    if not disagreement["flagged"]:
-        return None
-
-    reason_text = ", ".join(disagreement["reasons"])
-    logger.info(
-        "Lyrics source disagreement detected for %s - %s (%s); scoring candidates against audio",
-        artist,
-        title,
-        reason_text,
-    )
-    lrc_text, source, report = select_best_source(
-        title,
-        artist,
-        vocals_path,
-        target_duration,
-        sources=sources,
-    )
-    if not (lrc_text and source):
-        return None
-    if routing_diagnostics is not None:
-        routing_diagnostics["lyrics_source_audio_scoring_used"] = True
-        routing_diagnostics["lyrics_source_selection_mode"] = (
-            "audio_scored_disagreement"
-        )
-        routing_diagnostics["lyrics_source_routing_skip_reason"] = "none"
-    lines = parse_lrc_with_timing(lrc_text, title, artist, filter_promos=filter_promos)
-    score_str = f" (score: {report.overall_score:.1f})" if report else ""
-    logger.info(f"Selected best source after disagreement: {source}{score_str}")
-    return lrc_text, lines, source
-
-
-def _update_routing_diagnostics_from_disagreement(
-    routing_diagnostics: Optional[dict],
-    *,
-    sources: dict,
-    offline: bool,
-    disagreement: dict,
-) -> None:
-    if routing_diagnostics is None:
-        return
-    if offline and not sources:
-        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-            "offline_no_cached_sources"
-        )
-    routing_diagnostics["lyrics_source_candidate_count"] = int(
-        disagreement.get("source_count", 0) or 0
-    )
-    routing_diagnostics["lyrics_source_comparable_candidate_count"] = int(
-        disagreement.get("comparable_source_count", 0) or 0
-    )
-    routing_diagnostics["lyrics_source_disagreement_flagged"] = bool(
-        disagreement.get("flagged", False)
-    )
-    routing_diagnostics["lyrics_source_disagreement_reasons"] = list(
-        disagreement.get("reasons", []) or []
-    )
-    if (
-        not disagreement.get("flagged", False)
-        and sources
-        and routing_diagnostics["lyrics_source_routing_skip_reason"] == "offline"
-    ):
-        routing_diagnostics["lyrics_source_routing_skip_reason"] = (
-            "no_material_disagreement"
-        )
 
 
 def get_lyrics_simple(  # noqa: C901
@@ -749,11 +386,15 @@ def get_lyrics_simple(  # noqa: C901
     lenient_activity_bonus: float = 0.4,
     low_word_confidence_threshold: float = 0.5,
     offline: bool = False,
+    hooks: Optional[LyricsWhisperHooks] = None,
+    runtime_config: Optional[LyricsRuntimeConfig] = None,
 ) -> Tuple[List[Line], Optional[SongMetadata]]:
     """Simplified lyrics pipeline favoring LRC over Genius."""
     from .sync import get_lrc_duration
 
     _ = cache_dir
+    resolved_hooks = resolve_lyrics_whisper_hooks(hooks)
+    runtime_config = runtime_config or load_lyrics_runtime_config()
     return get_lyrics_simple_impl(
         title,
         artist,
@@ -778,27 +419,43 @@ def get_lyrics_simple(  # noqa: C901
         low_word_confidence_threshold,
         offline,
         create_no_lyrics_placeholder_fn=_create_no_lyrics_placeholder,
-        transcribe_vocals_for_state_fn=_transcribe_vocals_for_state,
+        transcribe_vocals_for_state_fn=lambda *a, **k: _transcribe_vocals_for_state(
+            *a, hooks=resolved_hooks, **k
+        ),
         create_lines_from_whisper_fn=_create_lines_from_whisper,
         romanize_lines_fn=_romanize_lines,
         load_lyrics_file_fn=_load_lyrics_file,
-        fetch_lrc_text_and_timings_for_state_fn=_fetch_lrc_text_and_timings_for_state,
+        fetch_lrc_text_and_timings_for_state_fn=lambda *a, **k: _fetch_lrc_text_and_timings_for_state(
+            *a, hooks=resolved_hooks, runtime_config=runtime_config, **k
+        ),
         get_lrc_duration_fn=get_lrc_duration,
         fetch_genius_lyrics_with_singers_for_state_fn=(
-            _fetch_genius_lyrics_with_singers_for_state
+            lambda *a, **k: _fetch_genius_lyrics_with_singers_for_state(
+                *a, hooks=resolved_hooks, **k
+            )
         ),
-        detect_and_apply_offset_for_state_fn=_detect_and_apply_offset_for_state,
+        detect_and_apply_offset_for_state_fn=lambda *a, **k: _detect_and_apply_offset_for_state(
+            *a, hooks=resolved_hooks, **k
+        ),
         create_lines_from_lrc_timings_fn=create_lines_from_lrc_timings,
         create_lines_from_lrc_fn=create_lines_from_lrc,
         apply_timing_to_lines_fn=_apply_timing_to_lines,
         extract_text_lines_from_lrc_fn=_extract_text_lines_from_lrc,
         create_lines_from_plain_text_fn=_create_lines_from_plain_text,
-        refine_timing_with_audio_for_state_fn=_refine_timing_with_audio_for_state,
-        apply_whisper_alignment_for_state_fn=_apply_whisper_alignment_for_state,
-        align_lrc_text_to_whisper_timings_for_state_fn=(
-            _align_lrc_text_to_whisper_timings_for_state
+        refine_timing_with_audio_for_state_fn=lambda *a, **k: _refine_timing_with_audio_for_state(
+            *a, hooks=resolved_hooks, **k
         ),
-        whisper_lang_to_epitran_for_state_fn=_whisper_lang_to_epitran_for_state,
+        apply_whisper_alignment_for_state_fn=lambda *a, **k: _apply_whisper_alignment_for_state(
+            *a, hooks=resolved_hooks, **k
+        ),
+        align_lrc_text_to_whisper_timings_for_state_fn=(
+            lambda *a, **k: _align_lrc_text_to_whisper_timings_for_state(
+                *a, hooks=resolved_hooks, **k
+            )
+        ),
+        whisper_lang_to_epitran_for_state_fn=lambda *a, **k: _whisper_lang_to_epitran_for_state(
+            *a, hooks=resolved_hooks, **k
+        ),
         map_lrc_lines_to_whisper_segments_fn=_map_lrc_lines_to_whisper_segments,
         apply_singer_info_fn=_apply_singer_info,
         logger=logger,

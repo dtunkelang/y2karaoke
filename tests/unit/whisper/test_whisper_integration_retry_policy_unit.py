@@ -2,6 +2,9 @@ from y2karaoke.core.components.whisper.whisper_integration_retry import (
     retry_improves_alignment,
     should_retry_with_aggressive_whisper,
 )
+from y2karaoke.core.components.whisper.whisper_runtime_config import (
+    WhisperRuntimeConfig,
+)
 
 
 def test_should_retry_with_aggressive_whisper_borderline_true():
@@ -87,3 +90,27 @@ def test_retry_improves_alignment_profile_safe_is_stricter(monkeypatch):
 
     monkeypatch.setenv("Y2K_WHISPER_PROFILE", "safe")
     assert retry_improves_alignment(baseline, retry) is False
+
+
+def test_retry_improves_alignment_profile_can_be_passed_explicitly():
+    baseline = {
+        "matched_ratio": 0.8,
+        "line_coverage": 0.84,
+        "phonetic_similarity_coverage": 0.4,
+    }
+    retry = {
+        "matched_ratio": 0.833,
+        "line_coverage": 0.83,
+        "phonetic_similarity_coverage": 0.44,
+    }
+
+    assert retry_improves_alignment(
+        baseline,
+        retry,
+        runtime_config=WhisperRuntimeConfig(profile="default"),
+    )
+    assert not retry_improves_alignment(
+        baseline,
+        retry,
+        runtime_config=WhisperRuntimeConfig(profile="safe"),
+    )

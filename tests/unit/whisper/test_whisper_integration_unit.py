@@ -3,6 +3,9 @@ from y2karaoke.core.models import Line, Word
 import y2karaoke.core.components.whisper.whisper_integration as wi
 from y2karaoke.core.components.whisper import whisper_integration_align as wialign
 from y2karaoke.core.components.whisper import whisper_integration_correct as wicorrect
+from y2karaoke.core.components.whisper.whisper_runtime_config import (
+    WhisperRuntimeConfig,
+)
 from y2karaoke.core.components.alignment.timing_models import (
     TranscriptionWord,
     TranscriptionSegment,
@@ -118,8 +121,7 @@ def test_should_ignore_trimmed_transcript_keeps_normal_tail_trim():
     )
 
 
-def test_should_force_whisperx_for_tail_shortfall(monkeypatch):
-    monkeypatch.setenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", "1")
+def test_should_force_whisperx_for_tail_shortfall():
     words = [
         TranscriptionWord(
             text=f"w{i}",
@@ -146,20 +148,19 @@ def test_should_force_whisperx_for_tail_shortfall(monkeypatch):
         all_words=words,
         lines=lines,
         language="fr",
+        runtime_config=WhisperRuntimeConfig(tail_shortfall_forced_fallback=True),
     )
 
     assert wialign._should_force_whisperx_for_tail_shortfall(
         all_words=words,
         lines=lines,
         language=None,
+        runtime_config=WhisperRuntimeConfig(tail_shortfall_forced_fallback=True),
         detected_lang="fr",
     )
 
 
-def test_should_not_force_whisperx_for_tail_shortfall_without_flag(monkeypatch):
-    monkeypatch.delenv(
-        "Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", raising=False
-    )
+def test_should_not_force_whisperx_for_tail_shortfall_without_flag():
     words = [
         TranscriptionWord(text="w", start=180.0 + i, end=180.2 + i, probability=1.0)
         for i in range(90)
@@ -170,6 +171,7 @@ def test_should_not_force_whisperx_for_tail_shortfall_without_flag(monkeypatch):
         all_words=words,
         lines=lines,
         language="fr",
+        runtime_config=WhisperRuntimeConfig(),
     )
 
 
@@ -226,5 +228,31 @@ def test_whisper_profile_configs(monkeypatch):
 
     assert safe_map.sparse_word_threshold > default_map.sparse_word_threshold
     assert aggr_map.sparse_word_threshold < default_map.sparse_word_threshold
+    assert safe_correct.quality_good_threshold > default_correct.quality_good_threshold
+    assert aggr_correct.quality_good_threshold < default_correct.quality_good_threshold
+
+
+def test_mapping_profile_config_can_be_selected_explicitly():
+    default_map = wialign._default_mapping_decision_config()
+    safe_map = wialign._default_mapping_decision_config(
+        WhisperRuntimeConfig(profile="safe")
+    )
+    aggr_map = wialign._default_mapping_decision_config(
+        WhisperRuntimeConfig(profile="aggressive")
+    )
+
+    assert safe_map.sparse_word_threshold > default_map.sparse_word_threshold
+    assert aggr_map.sparse_word_threshold < default_map.sparse_word_threshold
+
+
+def test_correction_profile_config_can_be_selected_explicitly():
+    default_correct = wicorrect._default_correction_config()
+    safe_correct = wicorrect._default_correction_config(
+        WhisperRuntimeConfig(profile="safe")
+    )
+    aggr_correct = wicorrect._default_correction_config(
+        WhisperRuntimeConfig(profile="aggressive")
+    )
+
     assert safe_correct.quality_good_threshold > default_correct.quality_good_threshold
     assert aggr_correct.quality_good_threshold < default_correct.quality_good_threshold

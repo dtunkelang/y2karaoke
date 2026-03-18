@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-import os
-from typing import Literal, cast
-
-WhisperProfile = Literal["safe", "default", "aggressive"]
+from .whisper_runtime_config import (
+    WhisperProfile,
+    load_whisper_runtime_config,
+    normalize_whisper_profile,
+)
 
 
 def get_whisper_profile() -> WhisperProfile:
-    profile = os.getenv("Y2K_WHISPER_PROFILE", "default").strip().lower()
-    if profile in {"safe", "aggressive"}:
-        return cast(WhisperProfile, profile)
-    return "default"
+    return load_whisper_runtime_config().profile
+
+
+__all__ = ["WhisperProfile", "get_whisper_profile", "normalize_whisper_profile"]

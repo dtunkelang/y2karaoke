@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from ... import models
@@ -16,12 +15,13 @@ from .whisper_mapping_post_text import (
     _normalize_match_token,
     _soft_token_match,
 )
+from .whisper_mapping_runtime_config import load_whisper_mapping_trace_config
 
 _MAPPER_CANDIDATE_TRACE_ROWS: list[dict[str, object]] = []
 
 
 def _append_candidate_trace_row(row: dict[str, object]) -> None:
-    trace_path = os.environ.get("Y2K_TRACE_MAPPER_CANDIDATES_JSON", "").strip()
+    trace_path = load_whisper_mapping_trace_config().mapper_candidates_path
     if not trace_path:
         return
     _MAPPER_CANDIDATE_TRACE_ROWS.append(row)

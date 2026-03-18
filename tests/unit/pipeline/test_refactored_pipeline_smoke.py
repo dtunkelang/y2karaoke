@@ -6,6 +6,7 @@ from y2karaoke.core.components.lyrics.sync_pipeline import (
     fetch_lyrics_multi_source_impl,
     _build_provider_search_terms,
 )
+from y2karaoke.core.components.lyrics.runtime_config import LyricsRuntimeConfig
 from y2karaoke.core.components.lyrics.lyrics_whisper_pipeline import (
     get_lyrics_simple_impl,
 )
@@ -257,7 +258,7 @@ def test_fetch_lyrics_multi_source_impl_logs_not_found_once_per_state():
     )
 
 
-def test_fetch_lyrics_multi_source_impl_prefers_syncedlyrics_via_env(monkeypatch):
+def test_fetch_lyrics_multi_source_impl_prefers_syncedlyrics_via_config():
     logger = _DummyLogger()
 
     class State:
@@ -274,7 +275,6 @@ def test_fetch_lyrics_multi_source_impl_prefers_syncedlyrics_via_env(monkeypatch
         calls.append(("syncedlyrics", "search"))
         return ("[00:00]From syncedlyrics", "NetEase")
 
-    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "syncedlyrics")
     result = fetch_lyrics_multi_source_impl(
         "Song",
         "Artist",
@@ -284,6 +284,7 @@ def test_fetch_lyrics_multi_source_impl_prefers_syncedlyrics_via_env(monkeypatch
         duration_tolerance=20,
         offline=False,
         runtime_state=State(),
+        runtime_config=LyricsRuntimeConfig(preferred_provider="syncedlyrics"),
         disk_cache_enabled_fn=lambda _s: False,
         load_disk_cache_fn=lambda _s: None,
         is_lyriq_available_fn=lambda _s: True,
@@ -300,9 +301,7 @@ def test_fetch_lyrics_multi_source_impl_prefers_syncedlyrics_via_env(monkeypatch
     assert calls == [("syncedlyrics", "search")]
 
 
-def test_fetch_lyrics_multi_source_impl_ignores_cached_wrong_provider_for_preference(
-    monkeypatch,
-):
+def test_fetch_lyrics_multi_source_impl_ignores_cached_wrong_provider_for_preference():
     logger = _DummyLogger()
 
     class State:
@@ -317,7 +316,6 @@ def test_fetch_lyrics_multi_source_impl_ignores_cached_wrong_provider_for_prefer
         calls.append(("syncedlyrics", "search"))
         return ("[00:00]From syncedlyrics", "NetEase")
 
-    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "syncedlyrics")
     result = fetch_lyrics_multi_source_impl(
         "Song",
         "Artist",
@@ -327,6 +325,7 @@ def test_fetch_lyrics_multi_source_impl_ignores_cached_wrong_provider_for_prefer
         duration_tolerance=20,
         offline=False,
         runtime_state=State(),
+        runtime_config=LyricsRuntimeConfig(preferred_provider="syncedlyrics"),
         disk_cache_enabled_fn=lambda _s: False,
         load_disk_cache_fn=lambda _s: None,
         is_lyriq_available_fn=lambda _s: True,
@@ -343,9 +342,7 @@ def test_fetch_lyrics_multi_source_impl_ignores_cached_wrong_provider_for_prefer
     assert calls == [("syncedlyrics", "search")]
 
 
-def test_fetch_lyrics_multi_source_impl_offline_reuses_cached_wrong_provider_when_needed(
-    monkeypatch,
-):
+def test_fetch_lyrics_multi_source_impl_offline_reuses_cached_wrong_provider_when_needed():
     logger = _DummyLogger()
 
     class State:
@@ -355,7 +352,6 @@ def test_fetch_lyrics_multi_source_impl_offline_reuses_cached_wrong_provider_whe
         disk_cache = {}
         warning_once_keys = set()
 
-    monkeypatch.setenv("Y2K_PREFERRED_LYRICS_PROVIDER", "syncedlyrics")
     result = fetch_lyrics_multi_source_impl(
         "Song",
         "Artist",
@@ -365,6 +361,7 @@ def test_fetch_lyrics_multi_source_impl_offline_reuses_cached_wrong_provider_whe
         duration_tolerance=20,
         offline=True,
         runtime_state=State(),
+        runtime_config=LyricsRuntimeConfig(preferred_provider="syncedlyrics"),
         disk_cache_enabled_fn=lambda _s: False,
         load_disk_cache_fn=lambda _s: None,
         is_lyriq_available_fn=lambda _s: True,

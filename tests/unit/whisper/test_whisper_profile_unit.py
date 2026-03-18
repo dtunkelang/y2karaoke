@@ -1,4 +1,7 @@
-from y2karaoke.core.components.whisper.whisper_profile import get_whisper_profile
+from y2karaoke.core.components.whisper.whisper_profile import (
+    get_whisper_profile,
+    normalize_whisper_profile,
+)
 
 
 def test_get_whisper_profile_defaults_to_default(monkeypatch):
@@ -17,3 +20,7 @@ def test_get_whisper_profile_accepts_known_values(monkeypatch):
 def test_get_whisper_profile_falls_back_on_unknown(monkeypatch):
     monkeypatch.setenv("Y2K_WHISPER_PROFILE", "experimental")
     assert get_whisper_profile() == "default"
+
+
+def test_normalize_whisper_profile_accepts_none():
+    assert normalize_whisper_profile(None) == "default"

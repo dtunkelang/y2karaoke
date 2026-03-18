@@ -124,3 +124,17 @@ def correct_timing_hook_kwargs(hooks: CorrectTimingHooks) -> Dict[str, Any]:
             hooks.pull_lines_forward_for_continuous_vocals_fn
         ),
     }
+
+
+def entrypoint_correct_timing_hook_kwargs(hooks: CorrectTimingHooks) -> Dict[str, Any]:
+    kwargs = correct_timing_hook_kwargs(hooks)
+    for key in (
+        "apply_low_quality_segment_postpasses_fn",
+        "finalize_whisper_line_set_fn",
+        "constrain_line_starts_to_baseline_fn",
+        "should_rollback_short_line_degradation_fn",
+        "restore_implausibly_short_lines_fn",
+        "clone_lines_for_fallback_fn",
+    ):
+        kwargs.pop(key)
+    return kwargs

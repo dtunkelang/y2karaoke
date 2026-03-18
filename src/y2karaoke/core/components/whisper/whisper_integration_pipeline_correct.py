@@ -21,6 +21,7 @@ from .whisper_integration_hooks import (
     CorrectTimingHooks,
     correct_timing_hook_kwargs,
 )
+from .whisper_runtime_config import WhisperRuntimeConfig
 
 
 def _build_correct_timing_kwargs(
@@ -38,6 +39,7 @@ def _build_correct_timing_kwargs(
     lenient_vocal_activity_threshold: float,
     lenient_activity_bonus: float,
     low_word_confidence_threshold: float,
+    runtime_config: WhisperRuntimeConfig | None,
     transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
     extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
     trim_whisper_transcription_by_lyrics_fn: Callable[..., Any],
@@ -114,6 +116,7 @@ def _build_correct_timing_kwargs(
         lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
         lenient_activity_bonus=lenient_activity_bonus,
         low_word_confidence_threshold=low_word_confidence_threshold,
+        runtime_config=runtime_config,
         **correct_timing_hook_kwargs(hooks),
         logger=logger,
     )
@@ -133,6 +136,7 @@ def correct_timing_with_whisper_impl(
     lenient_vocal_activity_threshold: float,
     lenient_activity_bonus: float,
     low_word_confidence_threshold: float,
+    runtime_config: WhisperRuntimeConfig | None = None,
     *,
     transcribe_vocals_fn: Callable[..., Tuple[Any, Any, str, str]],
     extract_audio_features_fn: Callable[..., Optional[timing_models.AudioFeatures]],
@@ -176,6 +180,7 @@ def correct_timing_with_whisper_impl(
         lenient_vocal_activity_threshold=lenient_vocal_activity_threshold,
         lenient_activity_bonus=lenient_activity_bonus,
         low_word_confidence_threshold=low_word_confidence_threshold,
+        runtime_config=runtime_config,
         transcribe_vocals_fn=transcribe_vocals_fn,
         extract_audio_features_fn=extract_audio_features_fn,
         trim_whisper_transcription_by_lyrics_fn=trim_whisper_transcription_by_lyrics_fn,

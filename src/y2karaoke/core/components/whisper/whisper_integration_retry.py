@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Dict
 
 from ..alignment.alignment_policy import should_retry_aggressive_whisper_dtw_map
-from .whisper_profile import get_whisper_profile
+from .whisper_runtime_config import WhisperRuntimeConfig, load_whisper_runtime_config
 
 
 @dataclass(frozen=True)
@@ -16,8 +16,10 @@ class _RetryImproveDecisionConfig:
     min_phonetic_gain: float
 
 
-def _default_retry_improve_config() -> _RetryImproveDecisionConfig:
-    profile = get_whisper_profile()
+def _default_retry_improve_config(
+    runtime_config: WhisperRuntimeConfig | None = None,
+) -> _RetryImproveDecisionConfig:
+    profile = (runtime_config or load_whisper_runtime_config()).profile
     if profile == "safe":
         return _RetryImproveDecisionConfig(
             min_matched_gain_with_line_tolerance=0.04,
@@ -59,8 +61,9 @@ def should_retry_with_aggressive_whisper(
 def retry_improves_alignment(
     baseline_metrics: Dict[str, float],
     retry_metrics: Dict[str, float],
+    runtime_config: WhisperRuntimeConfig | None = None,
 ) -> bool:
-    config = _default_retry_improve_config()
+    config = _default_retry_improve_config(runtime_config)
     base_matched = float(baseline_metrics.get("matched_ratio", 0.0) or 0.0)
     base_line = float(baseline_metrics.get("line_coverage", 0.0) or 0.0)
     base_phonetic = float(

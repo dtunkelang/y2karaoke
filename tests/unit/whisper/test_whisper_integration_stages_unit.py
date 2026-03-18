@@ -2,6 +2,9 @@ import numpy as np
 import pytest
 
 from y2karaoke.core.components.whisper import whisper_integration_stages as stages
+from y2karaoke.core.components.whisper.whisper_runtime_config import (
+    WhisperRuntimeConfig,
+)
 from y2karaoke.core.models import Line, Word
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
@@ -70,6 +73,30 @@ def test_normalize_repeated_line_durations_scales_repeated_lines_when_flag_enabl
     )
     assert out[1].end_time < lines[2].start_time - 0.05
     assert out[2] == lines[2]
+
+
+def test_normalize_repeated_line_durations_accepts_explicit_runtime_config():
+    lines = [
+        Line(
+            words=[
+                Word(text="I", start_time=10.0, end_time=10.2),
+                Word(text="said", start_time=10.2, end_time=10.6),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I", start_time=20.0, end_time=20.3),
+                Word(text="said", start_time=20.3, end_time=21.5),
+            ]
+        ),
+    ]
+
+    out = stages._normalize_repeated_line_durations(
+        lines,
+        runtime_config=WhisperRuntimeConfig(repeat_duration_normalize=True),
+    )
+
+    assert out != lines
 
 
 def test_enforce_mapped_line_stage_invariants_runs_two_cycles():

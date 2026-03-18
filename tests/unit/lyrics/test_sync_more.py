@@ -11,7 +11,7 @@ def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(
     monkeypatch, isolated_sync_state
 ):
     cache_key = ("artist", "title")
-    sync._lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 100)
+    isolated_sync_state.lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 100)
 
     isolated_sync_state.lyriq_available = False
     isolated_sync_state.syncedlyrics_available = True
@@ -25,7 +25,11 @@ def test_fetch_lyrics_multi_source_cached_duration_mismatch_refetch(
     isolated_sync_state.search_with_fallback_fn = fake_search
 
     result = sync.fetch_lyrics_multi_source(
-        "Title", "Artist", target_duration=200, duration_tolerance=10
+        "Title",
+        "Artist",
+        target_duration=200,
+        duration_tolerance=10,
+        state=isolated_sync_state,
     )
 
     # If refetch fails, reuse cached LRC even when duration is outside tolerance.
@@ -50,7 +54,7 @@ def test_fetch_lyrics_multi_source_enhanced_plain_allowed(
     isolated_sync_state.search_with_fallback_fn = fake_search
 
     lrc, is_synced, source = sync.fetch_lyrics_multi_source(
-        "Title", "Artist", synced_only=False, enhanced=True
+        "Title", "Artist", synced_only=False, enhanced=True, state=isolated_sync_state
     )
 
     assert lrc == "plain lyrics"
@@ -138,17 +142,17 @@ def test_search_single_provider_returns_none_on_empty_result(
     monkeypatch.setattr(
         sync, "syncedlyrics", types.SimpleNamespace(search=lambda *_a, **_k: None)
     )
-    result = sync._search_single_provider("term", "Provider")
+    result = sync._search_single_provider("term", "Provider", state=isolated_sync_state)
     assert result is None
-    assert sync._failed_providers.get("Provider", 0) == 0
+    assert isolated_sync_state.failed_providers.get("Provider", 0) == 0
 
 
 def test_search_single_provider_skips_after_failures(monkeypatch, isolated_sync_state):
-    sync._failed_providers["Provider"] = sync._FAILURE_THRESHOLD
+    isolated_sync_state.failed_providers["Provider"] = sync._FAILURE_THRESHOLD
     monkeypatch.setattr(
         sync, "syncedlyrics", types.SimpleNamespace(search=lambda *_a, **_k: "hit")
     )
-    result = sync._search_single_provider("term", "Provider")
+    result = sync._search_single_provider("term", "Provider", state=isolated_sync_state)
     assert result is None
 
 
@@ -158,7 +162,9 @@ def test_search_single_provider_returns_none_when_no_attempts(
     monkeypatch.setattr(
         sync, "syncedlyrics", types.SimpleNamespace(search=lambda *_a, **_k: "hit")
     )
-    result = sync._search_single_provider("term", "Provider", max_retries=-1)
+    result = sync._search_single_provider(
+        "term", "Provider", max_retries=-1, state=isolated_sync_state
+    )
     assert result is None
 
 
@@ -170,20 +176,24 @@ def test_fetch_from_lyriq_no_synced_or_plain(monkeypatch, isolated_sync_state):
     isolated_sync_state.lyriq_available = True
     isolated_sync_state.lyriq_get_lyrics_fn = lambda *_a, **_k: EmptyLyrics()
 
-    assert sync._fetch_from_lyriq("Title", "Artist") is None
+    assert sync._fetch_from_lyriq("Title", "Artist", state=isolated_sync_state) is None
 
 
 def test_fetch_lyrics_multi_source_cache_hit_duration_match(
     monkeypatch, isolated_sync_state
 ):
     cache_key = ("artist", "title")
-    sync._lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 120)
+    isolated_sync_state.lrc_cache[cache_key] = ("[00:00.00]A", True, "cached", 120)
 
     isolated_sync_state.lyriq_available = False
     isolated_sync_state.syncedlyrics_available = True
 
     result = sync.fetch_lyrics_multi_source(
-        "Title", "Artist", target_duration=125, duration_tolerance=10
+        "Title",
+        "Artist",
+        target_duration=125,
+        duration_tolerance=10,
+        state=isolated_sync_state,
     )
 
     assert result == ("[00:00.00]A", True, "cached")
@@ -199,7 +209,9 @@ def test_fetch_lyrics_multi_source_returns_synced_provider(
         "Provider",
     )
 
-    result = sync.fetch_lyrics_multi_source("Title", "Artist")
+    result = sync.fetch_lyrics_multi_source(
+        "Title", "Artist", state=isolated_sync_state
+    )
 
     assert result == ("[00:00.00]A", True, "Provider")
 
@@ -214,7 +226,9 @@ def test_fetch_lyrics_multi_source_returns_plain_when_allowed(
         "Provider",
     )
 
-    result = sync.fetch_lyrics_multi_source("Title", "Artist", synced_only=False)
+    result = sync.fetch_lyrics_multi_source(
+        "Title", "Artist", synced_only=False, state=isolated_sync_state
+    )
 
     assert result == ("Plain lyrics", False, "Provider")
 
@@ -251,7 +265,9 @@ def test_fetch_lyrics_for_duration_returns_match(monkeypatch, isolated_sync_stat
     )
     isolated_sync_state.get_lrc_duration_fn = lambda *_a, **_k: 200
 
-    result = sync.fetch_lyrics_for_duration("Title", "Artist", 200, tolerance=10)
+    result = sync.fetch_lyrics_for_duration(
+        "Title", "Artist", 200, tolerance=10, state=isolated_sync_state
+    )
 
     assert result == (lrc_text, True, "source", 200)
 

@@ -1,6 +1,9 @@
 from y2karaoke.core.components.whisper import (
     whisper_segment_assignment_experimental as exp,
 )
+from y2karaoke.core.components.whisper.whisper_mapping_runtime_config import (
+    SegmentAssignmentRuntimeConfig,
+)
 
 
 def test_experimental_segment_score_downweights_function_word_only_overlap_in_placeholder_heavy_segments() -> (
@@ -50,7 +53,7 @@ def test_experimental_assigner_limits_forward_jump_without_content_hits() -> Non
         ["et", "dans", "le", "bruit", "je", "cours", "et", "j", "ai", "peur"],
     ]
     seg_durations = [2.0, 1.0, 18.0, 1.0, 4.0]
-    config = exp.whisper_blocks._segment_assignment_config_from_env()
+    config = SegmentAssignmentRuntimeConfig()
 
     line_to_seg = exp._assign_lrc_lines_to_segments_experimental(
         lrc_lines_words=lrc_lines_words,
