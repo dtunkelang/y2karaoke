@@ -1,0 +1,238 @@
+{
+  "schema_version": "1.0",
+  "title": "Taste [first-chorus]",
+  "artist": "Sabrina Carpenter",
+  "audio_path": "/Users/dtunkelang/.cache/clip_audio/sabrina-carpenter-taste-first-chorus-23s-43s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "I heard you're back together and if that's true",
+      "start": 1.35,
+      "end": 6.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 1.35,
+          "end": 2.05
+        },
+        {
+          "word_index": 2,
+          "text": "heard",
+          "start": 2.05,
+          "end": 2.55
+        },
+        {
+          "word_index": 3,
+          "text": "you're",
+          "start": 2.55,
+          "end": 3.05
+        },
+        {
+          "word_index": 4,
+          "text": "back",
+          "start": 3.05,
+          "end": 3.55
+        },
+        {
+          "word_index": 5,
+          "text": "together",
+          "start": 3.55,
+          "end": 4.15
+        },
+        {
+          "word_index": 6,
+          "text": "and",
+          "start": 4.15,
+          "end": 4.65
+        },
+        {
+          "word_index": 7,
+          "text": "if",
+          "start": 4.65,
+          "end": 5.2
+        },
+        {
+          "word_index": 8,
+          "text": "that's",
+          "start": 5.2,
+          "end": 5.7
+        },
+        {
+          "word_index": 9,
+          "text": "true",
+          "start": 5.7,
+          "end": 6.3
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "You'll just have to taste me when he's kissin' you",
+      "start": 6.3,
+      "end": 10.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You'll",
+          "start": 6.3,
+          "end": 6.85
+        },
+        {
+          "word_index": 2,
+          "text": "just",
+          "start": 6.85,
+          "end": 7.2
+        },
+        {
+          "word_index": 3,
+          "text": "have",
+          "start": 7.2,
+          "end": 7.55
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 7.55,
+          "end": 7.85
+        },
+        {
+          "word_index": 5,
+          "text": "taste",
+          "start": 7.85,
+          "end": 8.35
+        },
+        {
+          "word_index": 6,
+          "text": "me",
+          "start": 8.35,
+          "end": 8.95
+        },
+        {
+          "word_index": 7,
+          "text": "when",
+          "start": 8.95,
+          "end": 9.35
+        },
+        {
+          "word_index": 8,
+          "text": "he's",
+          "start": 9.35,
+          "end": 9.7
+        },
+        {
+          "word_index": 9,
+          "text": "kissin'",
+          "start": 9.7,
+          "end": 10.15
+        },
+        {
+          "word_index": 10,
+          "text": "you",
+          "start": 10.15,
+          "end": 10.55
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "If you want forever, I bet you do",
+      "start": 10.85,
+      "end": 14.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "If",
+          "start": 10.85,
+          "end": 11.25
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 11.25,
+          "end": 11.55
+        },
+        {
+          "word_index": 3,
+          "text": "want",
+          "start": 11.55,
+          "end": 11.9
+        },
+        {
+          "word_index": 4,
+          "text": "forever,",
+          "start": 11.9,
+          "end": 12.6
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 13.0,
+          "end": 13.3
+        },
+        {
+          "word_index": 6,
+          "text": "bet",
+          "start": 13.3,
+          "end": 13.8
+        },
+        {
+          "word_index": 7,
+          "text": "you",
+          "start": 13.8,
+          "end": 14.2
+        },
+        {
+          "word_index": 8,
+          "text": "do",
+          "start": 14.2,
+          "end": 14.8
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Just know you'll taste me too",
+      "start": 14.85,
+      "end": 20.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Just",
+          "start": 14.85,
+          "end": 15.2
+        },
+        {
+          "word_index": 2,
+          "text": "know",
+          "start": 15.2,
+          "end": 15.7
+        },
+        {
+          "word_index": 3,
+          "text": "you'll",
+          "start": 15.7,
+          "end": 16.2
+        },
+        {
+          "word_index": 4,
+          "text": "taste",
+          "start": 16.2,
+          "end": 17.0
+        },
+        {
+          "word_index": 5,
+          "text": "me",
+          "start": 17.0,
+          "end": 17.5
+        },
+        {
+          "word_index": 6,
+          "text": "too",
+          "start": 17.5,
+          "end": 20.15
+        }
+      ]
+    }
+  ]
+}

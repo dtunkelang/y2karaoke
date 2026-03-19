@@ -78,6 +78,25 @@ def test_filter_manifest_songs_match_and_limit():
         songs, match="hook-repeat", max_songs=0
     )
     assert clip_selected == [songs[1]]
+    tag_selected = module._filter_manifest_songs(
+        [
+            songs[0],
+            module.BenchmarkSong(
+                manifest_index=1,
+                artist="Artist C",
+                title="Gamma",
+                youtube_id="ccccccccccc",
+                youtube_url="https://www.youtube.com/watch?v=ccccccccccc",
+                clip_id="duet-hook",
+                clip_tags=("duet", "overlap"),
+            ),
+        ],
+        match="",
+        clip_tags=("duet",),
+        max_songs=0,
+    )
+    assert len(tag_selected) == 1
+    assert tag_selected[0].title == "Gamma"
 
 
 def test_apply_aggregate_only_cached_scope(tmp_path):

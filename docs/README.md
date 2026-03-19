@@ -28,6 +28,8 @@ This directory is the canonical entry point for project documentation.
 
 ## Tooling Docs
 
+- `curated_clips.md`
+  - workflow for adding and running short curated benchmark clips
 - `gold_timing_editor.md`
   - manual gold-timing refinement workflow
 - `karaoke_visual_bootstrap.md`

@@ -252,11 +252,12 @@ Benchmark seed set for timing quality work:
   - Rebaseline one song safely: `./venv/bin/python tools/run_benchmark_suite.py --match "bad guy" --max-songs 1 --rebaseline`
   - Troubleshooting rule: if a song shows a large benchmark error that persists across multiple runs or heuristics, assume the gold curation may be wrong before assuming the pipeline is wrong.
     - First verify `candidate_url` / `audio_path`, then listen-check the gold against the actual benchmark source, and rebaseline before spending time on new alignment heuristics.
-  - Clip workflow rule:
+- Clip workflow rule:
   - for apples-to-apples clip measurement, prefer rerunning the full song on the normal path and rescoring the curated clip from that full-song report
   - direct clip-only generation can change source routing and make comparisons misleading
   - when the YouTube source is already cached locally, prefer offline benchmark reruns so clip-heavy iteration does not keep paying avoidable identify/network overhead
   - exception: if a clip manifest explicitly requests a non-`lyriq` provider, benchmark reruns now suppress auto-offline so the requested provider can actually be fetched instead of silently reusing cached LRCLib data
+  - use `--clip-tag <tag>` to run focused clip packs such as `control`, `duet`, `tail`, or `repeated-hook`
   - benchmark result diagnostics now record the requested provider/tolerance and whether auto-offline was suppressed for that request
   - for a brand-new clip on a cold song, use `tools/run_benchmark_suite.py --fast-clip-probe` to skip vocal separation during the no-render probe; this is a triage path for quick signal, not the final apples-to-apples benchmark path
   - Run strategy matrix and emit combined report: `make benchmark-matrix`
@@ -365,6 +366,7 @@ Then open `http://127.0.0.1:8765`.
   - if a song is still cold, the expensive first pass is usually Demucs separation; `--fast-clip-probe` avoids paying that cost just to get an initial read on whether a new clip is a control, a clean failure, or a comparability problem
 
 See `docs/gold_timing_editor.md` for schema and workflow details.
+See `docs/curated_clips.md` for the curated clip manifest and runner workflow.
 
 ## Karaoke bootstrap tool
 

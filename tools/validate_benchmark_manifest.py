@@ -83,18 +83,43 @@ def _validate_song(song: Any, index: int) -> list[str]:
             not isinstance(clip_id, str) or not clip_id.strip()
         ):
             errors.append(f"songs[{index}].clip_id must be a non-empty string")
+    clip_id = song.get("clip_id")
+    is_clip_entry = isinstance(clip_id, str) and bool(clip_id.strip())
     if "audio_start_sec" in song:
         audio_start_sec = song["audio_start_sec"]
         if not isinstance(audio_start_sec, (int, float)):
             errors.append(f"songs[{index}].audio_start_sec must be numeric")
         elif float(audio_start_sec) < 0.0:
             errors.append(f"songs[{index}].audio_start_sec must be >= 0")
+    elif is_clip_entry:
+        errors.append(f"songs[{index}].audio_start_sec is required for clip entries")
     if "lyrics_file" in song:
         lyrics_file = song["lyrics_file"]
         if lyrics_file is not None and (
             not isinstance(lyrics_file, str) or not lyrics_file.strip()
         ):
             errors.append(f"songs[{index}].lyrics_file must be a non-empty string")
+    if "clip_tags" in song:
+        clip_tags = song["clip_tags"]
+        if not isinstance(clip_tags, list) or not clip_tags:
+            errors.append(
+                f"songs[{index}].clip_tags must be a non-empty list when present"
+            )
+        else:
+            normalized_tags: set[str] = set()
+            for tag_idx, tag in enumerate(clip_tags):
+                if not isinstance(tag, str) or not tag.strip():
+                    errors.append(
+                        f"songs[{index}].clip_tags[{tag_idx}] must be a non-empty string"
+                    )
+                    continue
+                normalized_tags.add(tag.strip().lower())
+            if len(normalized_tags) != len(clip_tags):
+                errors.append(f"songs[{index}].clip_tags must not contain duplicates")
+    elif is_clip_entry:
+        errors.append(f"songs[{index}].clip_tags are required for clip entries")
+    if is_clip_entry and not isinstance(song.get("notes"), str):
+        errors.append(f"songs[{index}].notes are required for clip entries")
 
     return errors
 

@@ -239,6 +239,122 @@ def test_run_single_song_generation_auto_enables_offline_for_cached_source(tmp_p
     assert record["status"] == "ok"
 
 
+def test_collect_single_song_result_reuses_full_song_result_for_clip(tmp_path):
+    module = _load_module()
+    clip_root = tmp_path / "clip_gold"
+    clip_root.mkdir(parents=True)
+    module.DEFAULT_CLIP_GOLD_ROOT = clip_root
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="The Weeknd",
+        title="Blinding Lights",
+        youtube_id="fHI8X4OXluQ",
+        youtube_url="https://www.youtube.com/watch?v=fHI8X4OXluQ",
+        clip_id="hook-repeat",
+        audio_start_sec=112.0,
+    )
+    (clip_root / f"01_{song.slug}.gold.json").write_text(
+        json.dumps(
+            {
+                "audio_path": "",
+                "lines": [
+                    {
+                        "start": 1.0,
+                        "end": 4.0,
+                        "text": "I said, ooh",
+                        "words": [
+                            {"text": "I", "start": 1.0, "end": 1.3},
+                            {"text": "said,", "start": 1.3, "end": 1.8},
+                            {"text": "ooh", "start": 1.8, "end": 4.0},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    base_report_path = run_dir / f"01_{song.base_slug}_timing_report.json"
+    base_report_path.write_text(
+        json.dumps(
+            {
+                "alignment_method": "whisper_hybrid",
+                "lines": [
+                    {
+                        "index": 23,
+                        "start": 113.0,
+                        "end": 116.8,
+                        "text": "I said, ooh",
+                        "words": [
+                            {"text": "I", "start": 113.0, "end": 113.3},
+                            {"text": "said,", "start": 113.3, "end": 113.8},
+                            {"text": "ooh", "start": 113.8, "end": 116.8},
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / f"01_{song.base_slug}_result.json").write_text(
+        json.dumps(
+            {
+                "artist": song.artist,
+                "title": song.title,
+                "youtube_id": song.youtube_id,
+                "report_path": str(base_report_path),
+                "status": "ok",
+                "run_signature": {"mode": "test"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class Args:
+        reuse_mismatched_results = False
+        rerun_completed = False
+        rerun_failed = False
+        rebaseline = False
+
+    original_write_checkpoint = module._write_checkpoint
+    original_run_single_song_generation = module._run_single_song_generation
+    module._write_checkpoint = lambda **_kwargs: None
+
+    def fail_run_single_song_generation(**_kwargs):
+        raise AssertionError("clip should reuse full-song cached result")
+
+    module._run_single_song_generation = fail_run_single_song_generation
+    try:
+        song_results: list[dict[str, object]] = []
+        record = module._collect_single_song_result(
+            args=Args(),
+            song_results=song_results,
+            index=1,
+            total_songs=1,
+            song=song,
+            run_signature={"mode": "test"},
+            run_id="run-1",
+            run_dir=run_dir,
+            manifest_path=tmp_path / "manifest.yaml",
+            gold_root=tmp_path,
+            env={},
+            suite_start=0.0,
+        )
+    finally:
+        module._write_checkpoint = original_write_checkpoint
+        module._run_single_song_generation = original_run_single_song_generation
+
+    exact_result_path = run_dir / f"01_{song.slug}_result.json"
+    assert record["status"] == "ok"
+    assert record["result_reused"] is True
+    assert record["clip_scored_from_full_song"] is True
+    assert exact_result_path.exists()
+    persisted = json.loads(exact_result_path.read_text(encoding="utf-8"))
+    assert persisted["clip_scored_from_full_song"] is True
+    assert persisted["metrics"]["gold_word_coverage_ratio"] == 1.0
+
+
 def test_infer_compute_substage_uses_shared_cache_without_work_dir(tmp_path):
     module = _load_module()
     cache_root = tmp_path / ".cache" / "karaoke" / "abcdefghijk"
@@ -303,6 +419,9 @@ def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
                 "    youtube_id: abcdefghijk",
                 "    youtube_url: https://www.youtube.com/watch?v=abcdefghijk",
                 "    clip_id: intro-30s",
+                "    clip_tags:",
+                "      - control",
+                "      - intro",
                 "    audio_start_sec: 18.25",
                 "    lyrics_file: lyrics/song.txt",
             ]
@@ -314,6 +433,7 @@ def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
 
     assert len(songs) == 1
     assert songs[0].clip_id == "intro-30s"
+    assert songs[0].clip_tags == ("control", "intro")
     assert songs[0].audio_start_sec == 18.25
     assert songs[0].lyrics_file == str(lyrics.resolve())
 

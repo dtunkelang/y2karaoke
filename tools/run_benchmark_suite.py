@@ -154,6 +154,7 @@ class BenchmarkSong:
     youtube_id: str
     youtube_url: str
     clip_id: str | None = None
+    clip_tags: tuple[str, ...] = ()
     audio_start_sec: float = 0.0
     lyrics_file: str | None = None
     preferred_lyrics_provider: str | None = None
@@ -199,6 +200,7 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
                     youtube_id=str(song["youtube_id"]),
                     youtube_url=str(song["youtube_url"]),
                     clip_id=_normalize_optional_manifest_text(song.get("clip_id")),
+                    clip_tags=_normalize_manifest_tag_list(song.get("clip_tags")),
                     audio_start_sec=float(audio_start_sec),
                     lyrics_file=_resolve_manifest_optional_path(
                         path.parent, song.get("lyrics_file")
@@ -237,6 +239,17 @@ def _normalize_optional_manifest_text(value: Any) -> str | None:
     return text or None
 
 
+def _normalize_manifest_tag_list(value: Any) -> tuple[str, ...]:
+    if value is None or not isinstance(value, list):
+        return ()
+    normalized: list[str] = []
+    for item in value:
+        text = str(item).strip().lower()
+        if text and text not in normalized:
+            normalized.append(text)
+    return tuple(normalized)
+
+
 def _validate_cli_args(args: argparse.Namespace) -> None:
     if not 0.0 <= args.min_dtw_song_coverage_ratio <= 1.0:
         raise ValueError("--min-dtw-song-coverage-ratio must be between 0 and 1")
@@ -263,7 +276,11 @@ def _validate_cli_args(args: argparse.Namespace) -> None:
 
 
 def _filter_manifest_songs(
-    songs: list[BenchmarkSong], *, match: str | None, max_songs: int
+    songs: list[BenchmarkSong],
+    *,
+    match: str | None,
+    clip_tags: tuple[str, ...] = (),
+    max_songs: int,
 ) -> list[BenchmarkSong]:
     selected = songs
     if match:
@@ -280,6 +297,12 @@ def _filter_manifest_songs(
             )
             is not None
         ]
+    if clip_tags:
+        required_tags = {tag.strip().lower() for tag in clip_tags if tag.strip()}
+        if required_tags:
+            selected = [
+                song for song in selected if required_tags.intersection(song.clip_tags)
+            ]
     if max_songs > 0:
         selected = selected[:max_songs]
     return selected
@@ -6113,6 +6136,108 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _rebaseline_song_from_loaded_report(
+    *,
+    index: int,
+    song: BenchmarkSong,
+    report_doc: dict[str, Any],
+    gold_root: Path,
+) -> Path | None:
+    if not isinstance(report_doc, dict):
+        return None
+    gold_path = _resolve_gold_rebaseline_path(
+        index=index,
+        song=song,
+        gold_root=gold_root,
+    )
+    prior_gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+    _write_rebaseline_gold(
+        gold_path,
+        _build_rebaseline_gold_doc(
+            song=song,
+            report_doc=report_doc,
+            prior_gold_doc=prior_gold_doc,
+        ),
+    )
+    return gold_path
+
+
+def _try_build_clip_result_from_full_song_result(
+    *,
+    args: argparse.Namespace,
+    run_signature: dict[str, Any],
+    index: int,
+    total_songs: int,
+    song: BenchmarkSong,
+    run_dir: Path,
+    gold_root: Path,
+) -> dict[str, Any] | None:
+    if not song.clip_id:
+        return None
+    result_matches = sorted(run_dir.glob(f"*_{song.base_slug}_result.json"))
+    if len(result_matches) != 1:
+        return None
+
+    prior = _load_song_result(result_matches[0])
+    if prior is None:
+        return None
+    prior_signature = prior.get("run_signature")
+    signature_matches = prior_signature == run_signature
+    if not signature_matches and not args.reuse_mismatched_results:
+        print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
+        print("  -> full-song cached result ignored (run options changed)")
+        return None
+    if str(prior.get("status", "")) != "ok":
+        return None
+
+    report_raw = prior.get("report_path")
+    if not isinstance(report_raw, str) or not report_raw:
+        return None
+    report_path = Path(report_raw)
+    if not report_path.exists():
+        return None
+    try:
+        loaded_report = json.loads(report_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+    if not isinstance(loaded_report, dict):
+        return None
+    report_doc = _shift_report_to_clip_window(
+        loaded_report,
+        song=song,
+        gold_doc=gold_doc,
+    )
+    if report_doc is None:
+        return None
+
+    derived = dict(prior)
+    derived["clip_scored_from_full_song"] = True
+    derived["result_reused"] = True
+    derived["derived_from_full_song_result"] = True
+    derived = _refresh_metrics_from_loaded_report(
+        derived,
+        report=report_doc,
+        index=index,
+        song=song,
+        gold_root=gold_root,
+    )
+    if args.rebaseline:
+        rebased_path = _rebaseline_song_from_loaded_report(
+            index=index,
+            song=song,
+            report_doc=report_doc,
+            gold_root=gold_root,
+        )
+        derived["gold_rebaselined"] = rebased_path is not None
+        if rebased_path is not None:
+            derived["gold_path"] = str(rebased_path)
+            print(f"  -> gold rebaselined: {rebased_path}")
+    print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
+    print("  -> ok (scored from full-song cached result)")
+    return derived
+
+
 def _load_aggregate_only_results(
     *,
     songs: list[BenchmarkSong],
@@ -6633,6 +6758,15 @@ def _parse_args() -> argparse.Namespace:
         type=str,
         default="",
         help="Only run songs whose artist/title matches this case-insensitive regex",
+    )
+    parser.add_argument(
+        "--clip-tag",
+        action="append",
+        default=[],
+        help=(
+            "Restrict selection to clip entries carrying at least one of these "
+            "case-insensitive tags. May be provided multiple times."
+        ),
     )
     parser.add_argument(
         "--offline",
@@ -7560,13 +7694,24 @@ def _try_reuse_cached_song_result(
     index: int,
     total_songs: int,
     song: BenchmarkSong,
+    run_dir: Path | None = None,
     result_path: Path,
     report_path: Path,
     gold_root: Path,
 ) -> dict[str, Any] | None:
     prior = _load_song_result(result_path)
     if prior is None:
-        return None
+        if run_dir is None:
+            return None
+        return _try_build_clip_result_from_full_song_result(
+            args=args,
+            run_signature=run_signature,
+            index=index,
+            total_songs=total_songs,
+            song=song,
+            run_dir=run_dir,
+            gold_root=gold_root,
+        )
     prior_signature = prior.get("run_signature")
     signature_matches = prior_signature == run_signature
     if not signature_matches and not args.reuse_mismatched_results:
@@ -7742,6 +7887,7 @@ def _collect_single_song_result(
         index=index,
         total_songs=total_songs,
         song=song,
+        run_dir=run_dir,
         result_path=result_path,
         report_path=report_path,
         gold_root=gold_root,
@@ -7755,6 +7901,7 @@ def _collect_single_song_result(
             manifest_path=manifest_path,
             args=args,
             suite_start=suite_start,
+            result_path=result_path,
         )
         return reused
 
@@ -7847,7 +7994,10 @@ def _prepare_run_context(
 ]:
     manifest_path = args.manifest.resolve()
     songs = _filter_manifest_songs(
-        _parse_manifest(manifest_path), match=args.match, max_songs=args.max_songs
+        _parse_manifest(manifest_path),
+        match=args.match,
+        clip_tags=tuple(str(tag) for tag in getattr(args, "clip_tag", [])),
+        max_songs=args.max_songs,
     )
     run_dir, run_id = _resolve_run_dir(
         output_root=args.output_root,

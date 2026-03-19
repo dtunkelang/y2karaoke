@@ -9,6 +9,7 @@ songs:
 - artist: The Weeknd
   title: Blinding Lights
   clip_id: early-verse
+  clip_tags: [control, verse, offset]
   audio_start_sec: 27
   youtube_id: fHI8X4OXluQ
   youtube_url: https://www.youtube.com/watch?v=fHI8X4OXluQ
@@ -19,6 +20,7 @@ songs:
 - artist: The Weeknd
   title: Blinding Lights
   clip_id: hook-repeat
+  clip_tags: [stress, repeated-hook, comparability]
   audio_start_sec: 112
   youtube_id: fHI8X4OXluQ
   youtube_url: https://www.youtube.com/watch?v=fHI8X4OXluQ
@@ -29,6 +31,7 @@ songs:
 - artist: ROSALIA
   title: DESPECHA
   clip_id: late-nonadlib-run
+  clip_tags: [stress, source-timing, late-run]
   audio_start_sec: 10
   youtube_id: Y2ESxHKuSOk
   youtube_url: https://www.youtube.com/watch?v=Y2ESxHKuSOk
@@ -39,6 +42,7 @@ songs:
 - artist: ROSALIA
   title: DESPECHA
   clip_id: adlib-outro
+  clip_tags: [stress, adlib, tail]
   audio_start_sec: 140
   youtube_id: Y2ESxHKuSOk
   youtube_url: https://www.youtube.com/watch?v=Y2ESxHKuSOk
@@ -49,6 +53,7 @@ songs:
 - artist: Indila
   title: Derniere danse
   clip_id: terminal-tail
+  clip_tags: [stress, tail, sparse-support]
   audio_start_sec: 123
   youtube_id: K5KAc5CoCuk
   youtube_url: https://www.youtube.com/watch?v=K5KAc5CoCuk
@@ -59,6 +64,7 @@ songs:
 - artist: J Balvin
   title: Mi Gente
   clip_id: clean-control-early
+  clip_tags: [control, verse, clean]
   audio_start_sec: 20
   youtube_id: wnJ6LuUFpMo
   youtube_url: https://www.youtube.com/watch?v=wnJ6LuUFpMo
@@ -69,6 +75,7 @@ songs:
 - artist: J Balvin
   title: Mi Gente
   clip_id: clean-control-mid
+  clip_tags: [control, mid-song, clean]
   audio_start_sec: 56
   youtube_id: wnJ6LuUFpMo
   youtube_url: https://www.youtube.com/watch?v=wnJ6LuUFpMo
@@ -79,6 +86,7 @@ songs:
 - artist: Ed Sheeran
   title: Shape of You
   clip_id: second-verse
+  clip_tags: [control, verse, clean]
   audio_start_sec: 89.8
   youtube_id: liTfD88dbCo
   youtube_url: https://www.youtube.com/watch?v=liTfD88dbCo
@@ -89,6 +97,7 @@ songs:
 - artist: Coldplay
   title: Viva La Vida
   clip_id: second-verse
+  clip_tags: [control, verse, clean]
   audio_start_sec: 110.4
   youtube_id: dvgZkm1xWPE
   youtube_url: https://www.youtube.com/watch?v=dvgZkm1xWPE
@@ -99,6 +108,7 @@ songs:
 - artist: OneRepublic
   title: Counting Stars
   clip_id: first-chorus
+  clip_tags: [stress, chorus, repeated-hook]
   audio_start_sec: 76
   youtube_id: hT_nvWreIhg
   youtube_url: https://www.youtube.com/watch?v=hT_nvWreIhg
@@ -109,6 +119,7 @@ songs:
 - artist: Billie Eilish
   title: bad guy
   clip_id: tough-guy
+  clip_tags: [control, rhythmic, verse]
   audio_start_sec: 42
   youtube_id: ayxYgDgBD3g
   youtube_url: https://www.youtube.com/watch?v=ayxYgDgBD3g
@@ -119,6 +130,7 @@ songs:
 - artist: Bruno Mars
   title: Uptown Funk
   clip_id: first-chorus
+  clip_tags: [control, chorus, rhythmic]
   audio_start_sec: 50.1
   youtube_id: OPf0YbXqDm0
   youtube_url: https://www.youtube.com/watch?v=OPf0YbXqDm0
@@ -129,6 +141,7 @@ songs:
 - artist: Imagine Dragons
   title: Believer
   clip_id: first-chorus
+  clip_tags: [control, chorus, clean]
   audio_start_sec: 54.8
   youtube_id: 7wtfhZwyrcc
   youtube_url: https://www.youtube.com/watch?v=7wtfhZwyrcc
@@ -139,6 +152,7 @@ songs:
 - artist: Stromae
   title: Papaoutai
   clip_id: verse-hook
+  clip_tags: [control, verse-hook, clean]
   audio_start_sec: 31.8
   youtube_id: oiKj0Z_Xnjc
   youtube_url: https://www.youtube.com/watch?v=oiKj0Z_Xnjc
@@ -149,6 +163,7 @@ songs:
 - artist: The Weepies
   title: Take It From Me
   clip_id: source-text-stress
+  clip_tags: [stress, source-text, verse]
   audio_start_sec: 33
   youtube_id: 5yUv1QYD770
   youtube_url: https://www.youtube.com/watch?v=5yUv1QYD770
@@ -159,6 +174,7 @@ songs:
 - artist: The Weepies
   title: Take It From Me
   clip_id: duet-outro
+  clip_tags: [stress, duet, tail]
   audio_start_sec: 174
   youtube_id: 5yUv1QYD770
   youtube_url: https://www.youtube.com/watch?v=5yUv1QYD770
@@ -169,6 +185,7 @@ songs:
 - artist: Gotye feat. Kimbra
   title: Somebody That I Used to Know
   clip_id: first-chorus
+  clip_tags: [control, chorus, duet]
   audio_start_sec: 93.5
   youtube_id: 8UVNT4wvIGY
   youtube_url: https://www.youtube.com/watch?v=8UVNT4wvIGY
@@ -179,6 +196,7 @@ songs:
 - artist: Adele
   title: Rolling in the Deep
   clip_id: first-chorus
+  clip_tags: [control, chorus, clean]
   audio_start_sec: 58.0
   youtube_id: rYEDA3JcQqw
   youtube_url: https://www.youtube.com/watch?v=rYEDA3JcQqw
@@ -190,6 +208,7 @@ songs:
 - artist: Imagine Dragons
   title: Radioactive
   clip_id: first-chorus
+  clip_tags: [control, chorus, clean]
   audio_start_sec: 55.0
   youtube_id: CAEUnn0HNLM
   youtube_url: https://www.youtube.com/watch?v=CAEUnn0HNLM
@@ -201,6 +220,7 @@ songs:
 - artist: Katy Perry
   title: Roar
   clip_id: first-chorus
+  clip_tags: [control, chorus, repeated-hook]
   audio_start_sec: 73.0
   youtube_id: zoJAcgmOS4Q
   youtube_url: https://www.youtube.com/watch?v=zoJAcgmOS4Q
@@ -211,6 +231,7 @@ songs:
 - artist: Sia
   title: Chandelier
   clip_id: first-chorus
+  clip_tags: [stress, chorus, clipped-onset]
   audio_start_sec: 36.85
   youtube_id: bZ0ZMLQSAWU
   youtube_url: https://www.youtube.com/watch?v=bZ0ZMLQSAWU
@@ -222,6 +243,7 @@ songs:
 - artist: Kelly Clarkson
   title: Since U Been Gone
   clip_id: first-chorus
+  clip_tags: [control, chorus, clean]
   audio_start_sec: 46.78
   youtube_id: R7UrFYvl5TE
   youtube_url: https://www.youtube.com/watch?v=R7UrFYvl5TE
@@ -232,6 +254,7 @@ songs:
 - artist: Olivia Rodrigo
   title: good 4 u
   clip_id: main-chorus
+  clip_tags: [control, chorus, source-text]
   audio_start_sec: 57.0
   youtube_id: aeDdS9aIpck
   youtube_url: https://www.youtube.com/watch?v=aeDdS9aIpck
@@ -243,6 +266,7 @@ songs:
 - artist: Carly Rae Jepsen
   title: Call Me Maybe
   clip_id: first-chorus
+  clip_tags: [control, chorus, clean]
   audio_start_sec: 42.0
   youtube_id: eHx--ZtG_Ds
   youtube_url: https://www.youtube.com/watch?v=eHx--ZtG_Ds
@@ -254,6 +278,7 @@ songs:
 - artist: Adele
   title: Someone Like You
   clip_id: first-chorus
+  clip_tags: [stress, chorus, clipped-tail]
   audio_start_sec: 72.0
   youtube_id: 22c3_LoIfZQ
   youtube_url: https://www.youtube.com/watch?v=22c3_LoIfZQ
@@ -262,3 +287,69 @@ songs:
   lrc_duration_tolerance_sec: 20
   notes: Official-audio chorus clip seeded from validated LRCLib timings; current
     gold includes a clipped-tail final line.
+- artist: Eminem
+  title: Houdini
+  clip_id: rapid-verse
+  clip_tags: [stress, rapid, dense-lyrics, verse]
+  audio_start_sec: 6.0
+  youtube_id: soNLLPokjC4
+  youtube_url: https://www.youtube.com/watch?v=soNLLPokjC4
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Dense rapid-fire verse clip from 0:06 to 0:36 using lines 7-15 as the curation target.
+- artist: Daddy Yankee & Snow
+  title: Con Calma
+  clip_id: first-chorus-bilingual
+  clip_tags: [stress, chorus, bilingual, handoff]
+  audio_start_sec: 30.0
+  youtube_id: r_wb7GAiCg4
+  youtube_url: https://www.youtube.com/watch?v=r_wb7GAiCg4
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: First Con calma chorus block with the initial Spanish/English exchange.
+- artist: Johnny Cash
+  title: Hurt
+  clip_id: sparse-opening
+  clip_tags: [stress, sparse-support, weak-onset, verse]
+  audio_start_sec: 12.0
+  youtube_id: 8AHCfZTRGiI
+  youtube_url: https://www.youtube.com/watch?v=8AHCfZTRGiI
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Sparse opening verse clip starting where the lyrics begin.
+- artist: Neil Diamond
+  title: Sweet Caroline
+  clip_id: first-chorus
+  clip_tags: [stress, chorus, singalong, sustained]
+  audio_start_sec: 62.0
+  youtube_id: 4F_RCWVoL4s
+  youtube_url: https://www.youtube.com/watch?v=4F_RCWVoL4s
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: First Sweet Caroline chorus block from 1:02 to 1:28.
+- artist: a-ha
+  title: Take On Me
+  clip_id: first-chorus
+  clip_tags: [stress, chorus, falsetto, sustained]
+  audio_start_sec: 50.0
+  youtube_id: NaQ083rNUwc
+  youtube_url: https://www.youtube.com/watch?v=NaQ083rNUwc
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: First main chorus clip from 0:50 to 1:12 around Take on me / Take me on / I'll be gone / In a day or two.
+- artist: Sabrina Carpenter
+  title: Taste
+  clip_id: first-chorus
+  clip_tags: [control, chorus, modern-pop, source-text]
+  audio_start_sec: 23.0
+  youtube_id: -5GI38vWew8
+  youtube_url: https://www.youtube.com/watch?v=-5GI38vWew8
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: First main chorus clip from 0:23 to 0:43 around I heard you're back together... / You'll just have to taste me....
