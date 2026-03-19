@@ -20,6 +20,13 @@ logger = logging.getLogger(__name__)
 
 _LEX_LOOKUP_BIN_NAME = "lex_lookup"
 _lex_lookup_added = False
+_epitran_warning_filter_added = False
+
+
+class _EpitranLexLookupWarningFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        message = record.getMessage()
+        return "lex_lookup (from flite) is not installed" not in message
 
 
 def _build_script_content(python_executable: str) -> str:
@@ -55,6 +62,14 @@ def _resolve_shim_dir() -> Path:
     return fallback
 
 
+def _suppress_epitran_lex_lookup_warning() -> None:
+    global _epitran_warning_filter_added
+    if _epitran_warning_filter_added:
+        return
+    logging.getLogger("epitran").addFilter(_EpitranLexLookupWarningFilter())
+    _epitran_warning_filter_added = True
+
+
 def ensure_local_lex_lookup() -> Optional[Path]:
     """Ensure a lex_lookup shim exists on PATH for this environment."""
     global _lex_lookup_added
@@ -63,6 +78,7 @@ def ensure_local_lex_lookup() -> Optional[Path]:
         found_path = Path(found)
         if _is_usable_lex_lookup(found_path):
             _lex_lookup_added = True
+            _suppress_epitran_lex_lookup_warning()
             return found_path
         logger.warning(
             "Ignoring unusable lex_lookup binary at %s; installing local shim.",
@@ -79,5 +95,6 @@ def ensure_local_lex_lookup() -> Optional[Path]:
 
     os.environ["PATH"] = os.pathsep.join([str(shim_dir), os.environ.get("PATH", "")])
     _lex_lookup_added = True
+    _suppress_epitran_lex_lookup_warning()
     logger.debug("Installed lex_lookup shim at %s", stub_path)
     return stub_path

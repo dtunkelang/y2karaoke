@@ -42,6 +42,9 @@ def _dummy_align_call(lines):
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda input_lines: input_lines,
+        enforce_monotonic_line_starts_fn=lambda input_lines: input_lines,
+        enforce_non_overlapping_lines_fn=lambda input_lines: input_lines,
         logger=wi.logger,
     )
 
