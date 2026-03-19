@@ -359,3 +359,27 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: First main chorus clip from 0:23 to 0:43 around I heard you're back together... / You'll just have to taste me....
+- artist: Eminem
+  title: Without Me
+  clip_id: repeated-hook
+  clip_tags: [stress, repeated-hook, compact-lines, rap]
+  audio_start_sec: 20.0
+  clip_duration_sec: 10.0
+  youtube_id: 9SbT3q1a6dQ
+  youtube_url: https://www.youtube.com/watch?v=9SbT3q1a6dQ
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Compact repeated-hook clip from 0:20 to 0:30 around Guess who's back / Back again / Shady's back / Tell a friend.
+- artist: Black Eyed Peas
+  title: I Gotta Feeling
+  clip_id: repeated-hook
+  clip_tags: [control, repeated-hook, compact-lines, chorus]
+  audio_start_sec: 28.0
+  clip_duration_sec: 16.0
+  youtube_id: hs_yk24ghzA
+  youtube_url: https://www.youtube.com/watch?v=hs_yk24ghzA
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Compact repeated-hook control clip from 0:28 to 0:44 around I gotta feeling / That tonight's gonna be a good night.

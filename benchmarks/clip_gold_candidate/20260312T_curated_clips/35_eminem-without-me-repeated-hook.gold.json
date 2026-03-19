@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "title": "Without Me [repeated-hook]",
+  "artist": "Eminem",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/9SbT3q1a6dQ/trimmed_from_20.00s_for_10.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Guess who's back",
+      "start": 2.6,
+      "end": 3.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Guess",
+          "start": 2.6,
+          "end": 2.95
+        },
+        {
+          "word_index": 2,
+          "text": "who's",
+          "start": 2.95,
+          "end": 3.35
+        },
+        {
+          "word_index": 3,
+          "text": "back",
+          "start": 3.35,
+          "end": 3.85
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Back again",
+      "start": 4.95,
+      "end": 5.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Back",
+          "start": 4.95,
+          "end": 5.2
+        },
+        {
+          "word_index": 2,
+          "text": "again",
+          "start": 5.2,
+          "end": 5.65
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Shady's back",
+      "start": 6.7,
+      "end": 8.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Shady's",
+          "start": 6.7,
+          "end": 7.3
+        },
+        {
+          "word_index": 2,
+          "text": "back",
+          "start": 7.3,
+          "end": 8.15
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Tell a friend",
+      "start": 9.05,
+      "end": 10.15,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Tell",
+          "start": 9.05,
+          "end": 9.45
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 9.45,
+          "end": 9.8
+        },
+        {
+          "word_index": 3,
+          "text": "friend",
+          "start": 9.8,
+          "end": 10.15
+        }
+      ]
+    }
+  ]
+}

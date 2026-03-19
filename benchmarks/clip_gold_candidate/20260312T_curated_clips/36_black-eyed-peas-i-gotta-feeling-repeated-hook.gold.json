@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "title": "I Gotta Feeling [repeated-hook]",
+  "artist": "Black Eyed Peas",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/hs_yk24ghzA/trimmed_from_28.00s_for_16.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "I gotta feeling",
+      "start": 1.0,
+      "end": 2.8,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 1.0,
+          "end": 1.2
+        },
+        {
+          "word_index": 2,
+          "text": "gotta",
+          "start": 1.2,
+          "end": 1.8
+        },
+        {
+          "word_index": 3,
+          "text": "feeling",
+          "start": 1.8,
+          "end": 2.8
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "That tonight's gonna be a good night",
+      "start": 4.8,
+      "end": 8.55,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "That",
+          "start": 4.8,
+          "end": 5.2
+        },
+        {
+          "word_index": 2,
+          "text": "tonight's",
+          "start": 5.2,
+          "end": 5.7
+        },
+        {
+          "word_index": 3,
+          "text": "gonna",
+          "start": 5.7,
+          "end": 6.4
+        },
+        {
+          "word_index": 4,
+          "text": "be",
+          "start": 6.4,
+          "end": 6.85
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 6.85,
+          "end": 7.15
+        },
+        {
+          "word_index": 6,
+          "text": "good",
+          "start": 7.15,
+          "end": 7.7
+        },
+        {
+          "word_index": 7,
+          "text": "night",
+          "start": 7.7,
+          "end": 8.55
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "That tonight's gonna be a good night",
+      "start": 8.55,
+      "end": 12.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "That",
+          "start": 8.55,
+          "end": 8.95
+        },
+        {
+          "word_index": 2,
+          "text": "tonight's",
+          "start": 8.95,
+          "end": 9.65
+        },
+        {
+          "word_index": 3,
+          "text": "gonna",
+          "start": 9.65,
+          "end": 10.25
+        },
+        {
+          "word_index": 4,
+          "text": "be",
+          "start": 10.25,
+          "end": 10.7
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 10.7,
+          "end": 11.0
+        },
+        {
+          "word_index": 6,
+          "text": "good",
+          "start": 11.0,
+          "end": 11.55
+        },
+        {
+          "word_index": 7,
+          "text": "night",
+          "start": 11.55,
+          "end": 12.4
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "That tonight's gonna be a good, good night",
+      "start": 12.55,
+      "end": 16.25,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "That",
+          "start": 12.55,
+          "end": 12.9
+        },
+        {
+          "word_index": 2,
+          "text": "tonight's",
+          "start": 12.9,
+          "end": 13.55
+        },
+        {
+          "word_index": 3,
+          "text": "gonna",
+          "start": 13.55,
+          "end": 14.1
+        },
+        {
+          "word_index": 4,
+          "text": "be",
+          "start": 14.1,
+          "end": 14.45
+        },
+        {
+          "word_index": 5,
+          "text": "a",
+          "start": 14.45,
+          "end": 14.65
+        },
+        {
+          "word_index": 6,
+          "text": "good,",
+          "start": 14.65,
+          "end": 15.1
+        },
+        {
+          "word_index": 7,
+          "text": "good",
+          "start": 15.1,
+          "end": 15.55
+        },
+        {
+          "word_index": 8,
+          "text": "night",
+          "start": 15.55,
+          "end": 16.25
+        }
+      ]
+    }
+  ]
+}
