@@ -407,3 +407,15 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Sparse sustained repeated-refrain companion clip for weak-Whisper fallback work.
+- artist: Bee Gees
+  title: Stayin' Alive
+  clip_id: falsetto-hook
+  clip_tags: [stress, sparse-support, sustained, falsetto, repeated-hook]
+  audio_start_sec: 41.0
+  clip_duration_sec: 16.0
+  youtube_id: bVVwmRbBZ-I
+  youtube_url: https://www.youtube.com/watch?v=bVVwmRbBZ-I
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Male falsetto repeated-hook companion clip for Take On Me-style sparse weak-Whisper work.

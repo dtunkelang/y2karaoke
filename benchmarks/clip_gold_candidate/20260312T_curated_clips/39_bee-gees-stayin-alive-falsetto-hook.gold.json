@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "title": "Stayin' Alive",
+  "artist": "Bee Gees",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/bVVwmRbBZ-I/trimmed_from_41.00s_for_16.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Ah, ha, ha, ha, stayin' alive, stayin' alive",
+      "start": 1.3,
+      "end": 5.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ah,",
+          "start": 1.3,
+          "end": 1.7
+        },
+        {
+          "word_index": 2,
+          "text": "ha,",
+          "start": 1.7,
+          "end": 2.2
+        },
+        {
+          "word_index": 3,
+          "text": "ha,",
+          "start": 2.2,
+          "end": 2.75
+        },
+        {
+          "word_index": 4,
+          "text": "ha,",
+          "start": 2.75,
+          "end": 3.25
+        },
+        {
+          "word_index": 5,
+          "text": "stayin'",
+          "start": 3.25,
+          "end": 3.85
+        },
+        {
+          "word_index": 6,
+          "text": "alive,",
+          "start": 3.85,
+          "end": 4.55
+        },
+        {
+          "word_index": 7,
+          "text": "stayin'",
+          "start": 4.55,
+          "end": 5.15
+        },
+        {
+          "word_index": 8,
+          "text": "alive",
+          "start": 5.15,
+          "end": 5.7
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Ah, ha, ha, ha, stayin' alive",
+      "start": 5.85,
+      "end": 16.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Ah,",
+          "start": 5.85,
+          "end": 6.3
+        },
+        {
+          "word_index": 2,
+          "text": "ha,",
+          "start": 6.3,
+          "end": 6.85
+        },
+        {
+          "word_index": 3,
+          "text": "ha,",
+          "start": 6.85,
+          "end": 7.45
+        },
+        {
+          "word_index": 4,
+          "text": "ha,",
+          "start": 7.45,
+          "end": 8.1
+        },
+        {
+          "word_index": 5,
+          "text": "stayin'",
+          "start": 8.1,
+          "end": 8.65
+        },
+        {
+          "word_index": 6,
+          "text": "alive",
+          "start": 8.65,
+          "end": 16.0
+        }
+      ]
+    }
+  ]
+}
