@@ -20,6 +20,9 @@ def attempt_whisperx_forced_alignment(
     align_lines_with_whisperx_fn: Callable[..., Any],
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any] | None = None,
+    enforce_monotonic_line_starts_fn: Callable[..., Any] | None = None,
+    enforce_non_overlapping_lines_fn: Callable[..., Any] | None = None,
     min_forced_word_coverage: float = 0.2,
     min_forced_line_coverage: float = 0.2,
 ) -> Optional[Tuple[List[models.Line], List[str], Dict[str, Any]]]:
@@ -70,6 +73,13 @@ def attempt_whisperx_forced_alignment(
             short_after,
         )
         return None
+
+    if normalize_line_word_timings_fn is not None:
+        forced_lines = normalize_line_word_timings_fn(forced_lines)
+    if enforce_monotonic_line_starts_fn is not None:
+        forced_lines = enforce_monotonic_line_starts_fn(forced_lines)
+    if enforce_non_overlapping_lines_fn is not None:
+        forced_lines = enforce_non_overlapping_lines_fn(forced_lines)
 
     forced_payload: Dict[str, Any] = {
         "matched_ratio": forced_word_coverage,

@@ -115,6 +115,15 @@ def _build_alignment_hooks() -> AlignmentPassHooks:
         pull_lines_forward_for_continuous_vocals_fn=_resolve_integration_attr(
             "_pull_lines_forward_for_continuous_vocals"
         ),
+        normalize_line_word_timings_fn=_resolve_integration_attr(
+            "_normalize_line_word_timings"
+        ),
+        enforce_monotonic_line_starts_fn=_resolve_integration_attr(
+            "_enforce_monotonic_line_starts"
+        ),
+        enforce_non_overlapping_lines_fn=_resolve_integration_attr(
+            "_enforce_non_overlapping_lines"
+        ),
     )
 
 
@@ -380,6 +389,9 @@ def align_lrc_text_to_whisper_timings(
         pull_lines_forward_for_continuous_vocals_fn=(
             hooks.pull_lines_forward_for_continuous_vocals_fn
         ),
+        normalize_line_word_timings_fn=hooks.normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=hooks.enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=hooks.enforce_non_overlapping_lines_fn,
         logger=logger,
     )
 

@@ -205,9 +205,7 @@ def _load_preferred_lrc_source(
         if file_lines or file_lrc_text:
             logger.info(f"Using lyrics from file: {lyrics_file}")
         if file_lines and not file_lrc_text and not file_line_timings:
-            logger.debug(
-                "Plain text lyrics file provided; skipping provider LRC fetch"
-            )
+            logger.debug("Plain text lyrics file provided; skipping provider LRC fetch")
             return None, None, file_lines
 
     logger.debug(

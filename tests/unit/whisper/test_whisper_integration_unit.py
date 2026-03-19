@@ -175,6 +175,150 @@ def test_should_not_force_whisperx_for_tail_shortfall_without_flag():
     )
 
 
+def test_maybe_force_sparse_weak_alignment_accepts_sparse_low_support_case(monkeypatch):
+    lines = [Line(words=[Word(text="x", start_time=1.0, end_time=1.2)])]
+    baseline = [Line(words=[Word(text="x", start_time=1.0, end_time=1.2)])]
+    forced_lines = [Line(words=[Word(text="x", start_time=1.1, end_time=1.4)])]
+    monkeypatch.setattr(
+        wialign,
+        "align_lines_with_whisperx",
+        lambda *_args, **_kwargs: (
+            forced_lines,
+            {"forced_word_coverage": 0.9, "forced_line_coverage": 1.0},
+        ),
+    )
+
+    result = wialign._maybe_force_sparse_weak_alignment(
+        lines=lines,
+        baseline_lines=baseline,
+        vocals_path="vocals.wav",
+        language="en",
+        detected_lang="en",
+        used_model="large",
+        matched_ratio=0.85,
+        phonetic_similarity_coverage=0.25,
+        whisper_word_count_before_filter=9,
+        whisper_segment_count=1,
+        lrc_word_count=40,
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: (forced_lines, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+        trace_snapshots=[],
+        trace_path="",
+        logger=type(
+            "Logger",
+            (),
+            {"warning": lambda *_a, **_k: None, "info": lambda *_a, **_k: None},
+        )(),
+    )
+
+    assert result is not None
+    aligned_lines, corrections, metrics = result
+    assert aligned_lines == forced_lines
+    assert metrics["whisperx_forced"] == 1.0
+    assert any(
+        "sparse Whisper transcript with weak phonetic support" in c for c in corrections
+    )
+
+
+def test_maybe_force_sparse_weak_alignment_skips_when_phonetic_support_is_good(
+    monkeypatch,
+):
+    lines = [Line(words=[Word(text="x", start_time=1.0, end_time=1.2)])]
+    monkeypatch.setattr(
+        wialign,
+        "align_lines_with_whisperx",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            AssertionError("should not run")
+        ),
+    )
+
+    result = wialign._maybe_force_sparse_weak_alignment(
+        lines=lines,
+        baseline_lines=lines,
+        vocals_path="vocals.wav",
+        language="en",
+        detected_lang="en",
+        used_model="large",
+        matched_ratio=0.85,
+        phonetic_similarity_coverage=0.5,
+        whisper_word_count_before_filter=9,
+        whisper_segment_count=1,
+        lrc_word_count=40,
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: (lines, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+        trace_snapshots=[],
+        trace_path="",
+        logger=type(
+            "Logger",
+            (),
+            {"warning": lambda *_a, **_k: None, "info": lambda *_a, **_k: None},
+        )(),
+    )
+
+    assert result is None
+
+
+def test_maybe_force_sparse_weak_alignment_finalizes_accepted_forced_lines(monkeypatch):
+    lines = [Line(words=[Word(text="x", start_time=1.0, end_time=1.2)])]
+    forced_lines = [Line(words=[Word(text="x", start_time=1.1, end_time=1.4)])]
+    finalized_lines = [Line(words=[Word(text="x", start_time=1.3, end_time=1.6)])]
+    calls: list[str] = []
+    monkeypatch.setattr(
+        wialign,
+        "align_lines_with_whisperx",
+        lambda *_args, **_kwargs: (
+            forced_lines,
+            {"forced_word_coverage": 0.9, "forced_line_coverage": 1.0},
+        ),
+    )
+
+    result = wialign._maybe_force_sparse_weak_alignment(
+        lines=lines,
+        baseline_lines=lines,
+        vocals_path="vocals.wav",
+        language="en",
+        detected_lang="en",
+        used_model="large",
+        matched_ratio=0.85,
+        phonetic_similarity_coverage=0.25,
+        whisper_word_count_before_filter=9,
+        whisper_segment_count=1,
+        lrc_word_count=40,
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: (forced_lines, 0),
+        normalize_line_word_timings_fn=lambda input_lines: (
+            calls.append("normalize"),
+            input_lines,
+        )[1],
+        enforce_monotonic_line_starts_fn=lambda input_lines: (
+            calls.append("monotonic"),
+            input_lines,
+        )[1],
+        enforce_non_overlapping_lines_fn=lambda input_lines: (
+            calls.append("non_overlap"),
+            finalized_lines,
+        )[1],
+        trace_snapshots=[],
+        trace_path="",
+        logger=type(
+            "Logger",
+            (),
+            {"warning": lambda *_a, **_k: None, "info": lambda *_a, **_k: None},
+        )(),
+    )
+
+    assert result is not None
+    aligned_lines, _corrections, _metrics = result
+    assert aligned_lines == finalized_lines
+    assert calls == ["normalize", "monotonic", "non_overlap"]
+
+
 def test_build_word_to_segment_index():
     segments = [
         TranscriptionSegment(

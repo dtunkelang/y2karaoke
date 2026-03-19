@@ -102,6 +102,9 @@ def test_align_lrc_text_pipeline_pulls_forward_for_continuous_vocals():
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=fake_pull_forward,
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 
@@ -151,6 +154,9 @@ def test_build_alignment_pass_kwargs_uses_hook_bundle():
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 
@@ -219,6 +225,9 @@ def test_align_lrc_text_pipeline_uses_whisperx_for_sparse_transcript(monkeypatch
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 
@@ -313,6 +322,9 @@ def test_align_lrc_text_pipeline_uses_whisperx_for_tail_shortfall_experiment(
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 
@@ -509,6 +521,9 @@ def test_align_lrc_text_pipeline_enforces_monotonic_non_overlapping_invariants()
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 
@@ -596,6 +611,9 @@ def test_align_lrc_text_pipeline_falls_back_to_block_dtw_for_moderate_overlap():
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 
@@ -675,6 +693,9 @@ def test_align_lrc_text_pipeline_filters_low_confidence_whisper_words():
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 
@@ -775,6 +796,9 @@ def test_align_lrc_text_pipeline_preserves_line_count_under_repeated_reset_like_
         interpolate_unmatched_lines_fn=lambda ml, _set: ml,
         refine_unmatched_lines_with_onsets_fn=lambda ml, _set, _vp: ml,
         pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
         logger=wi.logger,
     )
 

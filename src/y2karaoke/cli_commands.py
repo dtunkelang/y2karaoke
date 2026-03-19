@@ -270,6 +270,7 @@ def run_generate_command(
             logger, shorten_breaks, track_info
         )
 
+        target_duration: int | None
         if audio_duration is not None and audio_duration > 0:
             target_duration = max(1, int(round(audio_duration)))
         else:

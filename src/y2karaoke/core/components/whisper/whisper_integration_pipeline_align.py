@@ -67,6 +67,9 @@ def _build_alignment_pass_kwargs(
     interpolate_unmatched_lines_fn: Callable[..., Any],
     refine_unmatched_lines_with_onsets_fn: Callable[..., Any],
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
     logger,
 ) -> Dict[str, Any]:
     hooks = AlignmentPassHooks(
@@ -95,6 +98,9 @@ def _build_alignment_pass_kwargs(
         interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
         refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
     )
     return dict(
         lines=lines,
@@ -203,6 +209,9 @@ def _run_alignment_pass(
         retime_short_interjection_lines_fn=hooks.retime_short_interjection_lines_fn,
         snap_first_word_to_whisper_onset_fn=hooks.snap_first_word_to_whisper_onset_fn,
         pull_lines_forward_for_continuous_vocals_fn=hooks.pull_lines_forward_for_continuous_vocals_fn,
+        normalize_line_word_timings_fn=hooks.normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=hooks.enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=hooks.enforce_non_overlapping_lines_fn,
         enforce_monotonic_line_starts_whisper_fn=hooks.enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=hooks.resolve_line_overlaps_fn,
         run_mapped_line_postpasses_fn=_run_mapped_line_postpasses_impl,
@@ -256,6 +265,9 @@ def align_lrc_text_to_whisper_timings_impl(
     interpolate_unmatched_lines_fn: Callable[..., Any],
     refine_unmatched_lines_with_onsets_fn: Callable[..., Any],
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
     logger,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     pass_kwargs = _build_alignment_pass_kwargs(
@@ -293,6 +305,9 @@ def align_lrc_text_to_whisper_timings_impl(
         retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
         snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
         pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
         enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
         logger=logger,

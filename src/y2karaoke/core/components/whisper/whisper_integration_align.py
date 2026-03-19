@@ -30,6 +30,11 @@ from . import whisper_utils
 _MIN_FORCED_WORD_COVERAGE = 0.2
 _MIN_FORCED_LINE_COVERAGE = 0.2
 
+
+def _identity_lines(lines: List[models.Line]) -> List[models.Line]:
+    return lines
+
+
 _line_set_end = _heuristics._line_set_end
 _extend_last_word_end = _heuristics._extend_last_word_end
 _retime_line_to_window = _heuristics._retime_line_to_window
@@ -228,6 +233,9 @@ def _attempt_forced_alignment_for_reason(
     reason: str,
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
     trace_snapshots: list[dict[str, Any]],
     trace_path: str,
 ) -> Optional[Tuple[List[models.Line], List[str], Dict[str, float]]]:
@@ -245,6 +253,9 @@ def _attempt_forced_alignment_for_reason(
         align_lines_with_whisperx_fn=align_lines_with_whisperx,
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
         min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
         min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
     )
@@ -407,6 +418,9 @@ def _prepare_alignment_inputs(
     filter_low_confidence_whisper_words_fn: Callable[..., Any],
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
     config: _WhisperMappingDecisionConfig,
     runtime_config: WhisperRuntimeConfig,
     logger,
@@ -456,6 +470,9 @@ def _prepare_alignment_inputs(
         reason="early Whisper transcript tail shortfall",
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
         trace_snapshots=trace_snapshots,
         trace_path=trace_path,
     )
@@ -478,6 +495,9 @@ def _prepare_alignment_inputs(
         reason="sparse Whisper transcript",
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
         trace_snapshots=trace_snapshots,
         trace_path=trace_path,
     )
@@ -785,6 +805,9 @@ def _maybe_force_low_coverage_alignment(
     used_model: str,
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
     trace_snapshots: list[dict[str, Any]],
     trace_path: str,
     config: _WhisperMappingDecisionConfig,
@@ -809,6 +832,69 @@ def _maybe_force_low_coverage_alignment(
         align_lines_with_whisperx_fn=align_lines_with_whisperx,
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
+        min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
+        min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
+    )
+    if forced_result is None:
+        return None
+    return _return_alignment_result_with_trace(
+        result=forced_result,
+        trace_snapshots=trace_snapshots,
+        trace_path=trace_path,
+    )
+
+
+def _maybe_force_sparse_weak_alignment(
+    *,
+    lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    vocals_path: str,
+    language: Optional[str],
+    detected_lang: str,
+    used_model: str,
+    matched_ratio: float,
+    phonetic_similarity_coverage: float,
+    whisper_word_count_before_filter: int,
+    whisper_segment_count: int,
+    lrc_word_count: int,
+    should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+    normalize_line_word_timings_fn: Callable[..., Any],
+    enforce_monotonic_line_starts_fn: Callable[..., Any],
+    enforce_non_overlapping_lines_fn: Callable[..., Any],
+    trace_snapshots: list[dict[str, Any]],
+    trace_path: str,
+    logger,
+) -> Optional[Tuple[List[models.Line], List[str], Dict[str, float]]]:
+    if whisper_word_count_before_filter <= 0 or lrc_word_count <= 0:
+        return None
+    if whisper_word_count_before_filter > max(12, int(lrc_word_count * 0.3)):
+        return None
+    if whisper_segment_count > 2:
+        return None
+    if matched_ratio < 0.7:
+        return None
+    if phonetic_similarity_coverage > 0.42:
+        return None
+
+    forced_result = attempt_whisperx_forced_alignment(
+        lines=lines,
+        baseline_lines=baseline_lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
+        logger=logger,
+        used_model=used_model,
+        reason="sparse Whisper transcript with weak phonetic support",
+        align_lines_with_whisperx_fn=align_lines_with_whisperx,
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
         min_forced_word_coverage=_MIN_FORCED_WORD_COVERAGE,
         min_forced_line_coverage=_MIN_FORCED_LINE_COVERAGE,
     )
@@ -868,6 +954,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     min_segment_overlap_coverage: float,
     runtime_config: WhisperRuntimeConfig | None = None,
     logger,
+    normalize_line_word_timings_fn: Callable[..., Any] = _identity_lines,
+    enforce_monotonic_line_starts_fn: Callable[..., Any] = _identity_lines,
+    enforce_non_overlapping_lines_fn: Callable[..., Any] = _identity_lines,
 ) -> Tuple[List[models.Line], List[str], Dict[str, float]]:
     """Align LRC text to Whisper timings via DTW-style phonetic assignment."""
     resolved_runtime_config = runtime_config or load_whisper_runtime_config()
@@ -896,6 +985,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         filter_low_confidence_whisper_words_fn=filter_low_confidence_whisper_words_fn,
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
         config=config,
         runtime_config=resolved_runtime_config,
         logger=logger,
@@ -980,6 +1072,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     line_coverage = (
         len(mapped_lines_set) / sum(1 for line in lines if line.words) if lines else 0.0
     )
+    phonetic_similarity_coverage = matched_ratio * avg_similarity
     forced_result = _maybe_force_low_coverage_alignment(
         lines=lines,
         lrc_words=lrc_words,
@@ -992,9 +1085,35 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         used_model=used_model,
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
         trace_snapshots=trace_snapshots,
         trace_path=trace_path,
         config=config,
+        logger=logger,
+    )
+    if forced_result is not None:
+        return forced_result
+    forced_result = _maybe_force_sparse_weak_alignment(
+        lines=lines,
+        baseline_lines=baseline_lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
+        used_model=used_model,
+        matched_ratio=matched_ratio,
+        phonetic_similarity_coverage=phonetic_similarity_coverage,
+        whisper_word_count_before_filter=before_low_conf_filter,
+        whisper_segment_count=len(transcription),
+        lrc_word_count=len(lrc_words),
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
+        trace_snapshots=trace_snapshots,
+        trace_path=trace_path,
         logger=logger,
     )
     if forced_result is not None:
@@ -1045,7 +1164,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         "mapped_timeline_ratio": mapped_timeline_ratio,
         "median_global_start_shift_sec": median_global_shift,
         "baseline_constraint_applied": 1.0 if apply_baseline_constraint else 0.0,
-        "phonetic_similarity_coverage": matched_ratio * avg_similarity,
+        "phonetic_similarity_coverage": phonetic_similarity_coverage,
         "high_similarity_ratio": avg_similarity,
         "exact_match_ratio": 0.0,
         "unmatched_ratio": 1.0 - matched_ratio,

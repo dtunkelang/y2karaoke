@@ -457,7 +457,11 @@ def test_load_preferred_lrc_source_skips_provider_fetch_for_plain_text_file(tmp_
         vocals_path="vocals.wav",
         evaluate_sources=False,
         offline=False,
-        load_lyrics_file_fn=lambda *_a, **_k: (None, None, ["Take on me", "Take me on"]),
+        load_lyrics_file_fn=lambda *_a, **_k: (
+            None,
+            None,
+            ["Take on me", "Take me on"],
+        ),
         fetch_lrc_text_and_timings_for_state_fn=_fetch_provider,
         get_lrc_duration_fn=lambda *_a, **_k: None,
         logger=_DummyLogger(),

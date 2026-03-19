@@ -35,6 +35,9 @@ class AlignmentPassHooks:
     interpolate_unmatched_lines_fn: Callable[..., Any]
     refine_unmatched_lines_with_onsets_fn: Callable[..., Any]
     pull_lines_forward_for_continuous_vocals_fn: Callable[..., Any]
+    normalize_line_word_timings_fn: Callable[..., Any]
+    enforce_monotonic_line_starts_fn: Callable[..., Any]
+    enforce_non_overlapping_lines_fn: Callable[..., Any]
 
 
 @dataclass(frozen=True)
