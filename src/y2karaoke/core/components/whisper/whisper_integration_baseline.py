@@ -39,6 +39,28 @@ def _is_implausibly_short_multiword_line(line: models.Line) -> bool:
     return word_count >= 6 and duration < 1.0 and per_word < 0.09
 
 
+def _is_severely_collapsed_compact_line(
+    original: models.Line,
+    aligned: models.Line,
+    *,
+    max_words: int = 3,
+    min_original_duration_sec: float = 0.9,
+    max_duration_ratio: float = 0.45,
+    min_duration_delta_sec: float = 0.5,
+) -> bool:
+    word_count = len(aligned.words)
+    if word_count == 0 or word_count > max_words or len(original.words) != word_count:
+        return False
+
+    original_duration = original.end_time - original.start_time
+    aligned_duration = aligned.end_time - aligned.start_time
+    if original_duration < min_original_duration_sec or aligned_duration <= 0.0:
+        return False
+    if aligned_duration > original_duration * max_duration_ratio:
+        return False
+    return (original_duration - aligned_duration) >= min_duration_delta_sec
+
+
 def _implausibly_short_multiword_count(lines: List[models.Line]) -> int:
     """Count suspiciously compressed multi-word lines."""
     count = 0
@@ -70,11 +92,21 @@ def _restore_implausibly_short_lines(
         original_duration = original.end_time - original.start_time
         aligned_duration = aligned.end_time - aligned.start_time
         severe_duration_collapse = (
-            len(aligned.words) >= 5
-            and original_duration >= 3.0
+            len(aligned.words) >= 3
+            and original_duration >= 3.5
             and aligned_duration > 0.0
-            and aligned_duration <= original_duration * 0.6
-            and (original_duration - aligned_duration) >= 1.2
+            and (
+                (
+                    len(aligned.words) >= 5
+                    and aligned_duration <= original_duration * 0.6
+                    and (original_duration - aligned_duration) >= 1.2
+                )
+                or (
+                    len(aligned.words) < 5
+                    and aligned_duration <= original_duration * 0.35
+                    and (original_duration - aligned_duration) >= 1.5
+                )
+            )
         )
         if _is_implausibly_short_multiword_line(
             aligned
@@ -83,6 +115,10 @@ def _restore_implausibly_short_lines(
             restored += 1
             continue
         if severe_duration_collapse:
+            repaired.append(original)
+            restored += 1
+            continue
+        if _is_severely_collapsed_compact_line(original, aligned):
             repaired.append(original)
             restored += 1
             continue

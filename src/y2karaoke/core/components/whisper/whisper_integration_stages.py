@@ -11,6 +11,33 @@ from ..alignment import timing_models
 from .whisper_runtime_config import WhisperRuntimeConfig, load_whisper_runtime_config
 
 
+def _non_placeholder_whisper_word_count(
+    words: List[timing_models.TranscriptionWord],
+) -> int:
+    count = 0
+    for word in words:
+        normalized = re.sub(r"[^a-z0-9']+", "", word.text.lower())
+        if not normalized or normalized == "vocal":
+            continue
+        count += 1
+    return count
+
+
+def _should_refine_all_lines_with_onsets(
+    *,
+    mapped_lines: List[models.Line],
+    matched_lines: Set[int],
+    all_words: List[timing_models.TranscriptionWord],
+) -> bool:
+    populated_lines = [line for line in mapped_lines if line.words]
+    if not populated_lines:
+        return False
+    if len(matched_lines) < len(populated_lines):
+        return False
+    lexical_word_count = _non_placeholder_whisper_word_count(all_words)
+    return lexical_word_count <= len(populated_lines)
+
+
 def _group_repeated_line_indices(lines_in: List[models.Line]) -> dict[str, list[int]]:
     groups: dict[str, list[int]] = {}
     for idx, line in enumerate(lines_in):
@@ -220,6 +247,112 @@ def _local_line_token_overlap(
     return overlap / max(len(line_tokens), len(nearby_tokens))
 
 
+def _shift_sparse_support_sustained_lines_to_onsets(
+    lines_in: List[models.Line],
+    audio_features: Optional[timing_models.AudioFeatures],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_duration: float = 2.5,
+    min_words: int = 3,
+    max_words: int = 5,
+    min_shift: float = 0.25,
+    max_shift: float = 1.6,
+    min_local_overlap_to_keep: float = 0.25,
+    overlap_slack: float = 0.08,
+) -> tuple[List[models.Line], int]:
+    if audio_features is None or audio_features.onset_times is None:
+        return lines_in, 0
+    populated_lines = [line for line in lines_in if line.words]
+    if not populated_lines:
+        return lines_in, 0
+    if _non_placeholder_whisper_word_count(whisper_words) > len(populated_lines):
+        return lines_in, 0
+
+    onset_times = audio_features.onset_times
+    if len(onset_times) == 0:
+        return lines_in, 0
+
+    shifted = list(lines_in)
+    applied = 0
+    for idx, line in enumerate(shifted):
+        candidate_shift = _sparse_support_onset_shift(
+            shifted=shifted,
+            idx=idx,
+            line=line,
+            onset_times=onset_times,
+            whisper_words=whisper_words,
+            min_duration=min_duration,
+            min_words=min_words,
+            max_words=max_words,
+            min_shift=min_shift,
+            max_shift=max_shift,
+            min_local_overlap_to_keep=min_local_overlap_to_keep,
+            overlap_slack=overlap_slack,
+        )
+        if candidate_shift is None:
+            continue
+        shift = candidate_shift
+        shifted_words = [
+            models.Word(
+                text=w.text,
+                start_time=w.start_time + shift,
+                end_time=w.end_time + shift,
+                singer=w.singer,
+            )
+            for w in line.words
+        ]
+        shifted[idx] = models.Line(words=shifted_words, singer=line.singer)
+        applied += 1
+    return shifted, applied
+
+
+def _sparse_support_onset_shift(
+    *,
+    shifted: List[models.Line],
+    idx: int,
+    line: models.Line,
+    onset_times: np.ndarray,
+    whisper_words: List[timing_models.TranscriptionWord],
+    min_duration: float,
+    min_words: int,
+    max_words: int,
+    min_shift: float,
+    max_shift: float,
+    min_local_overlap_to_keep: float,
+    overlap_slack: float,
+) -> float | None:
+    if not line.words:
+        return None
+    word_count = len(line.words)
+    duration = line.end_time - line.start_time
+    if word_count < min_words or word_count > max_words or duration < min_duration:
+        return None
+    if _local_line_token_overlap(line, whisper_words) >= min_local_overlap_to_keep:
+        return None
+    next_start = (
+        shifted[idx + 1].start_time
+        if idx + 1 < len(shifted) and shifted[idx + 1].words
+        else None
+    )
+    max_allowed = (
+        max(0.0, next_start - 0.05 - line.end_time)
+        if next_start is not None
+        else max_shift
+    )
+    if max_allowed < min_shift:
+        return None
+    candidate_onsets = onset_times[
+        (onset_times >= line.start_time + min_shift)
+        & (onset_times <= line.start_time + min(max_shift, max_allowed + overlap_slack))
+    ]
+    if len(candidate_onsets) == 0:
+        return None
+    shift = float(candidate_onsets[0] - line.start_time)
+    if shift < min_shift or shift > max_allowed + overlap_slack + 1e-6:
+        return None
+    return shift
+
+
 def _enforce_mapped_line_stage_invariants(
     lines_in: List[models.Line],
     all_words: List[timing_models.TranscriptionWord],
@@ -357,9 +490,18 @@ def _run_core_mapped_line_postpasses(
     trace_snapshots: list[dict[str, Any]] | None,
     trace_line_range: tuple[int, int] | None,
 ) -> List[models.Line]:
+    onset_refine_matched_lines = (
+        set()
+        if _should_refine_all_lines_with_onsets(
+            mapped_lines=mapped_lines,
+            matched_lines=mapped_lines_set,
+            all_words=all_words,
+        )
+        else mapped_lines_set
+    )
     mapped_lines = refine_unmatched_lines_with_onsets_fn(
         mapped_lines,
-        mapped_lines_set,
+        onset_refine_matched_lines,
         vocals_path,
     )
     mapped_lines = _enforce_mapped_line_stage_invariants(
@@ -587,6 +729,30 @@ def _run_audio_feature_mapped_line_postpasses(
         _maybe_capture_mapped_line_postpass_snapshot(
             mapped_lines,
             stage="postpass_shift_weak_opening_carryover",
+            capture_trace_snapshot_fn=capture_trace_snapshot_fn,
+            trace_snapshots=trace_snapshots,
+            trace_line_range=trace_line_range,
+        )
+    mapped_lines, sparse_sustained_fixes = (
+        _shift_sparse_support_sustained_lines_to_onsets(
+            mapped_lines,
+            audio_features,
+            all_words,
+        )
+    )
+    if sparse_sustained_fixes:
+        corrections.append(
+            f"Shifted {sparse_sustained_fixes} sparse-support sustained line(s) to later audio onsets"
+        )
+        mapped_lines = _enforce_mapped_line_stage_invariants(
+            mapped_lines,
+            all_words,
+            enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+            resolve_line_overlaps_fn=resolve_line_overlaps_fn,
+        )
+        _maybe_capture_mapped_line_postpass_snapshot(
+            mapped_lines,
+            stage="postpass_shift_sparse_sustained_onsets",
             capture_trace_snapshot_fn=capture_trace_snapshot_fn,
             trace_snapshots=trace_snapshots,
             trace_line_range=trace_line_range,

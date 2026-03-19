@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any, Callable, List, Optional, Tuple
 
 from ... import models
 from ..alignment import timing_models
+from .whisper_split_refrain_restore import (
+    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments_impl,
+)
+
+_FINALIZE_TOKEN_RE = re.compile(r"[^a-z0-9\s]")
 
 
 def _clone_line(line: models.Line) -> models.Line:
@@ -22,6 +28,10 @@ def _clone_line(line: models.Line) -> models.Line:
         ],
         singer=line.singer,
     )
+
+
+def _normalize_finalize_text(text: str) -> str:
+    return _FINALIZE_TOKEN_RE.sub("", text.lower()).strip()
 
 
 def _line_text_token_overlap(a: str, b: str) -> float:
@@ -91,6 +101,101 @@ def _restore_pairwise_inversions_from_source(
             repaired[idx] = _clone_line(src_curr)
             restored += 1
     return repaired, restored
+
+
+def _restore_repeated_compact_runs_from_source(
+    source_lines: List[models.Line],
+    aligned_lines: List[models.Line],
+    *,
+    max_source_duration: float = 2.5,
+    min_late_shift: float = 1.5,
+    min_pair_overlap: float = 0.6,
+    min_run_length: int = 2,
+) -> Tuple[List[models.Line], int]:
+    if len(aligned_lines) < min_run_length or len(source_lines) < min_run_length:
+        return aligned_lines, 0
+
+    repaired = list(aligned_lines)
+    restored = 0
+    limit = min(len(source_lines), len(aligned_lines))
+    idx = 0
+    while idx < limit:
+        run_end = _find_repeated_compact_run_end(
+            source_lines=source_lines,
+            repaired_lines=repaired,
+            start_idx=idx,
+            limit=limit,
+            max_source_duration=max_source_duration,
+            min_late_shift=min_late_shift,
+            min_pair_overlap=min_pair_overlap,
+        )
+        if run_end - idx < min_run_length:
+            idx += 1
+            continue
+
+        for restore_idx in range(idx, run_end):
+            repaired[restore_idx] = _clone_line(source_lines[restore_idx])
+            restored += 1
+        idx = run_end
+
+    return repaired, restored
+
+
+def _find_repeated_compact_run_end(
+    *,
+    source_lines: List[models.Line],
+    repaired_lines: List[models.Line],
+    start_idx: int,
+    limit: int,
+    max_source_duration: float,
+    min_late_shift: float,
+    min_pair_overlap: float,
+) -> int:
+    src = source_lines[start_idx]
+    dst = repaired_lines[start_idx]
+    if not src.words or not dst.words:
+        return start_idx
+    src_duration = src.end_time - src.start_time
+    if src_duration > max_source_duration:
+        return start_idx
+    if dst.start_time - src.start_time < min_late_shift:
+        return start_idx
+
+    run_end = start_idx + 1
+    while run_end < limit:
+        prev_src = source_lines[run_end - 1]
+        cur_src = source_lines[run_end]
+        cur_dst = repaired_lines[run_end]
+        if not prev_src.words or not cur_src.words or not cur_dst.words:
+            break
+        cur_duration = cur_src.end_time - cur_src.start_time
+        if cur_duration > max_source_duration:
+            break
+        if cur_dst.start_time - cur_src.start_time < min_late_shift:
+            break
+        if _line_text_token_overlap(prev_src.text, cur_src.text) < min_pair_overlap:
+            break
+        run_end += 1
+    return run_end
+
+
+def _restore_split_short_refrains_to_matching_segments(
+    aligned_lines: List[models.Line],
+    transcription: List[timing_models.TranscriptionSegment],
+    *,
+    min_gap: float = 0.05,
+    max_words: int = 4,
+    min_late_shift: float = 0.8,
+    max_late_shift: float = 3.0,
+) -> Tuple[List[models.Line], int]:
+    return _restore_split_short_refrains_to_matching_segments_impl(
+        aligned_lines,
+        transcription,
+        min_gap=min_gap,
+        max_words=max_words,
+        min_late_shift=min_late_shift,
+        max_late_shift=max_late_shift,
+    )
 
 
 def _apply_low_quality_segment_postpasses(
@@ -241,6 +346,19 @@ def _finalize_whisper_line_set(
     _record_stage_metric(
         stage_metrics, "finalize_restored_inversions_from_source", restored_inversions
     )
+    aligned_lines, restored_repeated_runs = _restore_repeated_compact_runs_from_source(
+        source_lines,
+        aligned_lines,
+    )
+    if restored_repeated_runs:
+        alignments.append(
+            f"Restored {restored_repeated_runs} repeated compact line(s) from source timing"
+        )
+    _record_stage_metric(
+        stage_metrics,
+        "finalize_restored_repeated_compact_runs_from_source",
+        restored_repeated_runs,
+    )
     aligned_lines, alignments = fix_ordering_violations_fn(
         source_lines, aligned_lines, alignments
     )
@@ -278,6 +396,22 @@ def _finalize_whisper_line_set(
             pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
             stage_metrics=stage_metrics,
         )
+
+    aligned_lines, restored_split_refrains = (
+        _restore_split_short_refrains_to_matching_segments(
+            aligned_lines,
+            transcription,
+        )
+    )
+    if restored_split_refrains:
+        alignments.append(
+            f"Restored {restored_split_refrains} split short refrain line(s) to matching Whisper segments"
+        )
+    _record_stage_metric(
+        stage_metrics,
+        "finalize_restored_split_short_refrains_to_matching_segments",
+        restored_split_refrains,
+    )
 
     aligned_lines = enforce_monotonic_line_starts_fn(aligned_lines)
     aligned_lines = enforce_non_overlapping_lines_fn(aligned_lines)

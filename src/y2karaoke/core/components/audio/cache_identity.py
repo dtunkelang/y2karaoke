@@ -24,13 +24,22 @@ _DISALLOWED_CACHE_TOKENS = {
     "instrumental",
     "sing",
     "cover",
-    "version",
 }
 
 
 def _tokenize(value: str) -> list[str]:
     tokens = re.findall(r"[a-z0-9]+", (value or "").lower())
-    return [token for token in tokens if token and token not in _NOISE_TOKENS]
+    normalized: list[str] = []
+    for token in tokens:
+        if not token or token in _NOISE_TOKENS:
+            continue
+        normalized.append(token)
+        # Treat common dropped-g lyric/title spellings as equivalent for cache lookup.
+        if token.endswith("in") and len(token) > 3:
+            normalized.append(f"{token}g")
+        elif token.endswith("ing") and len(token) > 4:
+            normalized.append(token[:-1])
+    return normalized
 
 
 def _coerce_path(value: Path | str) -> Path:

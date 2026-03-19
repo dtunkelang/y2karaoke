@@ -188,6 +188,7 @@ def _trim_whisper_transcription_by_lyrics(
         return segments, words, None
 
     last_match_end: Optional[float] = None
+    last_match_text: Optional[str] = None
     for seg in reversed(segments):
         seg_norm = _normalize_line_text(seg.text)
         if not seg_norm:
@@ -198,6 +199,7 @@ def _trim_whisper_transcription_by_lyrics(
         )
         if best_ratio >= min_similarity:
             last_match_end = seg.end
+            last_match_text = seg_norm
             break
 
     if last_match_end is None:
@@ -210,9 +212,44 @@ def _trim_whisper_transcription_by_lyrics(
     if transcript_end - last_match_end > max_trim_from_tail_sec:
         return segments, words, None
 
+    if (
+        last_match_text
+        and transcript_end - last_match_end > 2.5
+        and _has_ambiguous_repetitive_tail_match(
+            normalized_lyrics=normalized_lyrics,
+            matched_segment_text=last_match_text,
+            min_similarity=min_similarity,
+        )
+    ):
+        return segments, words, None
+
     trimmed_segments = [seg for seg in segments if seg.end <= last_match_end]
     trimmed_words = [word for word in words if word.start <= last_match_end]
     return trimmed_segments, trimmed_words, last_match_end
+
+
+def _has_ambiguous_repetitive_tail_match(
+    *,
+    normalized_lyrics: Sequence[str],
+    matched_segment_text: str,
+    min_similarity: float,
+) -> bool:
+    unique_lyrics = {lyric for lyric in normalized_lyrics if lyric}
+    if len(unique_lyrics) == len(normalized_lyrics):
+        return False
+
+    ambiguous_matches = sum(
+        1
+        for lyric in normalized_lyrics
+        if SequenceMatcher(None, matched_segment_text, lyric).ratio() >= min_similarity
+    )
+    if ambiguous_matches < 2:
+        return False
+
+    avg_words_per_line = sum(len(lyric.split()) for lyric in normalized_lyrics) / max(
+        1, len(normalized_lyrics)
+    )
+    return avg_words_per_line <= 4.0
 
 
 def _choose_segment_for_line(

@@ -4,9 +4,13 @@ from __future__ import annotations
 
 import re
 from typing import Any, Callable, Dict, List, Optional, Tuple
+import numpy as np
 
 from ... import models
 from ..alignment import timing_models
+from .whisper_split_refrain_restore import (
+    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
+)
 
 _LIGHT_LEADING_TOKENS = {"the", "a", "an"}
 _TOKEN_RE = re.compile(r"[a-z0-9']+")
@@ -14,6 +18,42 @@ _TOKEN_RE = re.compile(r"[a-z0-9']+")
 
 def _normalize_token(text: str) -> str:
     return "".join(_TOKEN_RE.findall(text.lower()))
+
+
+def _non_placeholder_whisper_word_count(
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+) -> int:
+    if not whisper_words:
+        return 0
+    count = 0
+    for word in whisper_words:
+        normalized = _normalize_token(word.text)
+        if not normalized or normalized == "vocal":
+            continue
+        count += 1
+    return count
+
+
+def _mean_nearest_onset_distance(
+    lines: List[models.Line],
+    audio_features: timing_models.AudioFeatures | None,
+) -> float | None:
+    if (
+        audio_features is None
+        or audio_features.onset_times is None
+        or len(audio_features.onset_times) == 0
+    ):
+        return None
+    populated = [line for line in lines if line.words]
+    if not populated:
+        return None
+    distances: list[float] = []
+    onset_times = audio_features.onset_times
+    for line in populated:
+        distances.append(float(min(abs(onset_times - line.start_time))))
+    if not distances:
+        return None
+    return sum(distances) / len(distances)
 
 
 def _shift_line(line: models.Line, delta: float) -> models.Line:
@@ -29,6 +69,286 @@ def _shift_line(line: models.Line, delta: float) -> models.Line:
         ],
         singer=line.singer,
     )
+
+
+def _coerce_forced_segments(
+    segments: Any,
+) -> List[timing_models.TranscriptionSegment]:
+    if not isinstance(segments, list):
+        return []
+    coerced: List[timing_models.TranscriptionSegment] = []
+    for seg in segments:
+        if not isinstance(seg, dict):
+            continue
+        start = seg.get("start")
+        end = seg.get("end")
+        if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+            continue
+        coerced.append(
+            timing_models.TranscriptionSegment(
+                start=float(start),
+                end=float(end),
+                text=str(seg.get("text") or ""),
+                words=[],
+            )
+        )
+    return coerced
+
+
+def _extract_aligned_word_spans(
+    aligned_segments: Any,
+) -> list[tuple[str, float, float]]:
+    if not isinstance(aligned_segments, list):
+        return []
+    aligned_words: list[tuple[str, float, float]] = []
+    for seg in aligned_segments:
+        if not isinstance(seg, dict):
+            continue
+        for word in seg.get("words", []) or []:
+            start = word.get("start")
+            end = word.get("end")
+            text = str(word.get("word") or word.get("text") or "").strip()
+            if not isinstance(start, (int, float)) or not isinstance(end, (int, float)):
+                continue
+            token = _normalize_token(text)
+            if token:
+                aligned_words.append((token, float(start), float(end)))
+    return aligned_words
+
+
+def _neighbor_line_bounds(
+    adjusted: List[models.Line], idx: int
+) -> tuple[float | None, float | None]:
+    prev_end = (
+        adjusted[idx - 1].end_time if idx > 0 and adjusted[idx - 1].words else None
+    )
+    next_start = (
+        adjusted[idx + 1].start_time
+        if idx + 1 < len(adjusted) and adjusted[idx + 1].words
+        else None
+    )
+    return prev_end, next_start
+
+
+def _best_aligned_word_sequence_match(
+    *,
+    aligned_words: list[tuple[str, float, float]],
+    target_tokens: list[str],
+    line_start: float,
+    prev_end: float | None,
+    next_start: float | None,
+    min_gap: float,
+    min_late_shift: float,
+    max_late_shift: float,
+) -> tuple[float, float] | None:
+    best_match: tuple[float, float] | None = None
+    best_delta: float | None = None
+    for word_idx in range(0, len(aligned_words) - len(target_tokens) + 1):
+        candidate = aligned_words[word_idx : word_idx + len(target_tokens)]
+        if [token for token, _start, _end in candidate] != target_tokens:
+            continue
+        match_start = candidate[0][1]
+        match_end = candidate[-1][2]
+        delta = match_start - line_start
+        if delta < min_late_shift or delta > max_late_shift:
+            continue
+        if prev_end is not None and match_start <= prev_end + min_gap:
+            continue
+        if next_start is not None and match_end >= next_start - min_gap:
+            continue
+        if best_delta is None or delta < best_delta:
+            best_match = (match_start, match_end)
+            best_delta = delta
+    return best_match
+
+
+def _rebuild_line_to_match_span(
+    line: models.Line, *, target_start: float, target_end: float
+) -> models.Line:
+    spacing = (target_end - target_start) / len(line.words)
+    rebuilt_words: list[models.Word] = []
+    for word_idx, word in enumerate(line.words):
+        start = target_start + word_idx * spacing
+        end = start + spacing * 0.9
+        if word_idx == len(line.words) - 1:
+            end = target_end
+        rebuilt_words.append(
+            models.Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+    return models.Line(words=rebuilt_words, singer=line.singer)
+
+
+def _restore_short_refrains_from_aligned_segment_words(
+    forced_lines: List[models.Line],
+    aligned_segments: Any,
+    *,
+    min_gap: float = 0.05,
+    max_words: int = 4,
+    min_late_shift: float = 0.8,
+    max_late_shift: float = 3.5,
+) -> tuple[List[models.Line], int]:
+    aligned_words = _extract_aligned_word_spans(aligned_segments)
+    if not aligned_words:
+        return forced_lines, 0
+
+    adjusted = list(forced_lines)
+    restored = 0
+    for idx, line in enumerate(adjusted):
+        if not line.words or len(line.words) > max_words:
+            continue
+        target_tokens = [_normalize_token(word.text) for word in line.words]
+        if not target_tokens or any(not token for token in target_tokens):
+            continue
+
+        prev_end, next_start = _neighbor_line_bounds(adjusted, idx)
+        best_match = _best_aligned_word_sequence_match(
+            aligned_words=aligned_words,
+            target_tokens=target_tokens,
+            line_start=line.start_time,
+            prev_end=prev_end,
+            next_start=next_start,
+            min_gap=min_gap,
+            min_late_shift=min_late_shift,
+            max_late_shift=max_late_shift,
+        )
+        if best_match is None:
+            continue
+
+        adjusted[idx] = _rebuild_line_to_match_span(
+            line,
+            target_start=best_match[0],
+            target_end=best_match[1],
+        )
+        restored += 1
+
+    return adjusted, restored
+
+
+def _normalize_line_text(text: str) -> str:
+    return " ".join(
+        _normalize_token(part) for part in text.split() if _normalize_token(part)
+    )
+
+
+def _repeated_refrain_counts(
+    forced_lines: List[models.Line],
+) -> dict[str, int]:
+    normalized_counts: dict[str, int] = {}
+    for line in forced_lines:
+        if not line.words or not line.text.strip():
+            continue
+        key = _normalize_line_text(line.text)
+        if key:
+            normalized_counts[key] = normalized_counts.get(key, 0) + 1
+    return normalized_counts
+
+
+def _followup_refrain_window(
+    *,
+    adjusted: List[models.Line],
+    idx: int,
+    line: models.Line,
+    prev: models.Line,
+    min_current_gap: float,
+    min_previous_words: int,
+    min_previous_duration: float,
+    min_gap_base: float,
+    min_gap_per_word: float,
+    min_shift: float,
+    inter_line_gap: float,
+    max_refrain_duration: float,
+) -> tuple[float, float] | None:
+    prev_duration = prev.end_time - prev.start_time
+    if len(prev.words) < min_previous_words and prev_duration < min_previous_duration:
+        return None
+    current_gap = line.start_time - prev.end_time
+    if current_gap > min_current_gap:
+        return None
+
+    target_start = prev.end_time + min_gap_base + min_gap_per_word * len(line.words)
+    target_duration = min(
+        line.end_time - line.start_time,
+        max(1.0, min(max_refrain_duration, 0.8 + 0.25 * len(line.words))),
+    )
+    if idx + 1 < len(adjusted) and adjusted[idx + 1].words:
+        next_start = adjusted[idx + 1].start_time
+        max_duration = next_start - inter_line_gap - target_start
+        if max_duration <= 0.2:
+            return None
+        target_duration = min(target_duration, max_duration)
+    shift = target_start - line.start_time
+    if shift < min_shift or target_duration <= 0.2:
+        return None
+    return target_start, target_duration
+
+
+def _enforce_repeated_short_refrain_followup_gap(
+    forced_lines: List[models.Line],
+    *,
+    min_current_gap: float = 0.35,
+    min_previous_words: int = 6,
+    min_previous_duration: float = 2.5,
+    min_gap_base: float = 0.9,
+    min_gap_per_word: float = 0.15,
+    min_shift: float = 0.5,
+    inter_line_gap: float = 0.05,
+    max_refrain_duration: float = 1.8,
+) -> tuple[List[models.Line], int]:
+    if not forced_lines:
+        return forced_lines, 0
+
+    normalized_counts = _repeated_refrain_counts(forced_lines)
+    adjusted = list(forced_lines)
+    shifted = 0
+    for idx in range(1, len(adjusted)):
+        prev = adjusted[idx - 1]
+        line = adjusted[idx]
+        if not prev.words or not line.words or len(line.words) > 4:
+            continue
+        key = _normalize_line_text(line.text)
+        if not key or normalized_counts.get(key, 0) < 2:
+            continue
+        target_window = _followup_refrain_window(
+            adjusted=adjusted,
+            idx=idx,
+            line=line,
+            prev=prev,
+            min_current_gap=min_current_gap,
+            min_previous_words=min_previous_words,
+            min_previous_duration=min_previous_duration,
+            min_gap_base=min_gap_base,
+            min_gap_per_word=min_gap_per_word,
+            min_shift=min_shift,
+            inter_line_gap=inter_line_gap,
+            max_refrain_duration=max_refrain_duration,
+        )
+        if target_window is None:
+            continue
+        target_start, target_duration = target_window
+        spacing = target_duration / len(line.words)
+        rebuilt_words: list[models.Word] = []
+        for word_idx, word in enumerate(line.words):
+            start = target_start + word_idx * spacing
+            end = start + spacing * 0.9
+            if word_idx == len(line.words) - 1:
+                end = target_start + target_duration
+            rebuilt_words.append(
+                models.Word(
+                    text=word.text,
+                    start_time=start,
+                    end_time=end,
+                    singer=word.singer,
+                )
+            )
+        adjusted[idx] = models.Line(words=rebuilt_words, singer=line.singer)
+        shifted += 1
+
+    return adjusted, shifted
 
 
 def _count_leading_light_tokens(normalized_tokens: List[str]) -> int:
@@ -107,6 +427,425 @@ def _can_apply_reanchored_line(
     return shifted_line.end_time <= next_start - 0.04
 
 
+def _count_sustained_line_degradations(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    min_baseline_duration_sec: float = 3.5,
+    max_duration_ratio: float = 0.6,
+) -> tuple[int, int]:
+    compared = 0
+    degraded = 0
+    for baseline_line, forced_line in zip(baseline_lines, forced_lines):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        baseline_duration = baseline_line.end_time - baseline_line.start_time
+        if baseline_duration < min_baseline_duration_sec:
+            continue
+        compared += 1
+        forced_duration = forced_line.end_time - forced_line.start_time
+        if forced_duration < baseline_duration * max_duration_ratio:
+            degraded += 1
+    return degraded, compared
+
+
+def _should_rollback_sustained_line_degradation(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    min_degraded_lines: int = 2,
+    min_degraded_ratio: float = 0.5,
+) -> tuple[bool, int, int]:
+    degraded, compared = _count_sustained_line_degradations(
+        baseline_lines,
+        forced_lines,
+    )
+    if compared == 0:
+        return False, degraded, compared
+    rollback = (
+        degraded >= min_degraded_lines and degraded / compared >= min_degraded_ratio
+    )
+    return rollback, degraded, compared
+
+
+def _restore_sustained_line_durations_from_source(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    min_baseline_duration_sec: float = 3.5,
+    max_duration_ratio: float = 0.6,
+    exact_start_restore_ratio: float = 0.25,
+    exact_start_restore_min_shift_sec: float = 1.5,
+    compact_recovered_word_count: int = 3,
+    compact_recovered_shift_coeff: float = 0.12,
+    compact_recovered_max_shift_sec: float = 0.55,
+    compact_followed_by_longer_line_extra_shift_sec: float = 0.28,
+    compact_followed_by_longer_line_min_words: int = 5,
+    inter_line_gap_sec: float = 0.05,
+) -> tuple[List[models.Line], int]:
+    repaired = list(forced_lines)
+    restored = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        sustained_restore = _restored_sustained_line(
+            baseline_lines=baseline_lines,
+            repaired_lines=repaired,
+            idx=idx,
+            baseline_line=baseline_line,
+            forced_line=forced_line,
+            min_baseline_duration_sec=min_baseline_duration_sec,
+            max_duration_ratio=max_duration_ratio,
+            exact_start_restore_ratio=exact_start_restore_ratio,
+            exact_start_restore_min_shift_sec=exact_start_restore_min_shift_sec,
+            compact_recovered_word_count=compact_recovered_word_count,
+            compact_recovered_shift_coeff=compact_recovered_shift_coeff,
+            compact_recovered_max_shift_sec=compact_recovered_max_shift_sec,
+            compact_followed_by_longer_line_extra_shift_sec=compact_followed_by_longer_line_extra_shift_sec,
+            compact_followed_by_longer_line_min_words=compact_followed_by_longer_line_min_words,
+            inter_line_gap_sec=inter_line_gap_sec,
+        )
+        if sustained_restore is None:
+            continue
+        repaired[idx] = sustained_restore
+        restored += 1
+    return repaired, restored
+
+
+def _restored_sustained_line(
+    *,
+    baseline_lines: List[models.Line],
+    repaired_lines: List[models.Line],
+    idx: int,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    min_baseline_duration_sec: float,
+    max_duration_ratio: float,
+    exact_start_restore_ratio: float,
+    exact_start_restore_min_shift_sec: float,
+    compact_recovered_word_count: int,
+    compact_recovered_shift_coeff: float,
+    compact_recovered_max_shift_sec: float,
+    compact_followed_by_longer_line_extra_shift_sec: float,
+    compact_followed_by_longer_line_min_words: int,
+    inter_line_gap_sec: float,
+) -> models.Line | None:
+    if not baseline_line.words or not forced_line.words:
+        return None
+    baseline_duration = baseline_line.end_time - baseline_line.start_time
+    if baseline_duration < min_baseline_duration_sec:
+        return None
+    forced_duration = forced_line.end_time - forced_line.start_time
+    if forced_duration >= baseline_duration * max_duration_ratio:
+        return None
+    start_shift = forced_line.start_time - baseline_line.start_time
+    if (
+        forced_duration <= baseline_duration * exact_start_restore_ratio
+        and abs(start_shift) >= exact_start_restore_min_shift_sec
+    ):
+        return baseline_line
+
+    repaired_line = _shift_line(baseline_line, start_shift)
+    if idx <= 0 or len(baseline_line.words) != compact_recovered_word_count:
+        return repaired_line
+    later_shift = min(
+        compact_recovered_max_shift_sec,
+        max(0.0, (baseline_duration - forced_duration) * compact_recovered_shift_coeff),
+    )
+    if (
+        idx + 1 < len(baseline_lines)
+        and len(baseline_lines[idx + 1].words)
+        >= compact_followed_by_longer_line_min_words
+    ):
+        later_shift = min(
+            compact_recovered_max_shift_sec,
+            later_shift + compact_followed_by_longer_line_extra_shift_sec,
+        )
+    if later_shift <= 0.0:
+        return repaired_line
+    return _shift_compact_recovered_line(
+        repaired_line=repaired_line,
+        repaired_lines=repaired_lines,
+        idx=idx,
+        later_shift=later_shift,
+        inter_line_gap_sec=inter_line_gap_sec,
+    )
+
+
+def _shift_compact_recovered_line(
+    *,
+    repaired_line: models.Line,
+    repaired_lines: List[models.Line],
+    idx: int,
+    later_shift: float,
+    inter_line_gap_sec: float,
+) -> models.Line:
+    shifted_candidate = _shift_line(repaired_line, later_shift)
+    if idx + 1 < len(repaired_lines) and repaired_lines[idx + 1].words:
+        next_start = repaired_lines[idx + 1].start_time
+        if shifted_candidate.end_time > next_start - inter_line_gap_sec:
+            available = next_start - inter_line_gap_sec - repaired_line.end_time
+            if available > 0.0:
+                shifted_candidate = _shift_line(
+                    repaired_line,
+                    min(later_shift, available),
+                )
+    return shifted_candidate
+
+
+def _restore_sparse_support_line_durations_from_source(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    *,
+    min_baseline_duration_sec: float = 3.0,
+    max_baseline_words: int = 5,
+    max_duration_ratio: float = 0.7,
+) -> tuple[List[models.Line], int]:
+    populated_lines = [line for line in forced_lines if line.words]
+    if not populated_lines:
+        return forced_lines, 0
+    if _non_placeholder_whisper_word_count(whisper_words) > max(
+        3, int(len(populated_lines) * 0.6)
+    ):
+        return forced_lines, 0
+
+    repaired = list(forced_lines)
+    restored = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        if len(baseline_line.words) > max_baseline_words:
+            continue
+        baseline_duration = baseline_line.end_time - baseline_line.start_time
+        if baseline_duration < min_baseline_duration_sec:
+            continue
+        forced_duration = forced_line.end_time - forced_line.start_time
+        if forced_duration >= baseline_duration * max_duration_ratio:
+            continue
+        delta = forced_line.start_time - baseline_line.start_time
+        repaired[idx] = _shift_line(baseline_line, delta)
+        restored += 1
+    return repaired, restored
+
+
+def _shift_sparse_support_lines_toward_better_onsets(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None,
+    *,
+    min_late_shift_sec: float = 0.2,
+    max_late_shift_sec: float = 0.8,
+    min_forced_onset_distance: float = 0.1,
+    min_onset_distance_gain: float = 0.03,
+) -> tuple[List[models.Line], int]:
+    if (
+        audio_features is None
+        or audio_features.onset_times is None
+        or len(audio_features.onset_times) == 0
+    ):
+        return forced_lines, 0
+    if _non_placeholder_whisper_word_count(whisper_words) > max(
+        3, int(max(1, len([line for line in forced_lines if line.words])) * 0.6)
+    ):
+        return forced_lines, 0
+
+    onset_times = audio_features.onset_times
+    repaired = list(forced_lines)
+    shifted = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        if len(forced_line.words) > 5:
+            continue
+        baseline_candidates = onset_times[
+            (onset_times >= baseline_line.start_time - 0.35)
+            & (onset_times <= baseline_line.start_time + 0.35)
+        ]
+        if len(baseline_candidates) == 0:
+            continue
+        target_start = float(
+            baseline_candidates[
+                int(np.argmin(np.abs(baseline_candidates - baseline_line.start_time)))
+            ]
+        )
+        late_shift = target_start - forced_line.start_time
+        if late_shift < min_late_shift_sec or late_shift > max_late_shift_sec:
+            continue
+        forced_onset_distance = float(min(abs(onset_times - forced_line.start_time)))
+        target_onset_distance = float(min(abs(onset_times - target_start)))
+        if forced_onset_distance < min_forced_onset_distance:
+            continue
+        if forced_onset_distance - target_onset_distance < min_onset_distance_gain:
+            continue
+        repaired[idx] = _shift_line(forced_line, late_shift)
+        shifted += 1
+    return repaired, shifted
+
+
+def _restore_sparse_support_line_starts_from_source(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None,
+    *,
+    min_late_shift_sec: float = 0.12,
+    max_late_shift_sec: float = 0.9,
+    onset_distance_tolerance: float = 0.03,
+) -> tuple[List[models.Line], int]:
+    if (
+        audio_features is None
+        or audio_features.onset_times is None
+        or len(audio_features.onset_times) == 0
+    ):
+        return forced_lines, 0
+    populated_count = len([line for line in forced_lines if line.words])
+    if _non_placeholder_whisper_word_count(whisper_words) > max(
+        3, int(max(1, populated_count) * 0.6)
+    ):
+        return forced_lines, 0
+
+    repaired = list(forced_lines)
+    onset_times = audio_features.onset_times
+    restored = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        late_shift = baseline_line.start_time - forced_line.start_time
+        if late_shift < min_late_shift_sec or late_shift > max_late_shift_sec:
+            continue
+        forced_onset_distance = float(min(abs(onset_times - forced_line.start_time)))
+        baseline_onset_distance = float(
+            min(abs(onset_times - baseline_line.start_time))
+        )
+        if baseline_onset_distance > forced_onset_distance + onset_distance_tolerance:
+            continue
+        repaired[idx] = _shift_line(forced_line, late_shift)
+        restored += 1
+    return repaired, restored
+
+
+def _count_compact_line_drift(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    max_baseline_duration_sec: float = 2.5,
+    min_late_shift_sec: float = 1.5,
+) -> tuple[int, int]:
+    compared = 0
+    degraded = 0
+    for baseline_line, forced_line in zip(baseline_lines, forced_lines):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        baseline_duration = baseline_line.end_time - baseline_line.start_time
+        if baseline_duration > max_baseline_duration_sec:
+            continue
+        compared += 1
+        if forced_line.start_time - baseline_line.start_time >= min_late_shift_sec:
+            degraded += 1
+    return degraded, compared
+
+
+def _should_rollback_compact_line_drift(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    min_degraded_lines: int = 3,
+    min_degraded_ratio: float = 0.4,
+) -> tuple[bool, int, int]:
+    degraded, compared = _count_compact_line_drift(
+        baseline_lines,
+        forced_lines,
+    )
+    if compared == 0:
+        return False, degraded, compared
+    rollback = (
+        degraded >= min_degraded_lines and degraded / compared >= min_degraded_ratio
+    )
+    return rollback, degraded, compared
+
+
+def _count_compact_line_duration_collapse(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    max_baseline_words: int = 3,
+    min_baseline_duration_sec: float = 0.9,
+    max_duration_ratio: float = 0.45,
+) -> tuple[int, int]:
+    compared = 0
+    degraded = 0
+    for baseline_line, forced_line in zip(baseline_lines, forced_lines):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        if len(baseline_line.words) != len(forced_line.words):
+            continue
+        if len(baseline_line.words) > max_baseline_words:
+            continue
+        baseline_duration = baseline_line.end_time - baseline_line.start_time
+        if baseline_duration < min_baseline_duration_sec:
+            continue
+        compared += 1
+        forced_duration = forced_line.end_time - forced_line.start_time
+        if (
+            forced_duration <= 0.0
+            or forced_duration <= baseline_duration * max_duration_ratio
+        ):
+            degraded += 1
+    return degraded, compared
+
+
+def _should_rollback_compact_line_duration_collapse(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    min_degraded_lines: int = 2,
+    min_degraded_ratio: float = 0.4,
+) -> tuple[bool, int, int]:
+    degraded, compared = _count_compact_line_duration_collapse(
+        baseline_lines,
+        forced_lines,
+    )
+    if compared == 0:
+        return False, degraded, compared
+    rollback = (
+        degraded >= min_degraded_lines and degraded / compared >= min_degraded_ratio
+    )
+    return rollback, degraded, compared
+
+
+def _reject_compact_line_duration_collapse_if_needed(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    logger: Any,
+) -> bool:
+    rollback_compact_duration, compact_duration_degraded, compact_duration_compared = (
+        _should_rollback_compact_line_duration_collapse(
+            baseline_lines,
+            forced_lines,
+        )
+    )
+    if not rollback_compact_duration:
+        return False
+    logger.warning(
+        (
+            "Discarded WhisperX forced alignment due to compact-line duration "
+            "collapse (%d/%d)"
+        ),
+        compact_duration_degraded,
+        compact_duration_compared,
+    )
+    return True
+
+
 def _reanchor_forced_lines_to_local_content_words(
     forced_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord] | None,
@@ -142,6 +881,329 @@ def _reanchor_forced_lines_to_local_content_words(
     return adjusted, shifted
 
 
+def _forced_coverage_ok(
+    *,
+    logger: Any,
+    forced_word_coverage: float,
+    forced_line_coverage: float,
+    min_forced_word_coverage: float,
+    min_forced_line_coverage: float,
+) -> bool:
+    if (
+        forced_word_coverage >= min_forced_word_coverage
+        and forced_line_coverage >= min_forced_line_coverage
+    ):
+        return True
+    logger.warning(
+        (
+            "Discarded WhisperX forced alignment due to low forced coverage "
+            "(word=%.2f line=%.2f)"
+        ),
+        forced_word_coverage,
+        forced_line_coverage,
+    )
+    return False
+
+
+def _forced_alignment_hurts_sparse_onsets(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None,
+    logger: Any,
+) -> bool:
+    lexical_word_count = _non_placeholder_whisper_word_count(whisper_words)
+    baseline_onset_distance = _mean_nearest_onset_distance(
+        baseline_lines, audio_features
+    )
+    forced_onset_distance = _mean_nearest_onset_distance(forced_lines, audio_features)
+    if not (
+        lexical_word_count <= 3
+        and baseline_onset_distance is not None
+        and forced_onset_distance is not None
+        and baseline_onset_distance <= 0.2
+        and forced_onset_distance >= baseline_onset_distance + 0.05
+    ):
+        return False
+    logger.info(
+        (
+            "Discarded WhisperX forced alignment because sparse lexical support "
+            "did not improve onset proximity (baseline=%.3f forced=%.3f)"
+        ),
+        baseline_onset_distance,
+        forced_onset_distance,
+    )
+    return True
+
+
+def _repair_short_line_degradation_if_possible(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    logger: Any,
+    should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+) -> List[models.Line] | None:
+    rollback, short_before, short_after = should_rollback_short_line_degradation_fn(
+        baseline_lines, forced_lines
+    )
+    if not rollback:
+        return forced_lines
+    repaired_lines, restored_count = restore_implausibly_short_lines_fn(
+        baseline_lines, forced_lines
+    )
+    repaired_rollback, _, repaired_after = should_rollback_short_line_degradation_fn(
+        baseline_lines, repaired_lines
+    )
+    if restored_count > 0 and not repaired_rollback:
+        logger.info(
+            "Kept WhisperX forced alignment after restoring %d short baseline line(s) (%d -> %d)",
+            restored_count,
+            short_after,
+            repaired_after,
+        )
+        return repaired_lines
+    logger.warning(
+        "Discarded WhisperX forced alignment due to short-line degradation (%d -> %d)",
+        short_before,
+        short_after,
+    )
+    return None
+
+
+def _repair_sustained_line_degradation_if_possible(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    logger: Any,
+) -> List[models.Line] | None:
+    rollback_sustained, sustained_degraded, sustained_compared = (
+        _should_rollback_sustained_line_degradation(
+            baseline_lines,
+            forced_lines,
+        )
+    )
+    if not rollback_sustained:
+        return forced_lines
+    repaired_lines, restored_count = _restore_sustained_line_durations_from_source(
+        baseline_lines,
+        forced_lines,
+    )
+    (
+        repaired_rollback_sustained,
+        repaired_sustained_degraded,
+        repaired_sustained_compared,
+    ) = _should_rollback_sustained_line_degradation(
+        baseline_lines,
+        repaired_lines,
+    )
+    if restored_count > 0 and not repaired_rollback_sustained:
+        logger.info(
+            (
+                "Kept WhisperX forced alignment after restoring %d sustained line(s) "
+                "from source duration (%d/%d -> %d/%d)"
+            ),
+            restored_count,
+            sustained_degraded,
+            sustained_compared,
+            repaired_sustained_degraded,
+            repaired_sustained_compared,
+        )
+        return repaired_lines
+    logger.warning(
+        "Discarded WhisperX forced alignment due to sustained-line compression (%d/%d)",
+        sustained_degraded,
+        sustained_compared,
+    )
+    return None
+
+
+def _post_normalize_sparse_support_repairs(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None,
+    logger: Any,
+    normalize_line_word_timings_fn: Callable[..., Any] | None,
+) -> List[models.Line]:
+    if normalize_line_word_timings_fn is None:
+        return forced_lines
+    forced_lines = normalize_line_word_timings_fn(forced_lines)
+    forced_lines, sparse_duration_restored_count = (
+        _restore_sparse_support_line_durations_from_source(
+            baseline_lines,
+            forced_lines,
+            whisper_words,
+        )
+    )
+    if sparse_duration_restored_count:
+        logger.info(
+            "Restored %d sparse-support line duration(s) from source after normalization",
+            sparse_duration_restored_count,
+        )
+    forced_lines, sparse_onset_shift_count = (
+        _shift_sparse_support_lines_toward_better_onsets(
+            baseline_lines,
+            forced_lines,
+            whisper_words,
+            audio_features,
+        )
+    )
+    if sparse_onset_shift_count:
+        logger.info(
+            "Shifted %d sparse-support line(s) to better local onsets after normalization",
+            sparse_onset_shift_count,
+        )
+    forced_lines, sparse_start_restore_count = (
+        _restore_sparse_support_line_starts_from_source(
+            baseline_lines,
+            forced_lines,
+            whisper_words,
+            audio_features,
+        )
+    )
+    if sparse_start_restore_count:
+        logger.info(
+            "Restored %d sparse-support line start(s) from source after normalization",
+            sparse_start_restore_count,
+        )
+    return forced_lines
+
+
+def _apply_forced_refrain_repairs(
+    *,
+    forced_lines: List[models.Line],
+    aligned_segments: Any,
+    forced_segments: List[timing_models.TranscriptionSegment],
+    transcription: List[timing_models.TranscriptionSegment] | None,
+    logger: Any,
+) -> tuple[List[models.Line], int, int, int]:
+    forced_lines, shifted_refrain_gaps = _enforce_repeated_short_refrain_followup_gap(
+        forced_lines
+    )
+    if shifted_refrain_gaps:
+        logger.info(
+            "Shifted %d repeated short refrain line(s) later after long preceding lines",
+            shifted_refrain_gaps,
+        )
+    forced_lines, restored_word_sequence_refrains = (
+        _restore_short_refrains_from_aligned_segment_words(
+            forced_lines,
+            aligned_segments,
+        )
+    )
+    if restored_word_sequence_refrains:
+        logger.info(
+            "Restored %d short refrain line(s) from WhisperX aligned word sequences",
+            restored_word_sequence_refrains,
+        )
+    forced_lines, restored_split_refrains = (
+        _restore_split_short_refrains_to_matching_segments(
+            forced_lines,
+            forced_segments or transcription or [],
+        )
+    )
+    if restored_split_refrains:
+        logger.info(
+            "Restored %d split short refrain line(s) after WhisperX forced alignment",
+            restored_split_refrains,
+        )
+    return (
+        forced_lines,
+        shifted_refrain_gaps,
+        restored_word_sequence_refrains,
+        restored_split_refrains,
+    )
+
+
+def _build_forced_payload(
+    *,
+    forced_word_coverage: float,
+    forced_line_coverage: float,
+    shifted_refrain_gaps: int,
+    restored_word_sequence_refrains: int,
+    restored_split_refrains: int,
+    used_model: str,
+) -> Dict[str, Any]:
+    return {
+        "matched_ratio": forced_word_coverage,
+        "word_coverage": forced_word_coverage,
+        "avg_similarity": 1.0,
+        "line_coverage": forced_line_coverage,
+        "phonetic_similarity_coverage": forced_word_coverage,
+        "high_similarity_ratio": 1.0,
+        "exact_match_ratio": 0.0,
+        "unmatched_ratio": 1.0 - forced_word_coverage,
+        "dtw_used": 0.0,
+        "dtw_mode": 0.0,
+        "whisperx_forced": 1.0,
+        "shifted_refrain_followup_gaps": float(shifted_refrain_gaps),
+        "restored_word_sequence_refrains": float(restored_word_sequence_refrains),
+        "restored_split_short_refrains": float(restored_split_refrains),
+        "whisper_model": used_model,
+    }
+
+
+def _reject_compact_line_drift_if_needed(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    logger: Any,
+) -> bool:
+    rollback_compact, compact_degraded, compact_compared = (
+        _should_rollback_compact_line_drift(
+            baseline_lines,
+            forced_lines,
+        )
+    )
+    if not rollback_compact:
+        return False
+    logger.warning(
+        "Discarded WhisperX forced alignment due to compact-line drift (%d/%d)",
+        compact_degraded,
+        compact_compared,
+    )
+    return True
+
+
+def _finalize_forced_line_timing(
+    *,
+    forced_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None,
+    logger: Any,
+    normalize_line_word_timings_fn: Callable[..., Any] | None,
+    enforce_monotonic_line_starts_fn: Callable[..., Any] | None,
+    enforce_non_overlapping_lines_fn: Callable[..., Any] | None,
+) -> List[models.Line]:
+    forced_lines, reanchored_count = _reanchor_forced_lines_to_local_content_words(
+        forced_lines,
+        whisper_words,
+    )
+    if reanchored_count:
+        logger.info(
+            "Reanchored %d forced-aligned line(s) to local content-word Whisper anchors",
+            reanchored_count,
+        )
+
+    forced_lines = _post_normalize_sparse_support_repairs(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        whisper_words=whisper_words,
+        audio_features=audio_features,
+        logger=logger,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+    )
+    if enforce_monotonic_line_starts_fn is not None:
+        forced_lines = enforce_monotonic_line_starts_fn(forced_lines)
+    if enforce_non_overlapping_lines_fn is not None:
+        forced_lines = enforce_non_overlapping_lines_fn(forced_lines)
+    return forced_lines
+
+
 def attempt_whisperx_forced_alignment(
     *,
     lines: List[models.Line],
@@ -156,6 +1218,8 @@ def attempt_whisperx_forced_alignment(
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
     whisper_words: List[timing_models.TranscriptionWord] | None = None,
+    transcription: List[timing_models.TranscriptionSegment] | None = None,
+    audio_features: timing_models.AudioFeatures | None = None,
     normalize_line_word_timings_fn: Callable[..., Any] | None = None,
     enforce_monotonic_line_starts_fn: Callable[..., Any] | None = None,
     enforce_non_overlapping_lines_fn: Callable[..., Any] | None = None,
@@ -169,78 +1233,95 @@ def attempt_whisperx_forced_alignment(
     forced_lines, forced_metrics = forced
     forced_word_coverage = float(forced_metrics.get("forced_word_coverage", 0.0))
     forced_line_coverage = float(forced_metrics.get("forced_line_coverage", 0.0))
-    if (
-        forced_word_coverage < min_forced_word_coverage
-        or forced_line_coverage < min_forced_line_coverage
+    aligned_segments = forced_metrics.get("aligned_segments")
+    forced_segments = _coerce_forced_segments(forced_metrics.get("aligned_segments"))
+    if not _forced_coverage_ok(
+        logger=logger,
+        forced_word_coverage=forced_word_coverage,
+        forced_line_coverage=forced_line_coverage,
+        min_forced_word_coverage=min_forced_word_coverage,
+        min_forced_line_coverage=min_forced_line_coverage,
     ):
-        logger.warning(
-            (
-                "Discarded WhisperX forced alignment due to low forced coverage "
-                "(word=%.2f line=%.2f)"
-            ),
-            forced_word_coverage,
-            forced_line_coverage,
-        )
         return None
 
-    rollback, short_before, short_after = should_rollback_short_line_degradation_fn(
-        baseline_lines, forced_lines
+    if _forced_alignment_hurts_sparse_onsets(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        whisper_words=whisper_words,
+        audio_features=audio_features,
+        logger=logger,
+    ):
+        return None
+
+    forced_lines = _repair_short_line_degradation_if_possible(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
     )
-    if rollback:
-        repaired_lines, restored_count = restore_implausibly_short_lines_fn(
-            baseline_lines, forced_lines
-        )
-        repaired_rollback, _, repaired_after = (
-            should_rollback_short_line_degradation_fn(baseline_lines, repaired_lines)
-        )
-        if restored_count > 0 and not repaired_rollback:
-            logger.info(
-                "Kept WhisperX forced alignment after restoring %d short baseline line(s) (%d -> %d)",
-                restored_count,
-                short_after,
-                repaired_after,
-            )
-            forced_lines = repaired_lines
-            rollback = False
-    if rollback:
-        logger.warning(
-            "Discarded WhisperX forced alignment due to short-line degradation (%d -> %d)",
-            short_before,
-            short_after,
-        )
+    if forced_lines is None:
         return None
 
-    forced_lines, reanchored_count = _reanchor_forced_lines_to_local_content_words(
+    forced_lines = _repair_sustained_line_degradation_if_possible(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    )
+    if forced_lines is None:
+        return None
+
+    if _reject_compact_line_drift_if_needed(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    ):
+        return None
+
+    if _reject_compact_line_duration_collapse_if_needed(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    ):
+        return None
+
+    forced_lines = _finalize_forced_line_timing(
+        forced_lines=forced_lines,
+        baseline_lines=baseline_lines,
+        whisper_words=whisper_words,
+        audio_features=audio_features,
+        logger=logger,
+        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
+        enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
+    )
+    (
         forced_lines,
-        whisper_words,
+        shifted_refrain_gaps,
+        restored_word_sequence_refrains,
+        restored_split_refrains,
+    ) = _apply_forced_refrain_repairs(
+        forced_lines=forced_lines,
+        aligned_segments=aligned_segments,
+        forced_segments=forced_segments,
+        transcription=transcription,
+        logger=logger,
     )
-    if reanchored_count:
-        logger.info(
-            "Reanchored %d forced-aligned line(s) to local content-word Whisper anchors",
-            reanchored_count,
-        )
+    if _reject_compact_line_duration_collapse_if_needed(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    ):
+        return None
 
-    if normalize_line_word_timings_fn is not None:
-        forced_lines = normalize_line_word_timings_fn(forced_lines)
-    if enforce_monotonic_line_starts_fn is not None:
-        forced_lines = enforce_monotonic_line_starts_fn(forced_lines)
-    if enforce_non_overlapping_lines_fn is not None:
-        forced_lines = enforce_non_overlapping_lines_fn(forced_lines)
-
-    forced_payload: Dict[str, Any] = {
-        "matched_ratio": forced_word_coverage,
-        "word_coverage": forced_word_coverage,
-        "avg_similarity": 1.0,
-        "line_coverage": forced_line_coverage,
-        "phonetic_similarity_coverage": forced_word_coverage,
-        "high_similarity_ratio": 1.0,
-        "exact_match_ratio": 0.0,
-        "unmatched_ratio": 1.0 - forced_word_coverage,
-        "dtw_used": 0.0,
-        "dtw_mode": 0.0,
-        "whisperx_forced": 1.0,
-        "whisper_model": used_model,
-    }
+    forced_payload = _build_forced_payload(
+        forced_word_coverage=forced_word_coverage,
+        forced_line_coverage=forced_line_coverage,
+        shifted_refrain_gaps=shifted_refrain_gaps,
+        restored_word_sequence_refrains=restored_word_sequence_refrains,
+        restored_split_refrains=restored_split_refrains,
+        used_model=used_model,
+    )
     return (
         forced_lines,
         [f"Applied WhisperX transcript-constrained forced alignment due to {reason}"],

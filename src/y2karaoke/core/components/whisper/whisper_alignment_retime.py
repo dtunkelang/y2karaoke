@@ -1,6 +1,7 @@
 """Functions for retiming lyrics lines within Whisper segments/windows."""
 
 import logging
+import re
 from typing import List, Optional, Tuple
 
 from ...models import Line, Word
@@ -9,6 +10,26 @@ from ...phonetic_utils import _phonetic_similarity
 from .whisper_alignment_utils import _find_best_whisper_segment
 
 logger = logging.getLogger(__name__)
+
+_TEXT_TOKEN_RE = re.compile(r"[^a-z0-9\s]")
+
+
+def _normalized_retime_text(text: str) -> str:
+    return _TEXT_TOKEN_RE.sub("", text.lower()).strip()
+
+
+def _is_short_repeated_refrain(
+    line: Line,
+    normalized_counts: dict[str, int],
+    *,
+    max_words: int = 3,
+) -> bool:
+    if len(line.words) > max_words:
+        return False
+    key = _normalized_retime_text(line.text)
+    if not key:
+        return False
+    return normalized_counts.get(key, 0) >= 2
 
 
 def _retime_line_to_segment(line: Line, seg: TranscriptionSegment) -> Line:
@@ -106,6 +127,13 @@ def _retime_adjacent_lines_to_whisper_window(  # noqa: C901
     adjusted = list(lines)
     fixes = 0
     sorted_segments = sorted(segments, key=lambda s: s.start)
+    normalized_counts = {
+        key: sum(1 for line in adjusted if _normalized_retime_text(line.text) == key)
+        for key in {
+            _normalized_retime_text(line.text) for line in adjusted if line.words
+        }
+        if key
+    }
 
     for idx in range(len(adjusted) - 1):
         line = adjusted[idx]
@@ -172,6 +200,11 @@ def _retime_adjacent_lines_to_whisper_window(  # noqa: C901
         if (
             max_start_offset is not None
             and abs(line.start_time - seg.start) > max_start_offset
+        ):
+            continue
+        if (
+            _is_short_repeated_refrain(next_line, normalized_counts)
+            and seg.start < next_line.start_time - 1.5
         ):
             continue
 
@@ -246,74 +279,130 @@ def _retime_adjacent_lines_to_segment_window(
     adjusted = list(lines)
     fixes = 0
     sorted_segments = sorted(segments, key=lambda s: s.start)
+    normalized_counts = {
+        key: sum(1 for line in adjusted if _normalized_retime_text(line.text) == key)
+        for key in {
+            _normalized_retime_text(line.text) for line in adjusted if line.words
+        }
+        if key
+    }
 
     for idx in range(len(adjusted) - 1):
-        line = adjusted[idx]
-        next_line = adjusted[idx + 1]
-        if not line.words or not next_line.words:
+        retimed_pair = _build_adjacent_segment_window_retiming(
+            adjusted=adjusted,
+            idx=idx,
+            sorted_segments=sorted_segments,
+            normalized_counts=normalized_counts,
+            language=language,
+            min_similarity=min_similarity,
+            max_gap=max_gap,
+            max_time_window=max_time_window,
+        )
+        if retimed_pair is None:
             continue
-
-        combined_text = f"{line.text} {next_line.text}".strip()
-
-        for s_idx in range(len(sorted_segments) - 1):
-            candidate = _matching_segment_window(
-                sorted_segments=sorted_segments,
-                segment_index=s_idx,
-                line_start=line.start_time,
-                max_time_window=max_time_window,
-                combined_text=combined_text,
-                language=language,
-                min_similarity=min_similarity,
-            )
-            if candidate is None:
-                continue
-            seg_a, seg_b = candidate
-
-            total_words = len(line.words) + len(next_line.words)
-            if total_words <= 0:
-                continue
-
-            window_start = seg_a.start
-            window_end = seg_b.end
-            total_duration = max(window_end - window_start, 0.2)
-            spacing = total_duration / total_words
-
-            new_line_words = []
-            new_next_words = []
-            for i, word in enumerate(line.words):
-                start = window_start + i * spacing
-                end = start + spacing * 0.9
-                new_line_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
-            for j, word in enumerate(next_line.words):
-                idx_in_seg = len(line.words) + j
-                start = window_start + idx_in_seg * spacing
-                end = start + spacing * 0.9
-                new_next_words.append(
-                    Word(
-                        text=word.text,
-                        start_time=start,
-                        end_time=end,
-                        singer=word.singer,
-                    )
-                )
-
-            gap = new_next_words[0].start_time - new_line_words[-1].end_time
-            if gap > max_gap:
-                continue
-
-            adjusted[idx] = Line(words=new_line_words, singer=line.singer)
-            adjusted[idx + 1] = Line(words=new_next_words, singer=next_line.singer)
-            fixes += 1
-            break
+        adjusted[idx], adjusted[idx + 1] = retimed_pair
+        fixes += 1
 
     return adjusted, fixes
+
+
+def _retime_pair_to_segment_window(
+    *,
+    line: Line,
+    next_line: Line,
+    window_start: float,
+    window_end: float,
+    max_gap: float,
+) -> tuple[Line, Line] | None:
+    total_words = len(line.words) + len(next_line.words)
+    if total_words <= 0:
+        return None
+
+    total_duration = max(window_end - window_start, 0.2)
+    spacing = total_duration / total_words
+    new_line_words = []
+    new_next_words = []
+
+    for i, word in enumerate(line.words):
+        start = window_start + i * spacing
+        end = start + spacing * 0.9
+        new_line_words.append(
+            Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+
+    for j, word in enumerate(next_line.words):
+        idx_in_seg = len(line.words) + j
+        start = window_start + idx_in_seg * spacing
+        end = start + spacing * 0.9
+        new_next_words.append(
+            Word(
+                text=word.text,
+                start_time=start,
+                end_time=end,
+                singer=word.singer,
+            )
+        )
+
+    gap = new_next_words[0].start_time - new_line_words[-1].end_time
+    if gap > max_gap:
+        return None
+    return (
+        Line(words=new_line_words, singer=line.singer),
+        Line(words=new_next_words, singer=next_line.singer),
+    )
+
+
+def _build_adjacent_segment_window_retiming(
+    *,
+    adjusted: List[Line],
+    idx: int,
+    sorted_segments: List[TranscriptionSegment],
+    normalized_counts: dict[str, int],
+    language: str,
+    min_similarity: float,
+    max_gap: float,
+    max_time_window: float,
+) -> tuple[Line, Line] | None:
+    line = adjusted[idx]
+    next_line = adjusted[idx + 1]
+    if not line.words or not next_line.words:
+        return None
+
+    combined_text = f"{line.text} {next_line.text}".strip()
+    for s_idx in range(len(sorted_segments) - 1):
+        candidate = _matching_segment_window(
+            sorted_segments=sorted_segments,
+            segment_index=s_idx,
+            line_start=line.start_time,
+            max_time_window=max_time_window,
+            combined_text=combined_text,
+            language=language,
+            min_similarity=min_similarity,
+        )
+        if candidate is None:
+            continue
+        seg_a, seg_b = candidate
+        if (
+            _is_short_repeated_refrain(next_line, normalized_counts)
+            and seg_a.start < next_line.start_time - 1.5
+        ):
+            continue
+
+        retimed_pair = _retime_pair_to_segment_window(
+            line=line,
+            next_line=next_line,
+            window_start=seg_a.start,
+            window_end=seg_b.end,
+            max_gap=max_gap,
+        )
+        if retimed_pair is not None:
+            return retimed_pair
+    return None
 
 
 def _matching_segment_window(

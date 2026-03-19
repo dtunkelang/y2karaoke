@@ -49,9 +49,9 @@ def _build_lines_from_lyrics_source(
 ) -> Tuple[List[Line], bool, Optional[List[dict[str, Any]]], Optional[str]]:
     from .helpers import (
         _apply_timing_to_lines,
+        _anchor_plain_text_lines_to_audio_window,
         _create_lines_from_plain_text,
         _extract_text_lines_from_lrc,
-        _spread_lines_across_target_duration,
     )
     from .lyrics_whisper import (
         _refine_timing_with_quality,
@@ -80,7 +80,11 @@ def _build_lines_from_lyrics_source(
         text_lines = file_lines or _extract_text_lines_from_lrc(lrc_text or "")
         lines = _create_lines_from_plain_text(text_lines)
         if target_duration:
-            lines = _spread_lines_across_target_duration(lines, target_duration)
+            lines = _anchor_plain_text_lines_to_audio_window(
+                lines,
+                target_duration,
+                vocals_path,
+            )
 
     if vocals_path and line_timings and len(line_timings) > 1 and not whisper_map_lrc:
         lines, alignment_method = _refine_timing_with_quality(

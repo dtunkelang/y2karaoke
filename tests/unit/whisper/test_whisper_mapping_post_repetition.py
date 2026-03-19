@@ -144,6 +144,75 @@ def test_pull_late_lines_compresses_early_repetitive_line_into_segment_window() 
     assert adjusted[1].end_time <= segments[0].end
 
 
+def test_pull_late_lines_retimes_split_short_refrain_to_exact_matching_segment() -> (
+    None
+):
+    lines = [
+        Line(
+            words=[
+                Word(text="If", start_time=1.1, end_time=1.8),
+                Word(text="you're", start_time=1.8, end_time=2.3),
+                Word(text="lost", start_time=2.3, end_time=2.8),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Time", start_time=4.5, end_time=4.9),
+                Word(text="after", start_time=4.9, end_time=5.2),
+                Word(text="time", start_time=6.1, end_time=6.55),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="If", start_time=8.73, end_time=9.2),
+                Word(text="you", start_time=9.2, end_time=9.6),
+                Word(text="fall", start_time=9.6, end_time=10.2),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Time", start_time=10.99, end_time=11.5),
+                Word(text="after", start_time=11.5, end_time=12.3),
+                Word(text="time", start_time=12.3, end_time=13.9),
+            ]
+        ),
+    ]
+    segments = [
+        TranscriptionSegment(
+            start=2.78,
+            end=4.18,
+            text="And you will find",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=5.62,
+            end=7.52,
+            text="Time after time",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=7.52,
+            end=10.97,
+            text="If you fall, I will catch you, I'll be waiting",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=13.0,
+            end=14.2,
+            text="After time",
+            words=[],
+        ),
+    ]
+
+    adjusted = wm._pull_late_lines_to_matching_segments(
+        lines, segments, language="eng-Latn"
+    )
+
+    assert adjusted[1].start_time >= 5.62
+    assert adjusted[1].start_time > lines[1].start_time
+    assert adjusted[1].end_time <= 7.8
+
+
 def test_shift_repeated_lines_fallback_pulls_adjacent_duplicate_closer() -> None:
     lines = [
         Line(

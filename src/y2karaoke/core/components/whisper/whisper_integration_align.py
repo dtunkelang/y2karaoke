@@ -20,6 +20,9 @@ from .whisper_integration_align_trace import (
     maybe_write_trace_snapshot_file as _maybe_write_trace_snapshot_file,
     parse_trace_line_range as _parse_trace_line_range,
 )
+from .whisper_split_refrain_restore import (
+    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
+)
 from .whisper_integration_shift_guard import (
     should_apply_baseline_constraint as _should_apply_baseline_constraint,
 )
@@ -234,6 +237,8 @@ def _attempt_forced_alignment_for_reason(
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
     whisper_words: List[timing_models.TranscriptionWord] | None,
+    transcription: List[timing_models.TranscriptionSegment] | None,
+    audio_features: Optional[timing_models.AudioFeatures],
     normalize_line_word_timings_fn: Callable[..., Any],
     enforce_monotonic_line_starts_fn: Callable[..., Any],
     enforce_non_overlapping_lines_fn: Callable[..., Any],
@@ -255,6 +260,8 @@ def _attempt_forced_alignment_for_reason(
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=whisper_words,
+        transcription=transcription,
+        audio_features=audio_features,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
@@ -473,6 +480,8 @@ def _prepare_alignment_inputs(
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=all_words,
+        transcription=transcription,
+        audio_features=audio_features,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
@@ -499,6 +508,8 @@ def _prepare_alignment_inputs(
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=all_words,
+        transcription=transcription,
+        audio_features=audio_features,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
@@ -803,12 +814,14 @@ def _maybe_force_low_coverage_alignment(
     matched_ratio: float,
     line_coverage: float,
     baseline_lines: List[models.Line],
+    transcription: List[timing_models.TranscriptionSegment],
     vocals_path: str,
     language: Optional[str],
     detected_lang: str,
     used_model: str,
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
+    audio_features: Optional[timing_models.AudioFeatures] = None,
     normalize_line_word_timings_fn: Callable[..., Any],
     enforce_monotonic_line_starts_fn: Callable[..., Any],
     enforce_non_overlapping_lines_fn: Callable[..., Any],
@@ -836,6 +849,8 @@ def _maybe_force_low_coverage_alignment(
         align_lines_with_whisperx_fn=align_lines_with_whisperx,
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+        transcription=transcription,
+        audio_features=audio_features,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
@@ -867,6 +882,8 @@ def _maybe_force_sparse_weak_alignment(
     should_rollback_short_line_degradation_fn: Callable[..., Any],
     restore_implausibly_short_lines_fn: Callable[..., Any],
     whisper_words: List[timing_models.TranscriptionWord] | None,
+    transcription: List[timing_models.TranscriptionSegment],
+    audio_features: Optional[timing_models.AudioFeatures] = None,
     normalize_line_word_timings_fn: Callable[..., Any],
     enforce_monotonic_line_starts_fn: Callable[..., Any],
     enforce_non_overlapping_lines_fn: Callable[..., Any],
@@ -898,6 +915,8 @@ def _maybe_force_sparse_weak_alignment(
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=whisper_words,
+        transcription=transcription,
+        audio_features=audio_features,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
@@ -1085,6 +1104,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         matched_ratio=matched_ratio,
         line_coverage=line_coverage,
         baseline_lines=baseline_lines,
+        transcription=transcription,
         vocals_path=vocals_path,
         language=language,
         detected_lang=detected_lang,
@@ -1116,6 +1136,8 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=all_words,
+        transcription=transcription,
+        audio_features=audio_features,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
@@ -1158,6 +1180,22 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         trace_line_range=trace_line_range,
         runtime_config=resolved_runtime_config,
     )
+    mapped_lines, restored_split_refrains = (
+        _restore_split_short_refrains_to_matching_segments(
+            mapped_lines,
+            transcription,
+        )
+    )
+    if restored_split_refrains:
+        corrections.append(
+            f"Restored {restored_split_refrains} split short refrain line(s) to matching Whisper segments"
+        )
+        _capture_trace_snapshot(
+            trace_snapshots,
+            stage="after_restore_split_short_refrains",
+            lines=mapped_lines,
+            line_range=trace_line_range,
+        )
     _maybe_write_trace_snapshot_file(
         snapshots=trace_snapshots,
         trace_path=trace_path,
@@ -1171,6 +1209,7 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         "mapped_timeline_ratio": mapped_timeline_ratio,
         "median_global_start_shift_sec": median_global_shift,
         "baseline_constraint_applied": 1.0 if apply_baseline_constraint else 0.0,
+        "restored_split_short_refrains": float(restored_split_refrains),
         "phonetic_similarity_coverage": phonetic_similarity_coverage,
         "high_similarity_ratio": avg_similarity,
         "exact_match_ratio": 0.0,

@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -288,15 +289,467 @@ def _spread_lines_across_target_duration(
     duration = float(target_duration)
     padding = min(float(edge_padding_sec), max(duration * 0.08, 0.0))
     usable_span = max(duration - (padding * 2.0), current_span)
-    if usable_span <= current_span * float(min_expansion_ratio):
+    desired_start = padding
+    desired_end = padding + usable_span
+    needs_fit = current_end > desired_end + 0.01 or current_span > usable_span + 0.01
+    if not needs_fit and usable_span <= current_span * float(min_expansion_ratio):
         return lines
 
     scale = usable_span / current_span
     for line in populated_lines:
         for word in line.words:
-            word.start_time = padding + (word.start_time - current_start) * scale
-            word.end_time = padding + (word.end_time - current_start) * scale
+            word.start_time = desired_start + (word.start_time - current_start) * scale
+            word.end_time = desired_start + (word.end_time - current_start) * scale
     return lines
+
+
+def _anchor_plain_text_lines_to_audio_window(
+    lines: List[Line],
+    target_duration: Optional[float],
+    vocals_path: Optional[str],
+    *,
+    min_detectable_start_sec: float = 0.35,
+    fallback_anchor_ratio: float = 0.06,
+    max_anchor_ratio: float = 0.35,
+    trailing_padding_sec: float = 0.8,
+    min_expansion_ratio: float = 1.05,
+    compact_line_word_threshold: float = 5.0,
+    compact_short_clip_word_threshold: float = 3.0,
+    compact_short_clip_line_count: int = 4,
+    compact_short_clip_duration_sec: float = 12.0,
+    compact_short_clip_anchor_ratio: float = 0.24,
+    compact_short_clip_trailing_padding_sec: float = 0.15,
+    repetitive_compact_clip_trailing_padding_sec: float = 0.15,
+    sparse_sustained_clip_min_duration_sec: float = 18.0,
+    sparse_sustained_clip_max_lines: int = 5,
+    sparse_sustained_clip_max_words_per_line: int = 5,
+    sparse_sustained_clip_min_avg_words_per_line: float = 2.5,
+    sparse_sustained_clip_max_avg_words_per_line: float = 5.2,
+    sparse_sustained_clip_anchor_ratio: float = 0.045,
+    sparse_sustained_clip_trailing_padding_sec: float = 0.5,
+    short_phrase_sustained_clip_min_duration_sec: float = 20.0,
+    short_phrase_sustained_clip_max_lines: int = 4,
+    short_phrase_sustained_clip_max_avg_words_per_line: float = 4.2,
+) -> List[Line]:
+    """Anchor untimed plain-text lines to the detected vocal onset when available.
+
+    Plain-text clip lyrics otherwise start at 0.0s, which can bias repeated-hook
+    clips toward artificially early alignment. When vocals enter later, shift the
+    seed lines forward to the detected onset and, if useful, stretch the remaining
+    sketch across the rest of the clip window.
+    """
+    if not lines or not target_duration or float(target_duration) <= 0.0:
+        return lines
+
+    populated_lines = [line for line in lines if line.words]
+    if not populated_lines:
+        return lines
+
+    duration = float(target_duration)
+    (
+        average_words_per_line,
+        repetitive_compact_clip,
+        sparse_sustained_clip,
+        compact_short_clip,
+        short_phrase_sustained_clip,
+        two_line_subset_refrain_clip,
+    ) = _classify_plain_text_clip_layout(
+        populated_lines=populated_lines,
+        duration=duration,
+        compact_line_word_threshold=compact_line_word_threshold,
+        compact_short_clip_word_threshold=compact_short_clip_word_threshold,
+        compact_short_clip_line_count=compact_short_clip_line_count,
+        compact_short_clip_duration_sec=compact_short_clip_duration_sec,
+        sparse_sustained_clip_min_duration_sec=sparse_sustained_clip_min_duration_sec,
+        sparse_sustained_clip_max_lines=sparse_sustained_clip_max_lines,
+        sparse_sustained_clip_max_words_per_line=sparse_sustained_clip_max_words_per_line,
+        sparse_sustained_clip_min_avg_words_per_line=sparse_sustained_clip_min_avg_words_per_line,
+        sparse_sustained_clip_max_avg_words_per_line=sparse_sustained_clip_max_avg_words_per_line,
+        short_phrase_sustained_clip_min_duration_sec=short_phrase_sustained_clip_min_duration_sec,
+        short_phrase_sustained_clip_max_lines=short_phrase_sustained_clip_max_lines,
+        short_phrase_sustained_clip_max_avg_words_per_line=short_phrase_sustained_clip_max_avg_words_per_line,
+    )
+    if not vocals_path:
+        return _spread_lines_across_target_duration(lines, target_duration)
+
+    from ..alignment.alignment import detect_song_start
+
+    detected_start = float(detect_song_start(vocals_path))
+    if detected_start < float(min_detectable_start_sec):
+        if not two_line_subset_refrain_clip:
+            return _spread_lines_across_target_duration(lines, target_duration)
+        detected_start = duration * float(fallback_anchor_ratio)
+
+    anchor_start, trailing_padding = _resolve_plain_text_clip_anchor(
+        detected_start=detected_start,
+        duration=duration,
+        max_anchor_ratio=max_anchor_ratio,
+        compact_short_clip=compact_short_clip,
+        compact_short_clip_anchor_ratio=compact_short_clip_anchor_ratio,
+        sparse_sustained_clip=sparse_sustained_clip,
+        sparse_sustained_clip_anchor_ratio=sparse_sustained_clip_anchor_ratio,
+        trailing_padding_sec=trailing_padding_sec,
+        repetitive_compact_clip=repetitive_compact_clip,
+        repetitive_compact_clip_trailing_padding_sec=repetitive_compact_clip_trailing_padding_sec,
+        compact_short_clip_trailing_padding_sec=compact_short_clip_trailing_padding_sec,
+        sparse_sustained_clip_trailing_padding_sec=sparse_sustained_clip_trailing_padding_sec,
+    )
+    desired_end = max(anchor_start, duration - trailing_padding)
+    available_span = desired_end - anchor_start
+    if available_span <= 0.0:
+        return lines
+
+    if (
+        average_words_per_line > compact_line_word_threshold
+        and not repetitive_compact_clip
+        and not two_line_subset_refrain_clip
+    ):
+        return _scale_dense_plain_text_lines(
+            lines=lines,
+            populated_lines=populated_lines,
+            anchor_start=anchor_start,
+            available_span=available_span,
+            min_expansion_ratio=min_expansion_ratio,
+        )
+
+    line_weights, gap_weights = _build_plain_text_clip_layout(
+        populated_lines=populated_lines,
+        sparse_sustained_clip=sparse_sustained_clip,
+        short_phrase_sustained_clip=short_phrase_sustained_clip,
+        two_line_subset_refrain_clip=two_line_subset_refrain_clip,
+        repetitive_compact_clip=repetitive_compact_clip,
+    )
+    return _apply_weighted_line_layout(
+        lines=lines,
+        populated_lines=populated_lines,
+        line_weights=line_weights,
+        gap_weights=gap_weights,
+        anchor_start=anchor_start,
+        desired_end=desired_end,
+    )
+
+
+def _normalize_line_weight_text(text: str) -> str:
+    return re.sub(r"[^a-z0-9\\s]", "", text.lower()).strip()
+
+
+def _classify_plain_text_clip_layout(
+    *,
+    populated_lines: List[Line],
+    duration: float,
+    compact_line_word_threshold: float,
+    compact_short_clip_word_threshold: float,
+    compact_short_clip_line_count: int,
+    compact_short_clip_duration_sec: float,
+    sparse_sustained_clip_min_duration_sec: float,
+    sparse_sustained_clip_max_lines: int,
+    sparse_sustained_clip_max_words_per_line: int,
+    sparse_sustained_clip_min_avg_words_per_line: float,
+    sparse_sustained_clip_max_avg_words_per_line: float,
+    short_phrase_sustained_clip_min_duration_sec: float,
+    short_phrase_sustained_clip_max_lines: int,
+    short_phrase_sustained_clip_max_avg_words_per_line: float,
+) -> Tuple[float, bool, bool, bool, bool, bool]:
+    average_words_per_line = sum(len(line.words) for line in populated_lines) / max(
+        len(populated_lines), 1
+    )
+    max_words_per_line = max(len(line.words) for line in populated_lines)
+    normalized_line_texts = [
+        _normalize_line_weight_text(line.text) for line in populated_lines
+    ]
+    two_line_subset_refrain_clip = _is_two_line_subset_refrain_clip(populated_lines)
+    repetitive_compact_clip = len(set(normalized_line_texts)) < len(
+        normalized_line_texts
+    ) and max_words_per_line <= max(compact_line_word_threshold, 6.0)
+    sparse_sustained_clip = (
+        not repetitive_compact_clip
+        and duration >= sparse_sustained_clip_min_duration_sec
+        and len(populated_lines) <= sparse_sustained_clip_max_lines
+        and max_words_per_line <= sparse_sustained_clip_max_words_per_line
+        and sparse_sustained_clip_min_avg_words_per_line
+        <= average_words_per_line
+        <= sparse_sustained_clip_max_avg_words_per_line
+    )
+    compact_short_clip = (
+        average_words_per_line <= compact_short_clip_word_threshold
+        and len(populated_lines) <= compact_short_clip_line_count
+        and duration <= compact_short_clip_duration_sec
+    )
+    short_phrase_sustained_clip = (
+        sparse_sustained_clip
+        and duration >= short_phrase_sustained_clip_min_duration_sec
+        and len(populated_lines) <= short_phrase_sustained_clip_max_lines
+        and average_words_per_line <= short_phrase_sustained_clip_max_avg_words_per_line
+    )
+    return (
+        average_words_per_line,
+        repetitive_compact_clip,
+        sparse_sustained_clip,
+        compact_short_clip,
+        short_phrase_sustained_clip,
+        two_line_subset_refrain_clip,
+    )
+
+
+def _resolve_plain_text_clip_anchor(
+    *,
+    detected_start: float,
+    duration: float,
+    max_anchor_ratio: float,
+    compact_short_clip: bool,
+    compact_short_clip_anchor_ratio: float,
+    sparse_sustained_clip: bool,
+    sparse_sustained_clip_anchor_ratio: float,
+    trailing_padding_sec: float,
+    repetitive_compact_clip: bool,
+    repetitive_compact_clip_trailing_padding_sec: float,
+    compact_short_clip_trailing_padding_sec: float,
+    sparse_sustained_clip_trailing_padding_sec: float,
+) -> Tuple[float, float]:
+    anchor_start = min(max(detected_start, 0.0), duration * float(max_anchor_ratio))
+    if compact_short_clip:
+        anchor_start = max(
+            anchor_start, duration * float(compact_short_clip_anchor_ratio)
+        )
+    if sparse_sustained_clip:
+        anchor_start = max(
+            anchor_start, duration * float(sparse_sustained_clip_anchor_ratio)
+        )
+
+    trailing_padding = min(float(trailing_padding_sec), 1.2)
+    if repetitive_compact_clip:
+        trailing_padding = min(
+            trailing_padding,
+            float(repetitive_compact_clip_trailing_padding_sec),
+        )
+    elif compact_short_clip:
+        trailing_padding = min(
+            trailing_padding,
+            float(compact_short_clip_trailing_padding_sec),
+        )
+    elif sparse_sustained_clip:
+        trailing_padding = min(
+            trailing_padding,
+            float(sparse_sustained_clip_trailing_padding_sec),
+        )
+    return anchor_start, trailing_padding
+
+
+def _scale_dense_plain_text_lines(
+    *,
+    lines: List[Line],
+    populated_lines: List[Line],
+    anchor_start: float,
+    available_span: float,
+    min_expansion_ratio: float,
+) -> List[Line]:
+    current_start = min(line.start_time for line in populated_lines)
+    current_end = max(line.end_time for line in populated_lines)
+    current_span = current_end - current_start
+    if current_span <= 0.0:
+        return lines
+    if available_span <= current_span * min_expansion_ratio:
+        shift = anchor_start - current_start
+        if abs(shift) > 0.01:
+            for line in populated_lines:
+                for word in line.words:
+                    word.start_time += shift
+                    word.end_time += shift
+        return lines
+
+    scale = available_span / current_span
+    for line in populated_lines:
+        for word in line.words:
+            rel_start = word.start_time - current_start
+            rel_end = word.end_time - current_start
+            word.start_time = anchor_start + rel_start * scale
+            word.end_time = anchor_start + rel_end * scale
+    return lines
+
+
+def _build_plain_text_clip_layout(
+    *,
+    populated_lines: List[Line],
+    sparse_sustained_clip: bool,
+    short_phrase_sustained_clip: bool,
+    two_line_subset_refrain_clip: bool,
+    repetitive_compact_clip: bool,
+) -> Tuple[List[float], List[float]]:
+    if sparse_sustained_clip:
+        if short_phrase_sustained_clip:
+            line_weights = [
+                _short_phrase_sustained_line_weight(line) for line in populated_lines
+            ]
+        else:
+            line_weights = [
+                _sparse_sustained_line_weight(line) for line in populated_lines
+            ]
+        return line_weights, [1.0] * max(len(populated_lines) - 1, 0)
+
+    if two_line_subset_refrain_clip:
+        return [3.4, 6.4], [0.12]
+
+    line_weights = [
+        _compact_line_weight(line, prefer_unique_tokens=repetitive_compact_clip)
+        for line in populated_lines
+    ]
+    if repetitive_compact_clip:
+        return _adjust_repetitive_compact_layout(populated_lines, line_weights)
+    return line_weights, [1.0] * max(len(populated_lines) - 1, 0)
+
+
+def _apply_weighted_line_layout(
+    *,
+    lines: List[Line],
+    populated_lines: List[Line],
+    line_weights: List[float],
+    gap_weights: List[float],
+    anchor_start: float,
+    desired_end: float,
+) -> List[Line]:
+    total_units = sum(line_weights) + sum(gap_weights)
+    if total_units <= 0.0:
+        return lines
+
+    unit = (desired_end - anchor_start) / total_units
+    cursor = anchor_start
+    for line_idx, (line, weight) in enumerate(zip(populated_lines, line_weights)):
+        line_span = max(unit * weight, 0.2)
+        word_count = max(len(line.words), 1)
+        word_step = line_span / word_count
+        word_span = word_step * 0.9
+        for word_idx, word in enumerate(line.words):
+            word.start_time = cursor + word_idx * word_step
+            word.end_time = min(word.start_time + word_span, desired_end)
+        cursor += line_span
+        if line_idx < len(gap_weights):
+            cursor += unit * gap_weights[line_idx]
+    return lines
+
+
+def _compact_line_weight(line: Line, *, prefer_unique_tokens: bool) -> float:
+    words = [re.sub(r"[^a-z0-9]", "", word.text.lower()) for word in line.words]
+    words = [word for word in words if word]
+    if not words:
+        return 2.0
+    if not prefer_unique_tokens:
+        return max(float(len(words)), 2.0)
+    unique_count = len(dict.fromkeys(words))
+    return max(float(unique_count), 2.0)
+
+
+def _line_tokens_for_weight(line: Line) -> List[str]:
+    words = [re.sub(r"[^a-z0-9]", "", word.text.lower()) for word in line.words]
+    return [word for word in words if word]
+
+
+def _adjust_repetitive_compact_layout(
+    lines: List[Line], line_weights: List[float]
+) -> Tuple[List[float], List[float]]:
+    """Bias repetitive compact hooks toward wider setup gaps and a tighter tail."""
+    gap_weights = [1.0] * max(len(lines) - 1, 0)
+    if not lines:
+        return line_weights, gap_weights
+
+    if len(lines) == 2:
+        return _adjust_two_line_repetitive_layout(lines, line_weights, gap_weights)
+
+    if len(lines) < 4:
+        return line_weights, gap_weights
+
+    return _adjust_dominant_repetition_layout(lines, line_weights, gap_weights)
+
+
+def _adjust_two_line_repetitive_layout(
+    lines: List[Line], line_weights: List[float], gap_weights: List[float]
+) -> Tuple[List[float], List[float]]:
+    first_tokens = _line_tokens_for_weight(lines[0])
+    second_tokens = _line_tokens_for_weight(lines[1])
+    if (
+        first_tokens
+        and second_tokens
+        and set(second_tokens) < set(first_tokens)
+        and len(lines[1].words) < len(lines[0].words)
+    ):
+        line_weights = list(line_weights)
+        line_weights[0] = max(2.0, min(line_weights[0], line_weights[1] * 0.53))
+        line_weights[1] = max(line_weights[1], line_weights[0] * 1.85)
+        gap_weights[0] = min(gap_weights[0], 0.1)
+    return line_weights, gap_weights
+
+
+def _adjust_dominant_repetition_layout(
+    lines: List[Line], line_weights: List[float], gap_weights: List[float]
+) -> Tuple[List[float], List[float]]:
+    normalized_texts = [_normalize_line_weight_text(line.text) for line in lines]
+    dominant_text, dominant_count = Counter(normalized_texts).most_common(1)[0]
+    if dominant_count < 3:
+        return line_weights, gap_weights
+
+    dominant_indices = [
+        i for i, text in enumerate(normalized_texts) if text == dominant_text
+    ]
+    first_dominant_idx = dominant_indices[0]
+    last_dominant_idx = dominant_indices[-1]
+    if first_dominant_idx <= 0:
+        return line_weights, gap_weights
+
+    for gap_idx in range(first_dominant_idx):
+        remaining_prefix_gaps = first_dominant_idx - gap_idx - 1
+        gap_weights[gap_idx] = max(
+            gap_weights[gap_idx],
+            2.7 + remaining_prefix_gaps * 0.3,
+        )
+
+    for gap_idx in range(first_dominant_idx, last_dominant_idx):
+        gap_weights[gap_idx] = min(gap_weights[gap_idx], 0.05)
+
+    if last_dominant_idx + 1 == len(lines) - 1:
+        dominant_tokens = set(_line_tokens_for_weight(lines[last_dominant_idx]))
+        tail_tokens = set(_line_tokens_for_weight(lines[-1]))
+        if (
+            tail_tokens
+            and tail_tokens < dominant_tokens
+            and len(lines[-1].words) < len(lines[last_dominant_idx].words)
+        ):
+            line_weights[-1] = max(1.0, line_weights[-1] * 0.34)
+            gap_weights[last_dominant_idx] = min(gap_weights[last_dominant_idx], 0.15)
+
+    return line_weights, gap_weights
+
+
+def _is_two_line_subset_refrain_clip(lines: List[Line]) -> bool:
+    if len(lines) != 2:
+        return False
+    first_tokens = _line_tokens_for_weight(lines[0])
+    second_tokens = _line_tokens_for_weight(lines[1])
+    if not first_tokens or not second_tokens:
+        return False
+    first_counts = Counter(first_tokens)
+    second_counts = Counter(second_tokens)
+    return (
+        all(first_counts[token] >= count for token, count in second_counts.items())
+        and any(first_counts[token] > count for token, count in second_counts.items())
+        and len(lines[1].words) < len(lines[0].words)
+    )
+
+
+def _sparse_sustained_line_weight(line: Line) -> float:
+    words = [re.sub(r"[^a-z0-9]", "", word.text.lower()) for word in line.words]
+    words = [word for word in words if word]
+    if not words:
+        return 1.5
+    unique_count = len(dict.fromkeys(words))
+    return min(1.9, max(1.35, 1.1 + unique_count * 0.14))
+
+
+def _short_phrase_sustained_line_weight(line: Line) -> float:
+    words = [re.sub(r"[^a-z0-9]", "", word.text.lower()) for word in line.words]
+    words = [word for word in words if word]
+    if not words:
+        return 2.0
+    unique_count = len(dict.fromkeys(words))
+    return min(2.35, max(2.0, 1.75 + unique_count * 0.12))
 
 
 def _clean_text_lines(lines: List[str]) -> List[str]:

@@ -128,3 +128,78 @@ def test_map_segment_words_to_line_tightens_leading_article_before_content_ancho
     assert mapped[0].start_time >= 22.0
     assert mapped[0].end_time <= mapped[1].start_time
     assert abs(mapped[1].start_time - 22.48) < 0.05
+
+
+def test_align_lines_with_whisperx_accepts_two_line_repeated_hook(monkeypatch):
+    lines = [
+        _line("Ah", "ha", "ha", "ha", "stayin'", "alive", "stayin'", "alive"),
+        _line("Ah", "ha", "ha", "ha", "stayin'", "alive"),
+    ]
+
+    class _WhisperX:
+        @staticmethod
+        def load_audio(_path):
+            return [0.0] * 32000
+
+        @staticmethod
+        def load_align_model(*, language_code, device):
+            assert language_code == "en"
+            assert device == "cpu"
+            return object(), {}
+
+        @staticmethod
+        def align(
+            _segs, _align_model, _metadata, _audio, *, device, return_char_alignments
+        ):
+            assert device == "cpu"
+            assert return_char_alignments is False
+            return {
+                "segments": [
+                    {
+                        "start": 1.3,
+                        "end": 5.7,
+                        "text": "Ah ha ha ha stayin' alive stayin' alive",
+                        "words": [
+                            {"word": "Ah", "start": 1.3, "end": 1.55},
+                            {"word": "ha", "start": 1.6, "end": 1.85},
+                            {"word": "ha", "start": 1.9, "end": 2.15},
+                            {"word": "ha", "start": 2.2, "end": 2.45},
+                            {"word": "stayin'", "start": 2.7, "end": 3.4},
+                            {"word": "alive", "start": 3.45, "end": 4.2},
+                            {"word": "stayin'", "start": 4.25, "end": 4.95},
+                            {"word": "alive", "start": 5.0, "end": 5.7},
+                        ],
+                    },
+                    {
+                        "start": 5.85,
+                        "end": 8.95,
+                        "text": "Ah ha ha ha stayin' alive",
+                        "words": [
+                            {"word": "Ah", "start": 5.85, "end": 6.1},
+                            {"word": "ha", "start": 6.15, "end": 6.4},
+                            {"word": "ha", "start": 6.45, "end": 6.7},
+                            {"word": "ha", "start": 6.75, "end": 7.0},
+                            {"word": "stayin'", "start": 7.25, "end": 8.0},
+                            {"word": "alive", "start": 8.05, "end": 8.95},
+                        ],
+                    },
+                ]
+            }
+
+    monkeypatch.setattr(wfa, "patch_torchaudio_for_whisperx", lambda: None)
+    monkeypatch.setitem(__import__("sys").modules, "whisperx", _WhisperX)
+
+    forced = wfa.align_lines_with_whisperx(
+        lines,
+        "vocals.wav",
+        "en",
+        _Logger(),
+    )
+
+    assert forced is not None
+    forced_lines, metrics = forced
+    assert len(forced_lines) == 2
+    assert forced_lines[0].start_time == 1.3
+    assert forced_lines[1].start_time == 5.85
+    assert metrics["forced_line_coverage"] == 1.0
+    assert metrics["forced_word_coverage"] == 1.0

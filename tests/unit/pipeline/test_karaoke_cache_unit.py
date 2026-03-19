@@ -59,6 +59,59 @@ def test_download_audio_offline_accepts_single_title_only_cached_audio(tmp_path)
     generator.downloader.download_audio.assert_not_called()
 
 
+def test_download_audio_offline_accepts_single_title_variant_cached_audio(tmp_path):
+    generator = KaraokeGenerator(cache_dir=tmp_path)
+    generator.downloader = MagicMock()
+
+    cache = CacheManager(tmp_path)
+    video_id = "abc123"
+    cache.save_metadata(
+        video_id,
+        {"title": "Total Eclipse of the Heart", "artist": "Bonnie Tyler"},
+    )
+
+    video_dir = cache.get_video_cache_dir(video_id)
+    original = video_dir / "Total Eclipse of the Heart (Radio Version).wav"
+    original.write_bytes(b"data")
+
+    result = generator._download_audio(
+        video_id,
+        "https://youtu.be/abc123",
+        False,
+        offline=True,
+        expected_title="Total Eclipse of the Heart",
+        expected_artist="Bonnie Tyler",
+    )
+
+    assert result["audio_path"] == str(original)
+    generator.downloader.download_audio.assert_not_called()
+
+
+def test_download_audio_offline_accepts_dropped_g_title_variant_cached_audio(tmp_path):
+    generator = KaraokeGenerator(cache_dir=tmp_path)
+    generator.downloader = MagicMock()
+
+    cache = CacheManager(tmp_path)
+    video_id = "abc123"
+    cache.save_metadata(video_id, {"title": "Stayin' Alive", "artist": "Bee Gees"})
+
+    video_dir = cache.get_video_cache_dir(video_id)
+    original = video_dir / "Bee Gees - Staying Alive (Audio).wav"
+    original.write_bytes(b"data")
+
+    result = generator._download_audio(
+        video_id,
+        "https://youtu.be/abc123",
+        False,
+        offline=True,
+        expected_title="Stayin' Alive",
+        expected_artist="Bee Gees",
+    )
+
+    assert result["audio_path"] == str(original)
+    generator.downloader.download_audio.assert_not_called()
+
+
 def test_download_audio_offline_ignores_trimmed_audio_when_matching_cache(tmp_path):
     generator = KaraokeGenerator(cache_dir=tmp_path)
     generator.downloader = MagicMock()

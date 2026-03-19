@@ -316,9 +316,13 @@ def _build_lines_from_lrc_source(
         text_lines = file_lines or extract_text_lines_from_lrc_fn(lrc_text or "")
         lines = create_lines_from_plain_text_fn(text_lines)
         if target_duration:
-            from .helpers import _spread_lines_across_target_duration
+            from .helpers import _anchor_plain_text_lines_to_audio_window
 
-            lines = _spread_lines_across_target_duration(lines, target_duration)
+            lines = _anchor_plain_text_lines_to_audio_window(
+                lines,
+                target_duration,
+                vocals_path,
+            )
 
     if vocals_path and line_timings and len(line_timings) > 1:
         lines = refine_timing_with_audio_for_state_fn(

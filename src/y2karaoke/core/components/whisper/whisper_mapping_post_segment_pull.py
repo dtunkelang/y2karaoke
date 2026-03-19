@@ -10,6 +10,7 @@ from .whisper_mapping_post_repetition import (
     _pull_adjacent_similar_lines_across_long_gaps,
     _realign_repetitive_runs_to_matching_segments,
     _rebalance_short_question_pairs,
+    _retime_split_short_refrains_to_matching_segments,
     _retime_repetitive_question_runs_to_segment_windows,
     _smooth_adjacent_duplicate_line_cadence,
 )
@@ -378,4 +379,5 @@ def _pull_late_lines_to_matching_segments(  # noqa: C901
     adjusted = _retime_repetitive_question_runs_to_segment_windows(
         adjusted, sorted_segments
     )
-    return _pull_adjacent_similar_lines_across_long_gaps(adjusted)
+    adjusted = _pull_adjacent_similar_lines_across_long_gaps(adjusted)
+    return _retime_split_short_refrains_to_matching_segments(adjusted, sorted_segments)

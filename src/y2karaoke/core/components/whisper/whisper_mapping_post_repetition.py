@@ -1,5 +1,6 @@
 """Post-processing helpers for repetitive Whisper mapping patterns."""
 
+from collections import Counter
 from typing import List, Optional
 
 from ... import models
@@ -17,6 +18,9 @@ from .whisper_mapping_post_question_duration import (
 )
 from . import whisper_mapping_post_repetition_cadence as _cadence_helpers
 from . import whisper_mapping_post_tail_extension as _tail_extension_helpers
+from .whisper_split_refrain_restore import (
+    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
+)
 
 
 def _realign_repetitive_runs_to_matching_segments(  # noqa: C901
@@ -165,6 +169,26 @@ def _realign_repetitive_runs_to_matching_segments(  # noqa: C901
             adjusted[run_idx] = models.Line(words=shifted_words, singer=cur_line.singer)
         idx = shift_end
 
+    return adjusted
+
+
+def _retime_split_short_refrains_to_matching_segments(
+    lines: List[models.Line],
+    segments: List[timing_models.TranscriptionSegment],
+    *,
+    min_gap: float = 0.05,
+    max_words: int = 4,
+    min_late_shift: float = 0.8,
+    max_late_shift: float = 3.0,
+) -> List[models.Line]:
+    adjusted, _restored = _restore_split_short_refrains_to_matching_segments(
+        lines,
+        segments,
+        min_gap=min_gap,
+        max_words=max_words,
+        min_late_shift=min_late_shift,
+        max_late_shift=max_late_shift,
+    )
     return adjusted
 
 

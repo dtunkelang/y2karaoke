@@ -242,6 +242,127 @@ def test_spread_lines_across_target_duration_skips_small_expansion():
     assert lines[0].end_time == pytest.approx(original_end)
 
 
+def test_anchor_plain_text_lines_to_audio_window_shifts_to_detected_onset(monkeypatch):
+    lines = lh._create_lines_from_plain_text(
+        ["Guess who's back", "Back again", "Shady's back", "Tell a friend"]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 1.8,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 10.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(2.4, abs=0.05)
+    assert lines[1].start_time > 3.5
+    assert lines[-1].start_time > 7.0
+
+
+def test_anchor_plain_text_lines_to_audio_window_keeps_early_onset(monkeypatch):
+    lines = lh._create_lines_from_plain_text(["hello world", "again now"])
+    original_starts = [line.start_time for line in lines]
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.1,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 8.0, "vocals.wav")
+
+    assert [line.start_time for line in lines] != pytest.approx(original_starts)
+    assert lines[0].start_time == pytest.approx(0.64, abs=0.05)
+
+
+def test_anchor_plain_text_lines_to_audio_window_stretches_repetitive_compact_hook(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Guess who's back, back again?",
+            "Shady's back, tell a friend",
+            "Guess who's back? Guess who's back?",
+            "Guess who's back? Guess who's back?",
+            "Guess who's back? Guess who's back?",
+            "Guess who's back?",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.66,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 15.0, "vocals.wav")
+
+    assert lines[1].start_time > 4.2
+    assert lines[2].start_time > 8.1
+    assert lines[3].start_time > 9.7
+    assert lines[-1].start_time > 13.2
+    assert lines[-1].end_time > 14.5
+
+
+def test_anchor_plain_text_lines_to_audio_window_spreads_sparse_sustained_clip(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        ["Take on me", "Take me on", "I'll be gone", "In a day or two"]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.42,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 22.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(0.99, abs=0.08)
+    assert lines[1].start_time > 6.3
+    assert lines[2].start_time > 11.9
+    assert lines[3].start_time > 17.2
+    assert lines[-1].end_time > 21.2
+
+
+def test_anchor_plain_text_lines_to_audio_window_rebalances_two_line_repeated_hook(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Ah, ha, ha, ha, stayin' alive, stayin' alive",
+            "Ah, ha, ha, ha, stayin' alive",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.42,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 16.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(0.42, abs=0.05)
+    assert lines[0].end_time < 6.2
+    assert 5.0 < lines[1].start_time < 6.8
+    assert lines[1].end_time > 14.8
+
+
+def test_anchor_plain_text_lines_to_audio_window_rebalances_two_line_repeated_hook_when_onset_detection_is_weak(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Ah, ha, ha, ha, stayin' alive, stayin' alive",
+            "Ah, ha, ha, ha, stayin' alive",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.1,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 16.0, "vocals.wav")
+
+    assert 0.8 < lines[0].start_time < 1.2
+    assert lines[0].end_time < 6.4
+    assert 5.0 < lines[1].start_time < 6.9
+    assert lines[1].end_time > 14.8
+
+
 def test_romanize_lines_only_non_ascii(monkeypatch):
     line = _line_with_words(["hello", "café"])
     monkeypatch.setattr(

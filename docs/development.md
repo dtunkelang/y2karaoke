@@ -99,3 +99,8 @@ Manual curation is high-cost user work, so protect it immediately:
 - verify the canonical clip audio path and duration
 - reopen the saved gold file through `tools/curated_clip_helper.py`
 - commit and push before doing any more engineering work
+
+For quality work on curated clips:
+- prefer `PYTHONPATH=src ./.venv/bin/python ...` so ad hoc script runs use the repo source, not an installed package copy
+- if a hard clip is still failing after a plausible fix, compare the real helper-generated seed, the accepted forced-alignment output, and the final timing report before adding more heuristics
+- treat 2-line clips as their own family; they can expose structural assumptions that never appear in longer repeated-hook packs

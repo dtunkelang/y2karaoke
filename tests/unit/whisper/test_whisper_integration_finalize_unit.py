@@ -1,5 +1,6 @@
 import pytest
 
+from y2karaoke.core.components.alignment.timing_models import TranscriptionSegment
 from y2karaoke.core.components.whisper import whisper_integration_baseline as wib
 from y2karaoke.core.components.whisper import whisper_integration_finalize as wifin
 from y2karaoke.core.models import Line, Word
@@ -203,6 +204,74 @@ def test_restore_implausibly_short_lines_restores_severe_long_line_collapse():
     assert repaired[0].end_time == pytest.approx(baseline[0].end_time)
 
 
+def test_restore_implausibly_short_lines_restores_three_word_sustained_collapse():
+    baseline = [
+        Line(
+            words=[
+                Word(text="Take", start_time=1.0, end_time=2.5),
+                Word(text="on", start_time=2.5, end_time=4.0),
+                Word(text="me", start_time=4.0, end_time=5.3),
+            ]
+        )
+    ]
+    aligned = [
+        Line(
+            words=[
+                Word(text="Take", start_time=0.63, end_time=0.8),
+                Word(text="on", start_time=0.8, end_time=0.95),
+                Word(text="me", start_time=0.95, end_time=1.13),
+            ]
+        )
+    ]
+
+    repaired, restored = wib._restore_implausibly_short_lines(baseline, aligned)
+
+    assert restored == 1
+    assert repaired[0].start_time == pytest.approx(baseline[0].start_time)
+    assert repaired[0].end_time == pytest.approx(baseline[0].end_time)
+
+
+def test_restore_implausibly_short_lines_restores_compact_two_word_collapse():
+    baseline = [
+        Line(
+            words=[
+                Word(text="Shady's", start_time=6.06, end_time=6.56),
+                Word(text="back", start_time=6.56, end_time=7.05),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Tell", start_time=7.63, end_time=8.15),
+                Word(text="a", start_time=8.15, end_time=8.45),
+                Word(text="friend", start_time=8.45, end_time=9.15),
+            ]
+        ),
+    ]
+    aligned = [
+        Line(
+            words=[
+                Word(text="Shady's", start_time=7.03, end_time=7.12),
+                Word(text="back", start_time=7.12, end_time=7.23),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Tell", start_time=7.25, end_time=7.36),
+                Word(text="a", start_time=7.36, end_time=7.43),
+                Word(text="friend", start_time=7.43, end_time=7.63),
+            ]
+        ),
+    ]
+
+    repaired, restored = wib._restore_implausibly_short_lines(baseline, aligned)
+
+    assert restored == 2
+    assert repaired[0].start_time == pytest.approx(baseline[0].start_time)
+    assert repaired[0].end_time == pytest.approx(baseline[0].end_time)
+    assert repaired[1].start_time == pytest.approx(baseline[1].start_time)
+    assert repaired[1].end_time == pytest.approx(baseline[1].end_time)
+
+
 def test_restore_pairwise_inversions_from_source_restores_outlier():
     source = [
         Line(words=[Word(text="a", start_time=100.0, end_time=101.0)]),
@@ -237,6 +306,65 @@ def test_restore_pairwise_inversions_from_source_keeps_ordered_lines():
     assert restored == 0
     assert repaired[0].start_time == pytest.approx(25.0)
     assert repaired[1].start_time == pytest.approx(27.0)
+
+
+def test_restore_repeated_compact_runs_from_source_restores_late_hook_run():
+    source = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=4.4, end_time=5.1),
+                Word(text="who's", start_time=5.1, end_time=5.8),
+                Word(text="back?", start_time=5.8, end_time=6.48),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=6.7, end_time=7.4),
+                Word(text="who's", start_time=7.4, end_time=8.1),
+                Word(text="back?", start_time=8.1, end_time=8.78),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=9.0, end_time=9.7),
+                Word(text="who's", start_time=9.7, end_time=10.4),
+                Word(text="back?", start_time=10.4, end_time=11.08),
+            ]
+        ),
+    ]
+    aligned = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=8.64, end_time=9.3),
+                Word(text="who's", start_time=9.3, end_time=10.0),
+                Word(text="back?", start_time=10.0, end_time=10.74),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=11.14, end_time=11.7),
+                Word(text="who's", start_time=11.7, end_time=12.2),
+                Word(text="back?", start_time=12.2, end_time=12.77),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=12.95, end_time=13.25),
+                Word(text="who's", start_time=13.25, end_time=13.55),
+                Word(text="back?", start_time=13.55, end_time=13.85),
+            ]
+        ),
+    ]
+
+    repaired, restored = wifin._restore_repeated_compact_runs_from_source(
+        source,
+        aligned,
+    )
+
+    assert restored == 3
+    assert repaired[0].start_time == pytest.approx(4.4)
+    assert repaired[1].start_time == pytest.approx(6.7)
+    assert repaired[2].start_time == pytest.approx(9.0)
 
 
 def test_finalize_whisper_line_set_rolls_back_on_text_divergence():
@@ -385,3 +513,77 @@ def test_finalize_whisper_line_set_records_force_dtw_stage_metrics():
     assert metrics["finalize_force_dtw_merge_short_following"] == pytest.approx(3.0)
     assert metrics["finalize_force_dtw_clamp_repeated"] == pytest.approx(4.0)
     assert metrics["finalize_text_divergence_rollback"] == pytest.approx(0.0)
+
+
+def test_restore_split_short_refrains_to_matching_segments() -> None:
+    aligned_lines = [
+        Line(
+            words=[
+                Word(text="If", start_time=1.09, end_time=1.5),
+                Word(text="you're", start_time=1.5, end_time=2.2),
+                Word(text="lost", start_time=2.2, end_time=4.48),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Time", start_time=4.5, end_time=4.88),
+                Word(text="after", start_time=4.9, end_time=5.1),
+                Word(text="time", start_time=6.08, end_time=6.55),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="If", start_time=7.52, end_time=8.1),
+                Word(text="you", start_time=8.1, end_time=8.8),
+                Word(text="fall", start_time=8.8, end_time=10.97),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Time", start_time=10.99, end_time=11.5),
+                Word(text="after", start_time=11.5, end_time=12.4),
+                Word(text="time", start_time=12.4, end_time=13.9),
+            ]
+        ),
+    ]
+    transcription = [
+        TranscriptionSegment(
+            start=1.06,
+            end=2.78,
+            text="If you're lost, you can look",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=2.78,
+            end=4.18,
+            text="And you will find",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=5.62,
+            end=7.52,
+            text="Time after time",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=7.52,
+            end=10.97,
+            text="If you fall, I will catch you, I'll be waiting",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=11.72,
+            end=12.48,
+            text="After",
+            words=[],
+        ),
+    ]
+
+    repaired, restored = wifin._restore_split_short_refrains_to_matching_segments(
+        aligned_lines,
+        transcription,
+    )
+
+    assert restored == 1
+    assert repaired[1].start_time == pytest.approx(5.62)
+    assert repaired[1].end_time <= repaired[2].start_time

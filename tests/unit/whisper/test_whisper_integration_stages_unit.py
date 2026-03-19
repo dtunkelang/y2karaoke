@@ -241,6 +241,51 @@ def test_run_mapped_line_postpasses_no_audio_calls_snap_with_max_shift():
     assert snap_kwargs == [{}, {"max_shift": 2.5}]
 
 
+def test_run_mapped_line_postpasses_refines_all_lines_when_whisper_support_is_sparse():
+    lines = [
+        Line(words=[Word(text="Take", start_time=0.4, end_time=3.9)]),
+        Line(words=[Word(text="me", start_time=5.3, end_time=8.8)]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="take", start=0.63, end=1.55, probability=0.8),
+    ]
+    matched_sets: list[set[int]] = []
+
+    def _mark(tag):
+        def _fn(*args, **kwargs):
+            return args[0]
+
+        return _fn
+
+    def _refine(lines_in, matched_lines, _vocals_path):
+        matched_sets.append(set(matched_lines))
+        return lines_in
+
+    out, _corrections = stages._run_mapped_line_postpasses(
+        mapped_lines=lines,
+        mapped_lines_set={0, 1},
+        all_words=whisper_words,
+        transcription=[],
+        audio_features=None,
+        vocals_path="vocals.wav",
+        epitran_lang="eng-Latn",
+        corrections=[],
+        interpolate_unmatched_lines_fn=_mark("interpolate"),
+        refine_unmatched_lines_with_onsets_fn=_refine,
+        shift_repeated_lines_to_next_whisper_fn=_mark("shift_repeat"),
+        extend_line_to_trailing_whisper_matches_fn=_mark("extend"),
+        pull_late_lines_to_matching_segments_fn=_mark("pull_late"),
+        retime_short_interjection_lines_fn=_mark("retime_interjection"),
+        snap_first_word_to_whisper_onset_fn=lambda ml, _aw, **_kw: ml,
+        pull_lines_forward_for_continuous_vocals_fn=lambda ml, _af: (ml, 0),
+        enforce_monotonic_line_starts_whisper_fn=_mark("monotonic"),
+        resolve_line_overlaps_fn=_mark("resolve"),
+    )
+
+    assert out == lines
+    assert matched_sets == [set()]
+
+
 def test_shift_weak_opening_lines_past_phrase_carryover_moves_line_when_gap_is_tight():
     lines = [
         Line(
@@ -324,3 +369,62 @@ def test_shift_weak_opening_lines_past_phrase_carryover_keeps_supported_line():
 
     assert count == 0
     assert adjusted[1].start_time == pytest.approx(122.84, abs=1e-2)
+
+
+def test_shift_sparse_support_sustained_lines_to_onsets_moves_late_falsetto_lines():
+    lines = [
+        Line(
+            words=[
+                Word(text="Take", start_time=0.5, end_time=1.68),
+                Word(text="on", start_time=1.68, end_time=2.87),
+                Word(text="me", start_time=2.87, end_time=4.05),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Take", start_time=5.46, end_time=6.64),
+                Word(text="me", start_time=6.64, end_time=7.82),
+                Word(text="on", start_time=7.82, end_time=9.0),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I'll", start_time=11.27, end_time=12.23),
+                Word(text="be", start_time=12.23, end_time=13.19),
+                Word(text="gone", start_time=13.19, end_time=14.16),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="In", start_time=15.28, end_time=16.47),
+                Word(text="a", start_time=16.47, end_time=17.67),
+                Word(text="day", start_time=17.67, end_time=18.87),
+                Word(text="or", start_time=18.87, end_time=20.07),
+                Word(text="two", start_time=20.07, end_time=21.27),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="Okay", start=0.05, end=0.63, probability=0.3),
+        TranscriptionWord(text="take", start=0.63, end=1.55, probability=0.8),
+        TranscriptionWord(text="off", start=1.55, end=2.77, probability=0.5),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([0.58, 5.9, 12.35, 16.21], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=22.0,
+        duration=22.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    adjusted, count = stages._shift_sparse_support_sustained_lines_to_onsets(
+        lines,
+        audio_features,
+        whisper_words,
+    )
+
+    assert count >= 2
+    assert adjusted[2].start_time == pytest.approx(12.35)
+    assert adjusted[3].start_time == pytest.approx(16.21)

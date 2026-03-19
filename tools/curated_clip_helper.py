@@ -13,7 +13,6 @@ from urllib.parse import urlencode
 
 import yaml  # type: ignore[import-untyped]
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = REPO_ROOT / "benchmarks" / "curated_clip_songs.yaml"
 CLIP_GOLD_ROOT = (
@@ -54,7 +53,9 @@ def _load_manifest(path: Path) -> list[dict[str, object]]:
     return [song for song in songs if isinstance(song, dict)]
 
 
-def _match_song(songs: list[dict[str, object]], match: str) -> tuple[int, dict[str, object]]:
+def _match_song(
+    songs: list[dict[str, object]], match: str
+) -> tuple[int, dict[str, object]]:
     lowered = match.lower()
     hits: list[tuple[int, dict[str, object]]] = []
     for index, song in enumerate(songs, start=1):
@@ -70,7 +71,10 @@ def _match_song(songs: list[dict[str, object]], match: str) -> tuple[int, dict[s
     if not hits:
         raise ValueError(f"No curated clip matched {match!r}")
     if len(hits) > 1:
-        labels = [f"{i}: {s['artist']} - {s['title']} [{s.get('clip_id', '')}]" for i, s in hits]
+        labels = [
+            f"{i}: {s['artist']} - {s['title']} [{s.get('clip_id', '')}]"
+            for i, s in hits
+        ]
         raise ValueError(f"Multiple curated clips matched {match!r}: {labels}")
     return hits[0]
 
@@ -117,7 +121,9 @@ def _ensure_clip_audio(song: dict[str, object]) -> Path:
     if clip_path.exists():
         return clip_path
 
-    source = next((path for path in _source_audio_candidates(song) if path.exists()), None)
+    source = next(
+        (path for path in _source_audio_candidates(song) if path.exists()), None
+    )
     if source is None:
         raise FileNotFoundError(
             f"No source audio found in {_cache_dir(song)}; expected one of "
@@ -167,7 +173,9 @@ def _editor_url(gold_path: Path, audio_path: Path) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--match", required=True, help="Substring match for artist/title/clip_id")
+    parser.add_argument(
+        "--match", required=True, help="Substring match for artist/title/clip_id"
+    )
     parser.add_argument(
         "--open-editor",
         action="store_true",
@@ -182,7 +190,16 @@ def main() -> int:
     _update_gold_audio_path(gold_path, audio_path)
     url = _editor_url(gold_path, audio_path)
 
-    print(json.dumps({"gold_path": str(gold_path), "audio_path": str(audio_path), "editor_url": url}, indent=2))
+    print(
+        json.dumps(
+            {
+                "gold_path": str(gold_path),
+                "audio_path": str(audio_path),
+                "editor_url": url,
+            },
+            indent=2,
+        )
+    )
     if args.open_editor:
         webbrowser.open(url)
     return 0

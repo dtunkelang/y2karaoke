@@ -256,6 +256,14 @@ def _index_aligned_segments(
     return seg_by_idx
 
 
+def _min_required_timed_lines(non_empty_line_count: int) -> int:
+    if non_empty_line_count <= 0:
+        return 0
+    if non_empty_line_count <= 3:
+        return non_empty_line_count
+    return max(3, int(non_empty_line_count * 0.5))
+
+
 def align_lines_with_whisperx(  # noqa: C901
     lines: List[models.Line],
     vocals_path: str,
@@ -280,7 +288,7 @@ def align_lines_with_whisperx(  # noqa: C901
         idx for idx, line in enumerate(lines) if line.words and line.text.strip()
     ]
     trace["non_empty_line_count"] = len(non_empty)
-    if len(non_empty) < 4:
+    if len(non_empty) < 2:
         trace["status"] = "too_few_non_empty_lines"
         _maybe_write_whisperx_trace(trace)
         return None
@@ -363,7 +371,7 @@ def align_lines_with_whisperx(  # noqa: C901
         else:
             forced_lines.append(line)
 
-    min_timed_lines = max(3, int(len(non_empty) * 0.5))
+    min_timed_lines = _min_required_timed_lines(len(non_empty))
     trace["timed_line_count"] = timed_lines
     trace["timed_word_count"] = timed_words
     trace["min_timed_lines_required"] = min_timed_lines
@@ -391,6 +399,7 @@ def align_lines_with_whisperx(  # noqa: C901
         "forced_line_coverage": timed_ratio,
         "forced_word_coverage": word_ratio,
         "forced_line_overlaps": float(overlaps),
+        "aligned_segments": aligned_segments,
     }
     trace.update({"status": "accepted", "metrics": metrics})
     _maybe_write_whisperx_trace(trace)

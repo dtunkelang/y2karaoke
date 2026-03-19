@@ -17,22 +17,33 @@ Use this file as a session handoff, not as a second backlog.
   - clip-bounded audio and clip-scoped gold lyrics
   - better clip scoring against gold
   - onset-aware seeding for untimed plain-text clip lyrics
-- Current repeated-hook companion set:
-  - `Houdini`
-  - `Without Me`
-  - `I Gotta Feeling`
-- Current repeated-hook results:
-  - `Houdini`: improved materially and is worth keeping
+- The repeated-hook pack is in a much healthier place:
+  - `Houdini`: materially improved
+  - `Without Me`: materially improved
   - `I Gotta Feeling`: healthy control
-  - `Without Me`: still the next likely quality target
+- The sparse/falsetto companion pack is now also useful:
+  - `Take On Me`
+  - `Time After Time`
+  - `Total Eclipse of the Heart`
+  - `Stayin' Alive`
+- Key latest result:
+  - `Stayin' Alive` improved from `2.5739s` to `0.1374s` start error in `benchmarks/results/20260319T223815Z`
+  - driver: 2-line forced-alignment unlock plus better weak-onset seed fallback for two-line subset-refrain clips
 
 ## If Quality Work Resumes
 
-- Start from the repeated-hook pack before adding more clips:
+- Recheck the broad curated pack before adding more clips:
+  - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --offline`
+- If focusing on clip families, use:
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Without Me|Gotta Feeling" --offline`
+  - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Take On Me|Time After Time|Total Eclipse|Stayin' Alive" --offline`
 - Treat hard clips as valid targets if they reflect real production problems.
 - Do not optimize against a single hard clip in isolation when the failure mode is still ambiguous; add companion clips first.
 - Prefer fixes that improve clip-scoped priors or shared alignment behavior over song-specific heuristics.
+- For stubborn clips, inspect in this order:
+  - helper-generated seed on the real cached clip audio
+  - accepted forced-alignment output
+  - final timing report
 
 ## Curation Process
 
@@ -52,9 +63,9 @@ Only continue if there is a concrete reason:
 - a test seam still depends on hidden state or unstable internals
 
 Most likely next inspection targets:
-- `Without Me` repeated-hook drift in the clip-alignment path
-- clip-scoped plain-text seeding behavior in `src/y2karaoke/core/components/lyrics/helpers.py`
-- only then broader alignment heuristics if the clip-family signal stays consistent
+- rerun the full curated pack and identify the next true outlier after the `Stayin' Alive` fix
+- likely remaining sparse/falsetto target: `Take On Me`
+- otherwise next likely broader target: whichever clip is now worst in the full-pack rerun, not whichever was worst before this session
 
 ## Guardrails
 

@@ -97,4 +97,13 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `Without Me`
   - `I Gotta Feeling`
 - Plain-text clip lyrics need an audio-window-aware timing seed. Starting every plain-text clip at `0.0s` hides useful structure and biases repeated hooks toward early collapse.
+- Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
+  - WhisperX forced alignment previously could not help 2-line clips at all
+  - weak onset detection could incorrectly fall back to a generic spread seed
+  - subset-refrain clips need their own plain-text seed layout when line 2 is a shorter tail of line 1
+- When a live clip still looks wrong after a plausible fix, compare:
+  - the helper-generated seed on the real cached clip audio
+  - the accepted forced-alignment output
+  - the final timing report
+  This is faster than guessing which postpass is to blame.
 - Do not drop difficult clips just because they are difficult. Keep them if they reflect real production failures, but add companion clips when a single clip is too underdetermined to tune against safely.
