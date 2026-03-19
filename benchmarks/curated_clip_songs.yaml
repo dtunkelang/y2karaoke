@@ -395,3 +395,15 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Sparse sustained chorus companion clip for weak-Whisper fallback work.
+- artist: Bonnie Tyler
+  title: Total Eclipse of the Heart
+  clip_id: repeated-refrain
+  clip_tags: [stress, sparse-support, sustained, repeated-refrain]
+  audio_start_sec: 37.0
+  clip_duration_sec: 13.0
+  youtube_id: KqBZAxCfWHA
+  youtube_url: https://www.youtube.com/watch?v=KqBZAxCfWHA
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Sparse sustained repeated-refrain companion clip for weak-Whisper fallback work.

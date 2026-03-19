@@ -1,0 +1,172 @@
+{
+  "schema_version": "1.0",
+  "title": "Total Eclipse of the Heart",
+  "artist": "Bonnie Tyler",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/KqBZAxCfWHA/trimmed_from_37.00s_for_13.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "(Turn around, bright eyes)",
+      "start": 0.35,
+      "end": 3.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Turn",
+          "start": 0.35,
+          "end": 0.8
+        },
+        {
+          "word_index": 2,
+          "text": "around,",
+          "start": 0.8,
+          "end": 2.1
+        },
+        {
+          "word_index": 3,
+          "text": "bright",
+          "start": 2.1,
+          "end": 2.9
+        },
+        {
+          "word_index": 4,
+          "text": "eyes)",
+          "start": 2.9,
+          "end": 3.85
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Every now and then, I fall apart",
+      "start": 4.05,
+      "end": 5.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Every",
+          "start": 4.05,
+          "end": 4.35
+        },
+        {
+          "word_index": 2,
+          "text": "now",
+          "start": 4.35,
+          "end": 4.6
+        },
+        {
+          "word_index": 3,
+          "text": "and",
+          "start": 4.6,
+          "end": 4.85
+        },
+        {
+          "word_index": 4,
+          "text": "then,",
+          "start": 4.85,
+          "end": 5.05
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 5.05,
+          "end": 5.3
+        },
+        {
+          "word_index": 6,
+          "text": "fall",
+          "start": 5.3,
+          "end": 5.65
+        },
+        {
+          "word_index": 7,
+          "text": "apart",
+          "start": 5.65,
+          "end": 5.95
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "(Turn around, bright eyes)",
+      "start": 5.95,
+      "end": 9.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "(Turn",
+          "start": 5.95,
+          "end": 6.3
+        },
+        {
+          "word_index": 2,
+          "text": "around,",
+          "start": 6.3,
+          "end": 7.85
+        },
+        {
+          "word_index": 3,
+          "text": "bright",
+          "start": 7.85,
+          "end": 8.55
+        },
+        {
+          "word_index": 4,
+          "text": "eyes)",
+          "start": 8.55,
+          "end": 9.6
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Every now and then, I fall apart",
+      "start": 9.7,
+      "end": 13.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Every",
+          "start": 9.7,
+          "end": 10.1
+        },
+        {
+          "word_index": 2,
+          "text": "now",
+          "start": 10.1,
+          "end": 10.35
+        },
+        {
+          "word_index": 3,
+          "text": "and",
+          "start": 10.35,
+          "end": 10.65
+        },
+        {
+          "word_index": 4,
+          "text": "then,",
+          "start": 10.65,
+          "end": 11.0
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 11.0,
+          "end": 11.3
+        },
+        {
+          "word_index": 6,
+          "text": "fall",
+          "start": 11.3,
+          "end": 11.65
+        },
+        {
+          "word_index": 7,
+          "text": "apart",
+          "start": 11.65,
+          "end": 13.05
+        }
+      ]
+    }
+  ]
+}
