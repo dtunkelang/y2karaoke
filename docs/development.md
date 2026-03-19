@@ -1,6 +1,6 @@
 # Development Workflow
 
-Last updated: 2026-03-18
+Last updated: 2026-03-19
 
 ## Bootstrap
 
@@ -40,6 +40,7 @@ Notes:
 - `make check` starts with `pip check`.
 - Normal pytest runs do not require `PYTHONPATH=src`; the test configuration prefers the local source tree automatically.
 - For direct one-off script or interpreter commands where the editable install may be stale, prefer `PYTHONPATH=src`.
+- For benchmark scripts and ad hoc helper scripts, prefer `PYTHONPATH=src ./.venv/bin/python ...` unless you are sure the editable install is current.
 
 ## CI Expectations
 
@@ -88,3 +89,13 @@ When structural work lands, update:
 - `docs/README.md`
 
 Use `NEXT_SESSION_TODO.md` only as a lightweight handoff, not as a second backlog.
+
+When manual curated clip work lands, also update:
+- `docs/curated_clips.md`
+- `benchmarks/curated_clip_songs.yaml` if clip windows or tags changed
+
+Manual curation is high-cost user work, so protect it immediately:
+- verify the saved gold JSON on disk
+- verify the canonical clip audio path and duration
+- reopen the saved gold file through `tools/curated_clip_helper.py`
+- commit and push before doing any more engineering work
