@@ -202,6 +202,7 @@ def test_maybe_force_sparse_weak_alignment_accepts_sparse_low_support_case(monke
         lrc_word_count=40,
         should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
         restore_implausibly_short_lines_fn=lambda *_a, **_k: (forced_lines, 0),
+        whisper_words=None,
         normalize_line_word_timings_fn=lambda lines: lines,
         enforce_monotonic_line_starts_fn=lambda lines: lines,
         enforce_non_overlapping_lines_fn=lambda lines: lines,
@@ -249,6 +250,7 @@ def test_maybe_force_sparse_weak_alignment_skips_when_phonetic_support_is_good(
         lrc_word_count=40,
         should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
         restore_implausibly_short_lines_fn=lambda *_a, **_k: (lines, 0),
+        whisper_words=None,
         normalize_line_word_timings_fn=lambda lines: lines,
         enforce_monotonic_line_starts_fn=lambda lines: lines,
         enforce_non_overlapping_lines_fn=lambda lines: lines,
@@ -292,6 +294,7 @@ def test_maybe_force_sparse_weak_alignment_finalizes_accepted_forced_lines(monke
         lrc_word_count=40,
         should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
         restore_implausibly_short_lines_fn=lambda *_a, **_k: (forced_lines, 0),
+        whisper_words=None,
         normalize_line_word_timings_fn=lambda input_lines: (
             calls.append("normalize"),
             input_lines,

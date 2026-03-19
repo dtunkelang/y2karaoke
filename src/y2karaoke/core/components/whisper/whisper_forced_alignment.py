@@ -12,6 +12,7 @@ from ... import models
 from .whisperx_compat import patch_torchaudio_for_whisperx
 
 _TOKEN_RE = re.compile(r"[a-z0-9']+")
+_LIGHT_LEADING_TOKENS = {"the", "a", "an"}
 
 
 def _maybe_write_whisperx_trace(payload: Dict[str, Any]) -> None:
@@ -154,6 +155,46 @@ def _build_words_from_anchors(
     return out
 
 
+def _tighten_leading_light_token_anchors(
+    starts: List[float],
+    ends: List[float],
+    norm_targets: Sequence[str],
+) -> None:
+    if len(norm_targets) < 2:
+        return
+    leading_count = 0
+    for token in norm_targets:
+        if token in _LIGHT_LEADING_TOKENS:
+            leading_count += 1
+            continue
+        break
+    if leading_count == 0 or leading_count >= len(norm_targets):
+        return
+
+    anchor_start = starts[leading_count]
+    current_start = starts[0]
+    if anchor_start <= current_start + 0.35:
+        return
+
+    total_window = min(
+        0.32 * leading_count,
+        max(0.16, anchor_start - current_start - 0.02),
+    )
+    if total_window <= 0.08:
+        return
+
+    target_start = anchor_start - total_window
+    word_span = total_window / leading_count
+    for idx in range(leading_count):
+        start = target_start + idx * word_span
+        if idx == leading_count - 1:
+            end = anchor_start - 0.02
+        else:
+            end = start + word_span * 0.82
+        starts[idx] = start
+        ends[idx] = max(start + 0.06, end)
+
+
 def _map_segment_words_to_line(
     line: models.Line,
     seg_words: Sequence[Tuple[float, float, str]],
@@ -171,6 +212,7 @@ def _map_segment_words_to_line(
     if len(match_idx) < min_required:
         return _distribute_line_words(line, seg_start, seg_end)
 
+    norm_targets = [_norm_token(w.text) for w in line.words]
     starts: List[float] = []
     ends: List[float] = []
     for ti in range(len(line.words)):
@@ -184,6 +226,7 @@ def _map_segment_words_to_line(
         )
         starts.append(s)
         ends.append(e)
+    _tighten_leading_light_token_anchors(starts, ends, norm_targets)
     return _build_words_from_anchors(line, starts, ends, seg_start, seg_end)
 
 

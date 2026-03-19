@@ -108,3 +108,23 @@ def test_align_lines_with_whisperx_accepts_segments_without_ids(monkeypatch):
     assert forced_lines[0].words[0].text == "Oh"
     assert forced_lines[1].words[0].start_time == 11.0
     assert metrics["forced_line_coverage"] == 1.0
+
+
+def test_map_segment_words_to_line_tightens_leading_article_before_content_anchor():
+    line = _line("The", "needle", "tears", "a", "hole")
+    seg_words = [
+        (19.84, 20.16, "real"),
+        (20.16, 22.48, "the"),
+        (22.48, 23.08, "needle"),
+        (23.08, 24.18, "tears"),
+        (24.18, 24.74, "the"),
+        (24.74, 25.18, "hole"),
+    ]
+
+    mapped = wfa._map_segment_words_to_line(line, seg_words, 19.84, 25.18)
+
+    assert mapped[0].text == "The"
+    assert mapped[1].text == "needle"
+    assert mapped[0].start_time >= 22.0
+    assert mapped[0].end_time <= mapped[1].start_time
+    assert abs(mapped[1].start_time - 22.48) < 0.05
