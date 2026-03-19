@@ -350,7 +350,7 @@ songs:
 - artist: Sabrina Carpenter
   title: Taste
   clip_id: first-chorus
-  clip_tags: [control, chorus, modern-pop, source-text]
+  clip_tags: [control, chorus, modern-pop]
   audio_start_sec: 23.0
   clip_duration_sec: 20.0
   youtube_id: -5GI38vWew8
@@ -383,3 +383,15 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Compact repeated-hook control clip from 0:28 to 0:44 around I gotta feeling / That tonight's gonna be a good night.
+- artist: Cyndi Lauper
+  title: Time After Time
+  clip_id: first-chorus
+  clip_tags: [stress, sparse-support, sustained, chorus]
+  audio_start_sec: 67.0
+  clip_duration_sec: 15.0
+  youtube_id: F1mqrCTFoz4
+  youtube_url: https://www.youtube.com/watch?v=F1mqrCTFoz4
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Sparse sustained chorus companion clip for weak-Whisper fallback work.
