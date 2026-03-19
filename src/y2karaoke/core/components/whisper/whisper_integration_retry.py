@@ -51,6 +51,8 @@ def should_retry_with_aggressive_whisper(
     aggressive: bool,
     metrics: Dict[str, float],
 ) -> bool:
+    if bool(float(metrics.get("transcription_empty", 0.0) or 0.0)):
+        return not aggressive and line_count > 0
     return should_retry_aggressive_whisper_dtw_map(
         line_count=line_count,
         aggressive_already_enabled=aggressive,

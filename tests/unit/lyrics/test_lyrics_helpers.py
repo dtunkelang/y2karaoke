@@ -217,6 +217,31 @@ def test_apply_timing_to_lines():
     assert lines[1].words[0].start_time == pytest.approx(3.0)
 
 
+def test_spread_lines_across_target_duration_expands_compact_plain_text_seed():
+    lines = lh._create_lines_from_plain_text(
+        ["Take on me", "Take me on", "I'll be gone", "In a day or two"]
+    )
+
+    lh._spread_lines_across_target_duration(lines, 22.0)
+
+    assert lines[0].start_time == pytest.approx(1.0)
+    assert lines[1].start_time > 5.0
+    assert lines[2].start_time > 10.0
+    assert lines[3].start_time > 15.0
+    assert lines[-1].end_time == pytest.approx(21.0, abs=0.05)
+
+
+def test_spread_lines_across_target_duration_skips_small_expansion():
+    lines = lh._create_lines_from_plain_text(["hello world"])
+    original_start = lines[0].start_time
+    original_end = lines[0].end_time
+
+    lh._spread_lines_across_target_duration(lines, original_end + 0.2)
+
+    assert lines[0].start_time == pytest.approx(original_start)
+    assert lines[0].end_time == pytest.approx(original_end)
+
+
 def test_romanize_lines_only_non_ascii(monkeypatch):
     line = _line_with_words(["hello", "café"])
     monkeypatch.setattr(

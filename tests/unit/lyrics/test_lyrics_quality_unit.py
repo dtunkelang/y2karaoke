@@ -3,6 +3,11 @@ import pytest
 from y2karaoke.core.components.lyrics import api as lyrics
 from y2karaoke.core import lyrics_whisper as lw
 from y2karaoke.core.components.lyrics import helpers as lh
+from y2karaoke.core.components.lyrics.lyrics_quality_sources import (
+    _build_lrc_text_from_line_timings,
+    _rebase_line_timings_to_audio_window,
+    _resolve_lrc_inputs,
+)
 from y2karaoke.core.components.lyrics.lyrics_whisper_pipeline import (
     should_auto_enable_whisper,
 )
@@ -121,6 +126,133 @@ def test_should_suppress_disagreement_negative_offset_only_when_provider_timings
             "Ignoring provider LRC timestamps due to severe duration mismatch; using audio/Whisper timing alignment instead"
         ]
     )
+
+
+def test_resolve_lrc_inputs_skips_provider_fetch_for_plain_text_lyrics_file(
+    monkeypatch, tmp_path
+):
+    lyrics_file = tmp_path / "clip.txt"
+    lyrics_file.write_text("Take on me\nTake me on\n", encoding="utf-8")
+    quality_report = {"source": "", "issues": []}
+    issues: list[str] = []
+    fetch_called = {"value": False}
+
+    def _unexpected_fetch(*_args, **_kwargs):
+        fetch_called["value"] = True
+        return ("[00:01.00]provider", [(1.0, "provider")], "provider")
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.helpers._load_lyrics_file",
+        lambda *_a, **_k: (None, None, ["Take on me", "Take me on"]),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.lyrics_whisper._fetch_lrc_text_and_timings_for_state",
+        _unexpected_fetch,
+    )
+    lrc_text, line_timings, source, file_lines = _resolve_lrc_inputs(
+        title="Song",
+        artist="Artist",
+        lyrics_file=lyrics_file,
+        audio_start=0.0,
+        filter_promos=True,
+        target_duration=22,
+        vocals_path="vocals.wav",
+        evaluate_sources=False,
+        offline=True,
+        quality_report=quality_report,
+        issues_list=issues,
+        drop_lrc_line_timings=False,
+        use_whisper=False,
+        whisper_map_lrc=True,
+        hooks=None,
+        runtime_config=None,
+    )
+
+    assert lrc_text is None
+    assert line_timings is None
+    assert source == f"lyrics_file:{lyrics_file}"
+    assert file_lines == ["Take on me", "Take me on"]
+    assert quality_report["lyrics_source_selection_mode"] == "lyrics_file_plain_text"
+    assert fetch_called["value"] is False
+
+
+def test_rebase_line_timings_to_audio_window_shifts_and_filters_clip_lines():
+    rebased = _rebase_line_timings_to_audio_window(
+        [
+            (20.0, "pre overlap"),
+            (24.0, "clip one"),
+            (28.5, "clip two"),
+            (44.0, "after clip"),
+        ],
+        audio_start=23.0,
+        target_duration=20,
+    )
+
+    assert rebased == [
+        (0.0, "pre overlap"),
+        (1.0, "clip one"),
+        (5.5, "clip two"),
+    ]
+
+
+def test_build_lrc_text_from_line_timings_serializes_rebased_window():
+    lrc_text = _build_lrc_text_from_line_timings(
+        [(0.0, "first"), (1.25, "second line")]
+    )
+
+    assert lrc_text == "[00:00.00]first\n[00:01.25]second line"
+
+
+def test_resolve_lrc_inputs_rebases_provider_lrc_to_clip_window(monkeypatch):
+    quality_report = {"source": "", "issues": []}
+    issues: list[str] = []
+
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.helpers._load_lyrics_file",
+        lambda *_a, **_k: (None, None, []),
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.lyrics.lyrics_whisper._fetch_lrc_text_and_timings_for_state",
+        lambda *_a, **_k: (
+            "[00:20.00]pre overlap\n[00:31.00]clip one\n[00:40.00]clip two\n[00:44.00]after clip",
+            [
+                (20.0, "pre overlap"),
+                (31.0, "clip one"),
+                (40.0, "clip two"),
+                (44.0, "after clip"),
+            ],
+            "lyriq (LRCLib)",
+        ),
+    )
+
+    lrc_text, line_timings, source, file_lines = _resolve_lrc_inputs(
+        title="Song",
+        artist="Artist",
+        lyrics_file=None,
+        audio_start=23.0,
+        filter_promos=True,
+        target_duration=20,
+        vocals_path="vocals.wav",
+        evaluate_sources=False,
+        offline=True,
+        quality_report=quality_report,
+        issues_list=issues,
+        drop_lrc_line_timings=False,
+        use_whisper=False,
+        whisper_map_lrc=True,
+        hooks=None,
+        runtime_config=None,
+    )
+
+    assert lrc_text == "[00:00.00]pre overlap\n[00:08.00]clip one\n[00:17.00]clip two"
+    assert line_timings == [
+        (0.0, "pre overlap"),
+        (8.0, "clip one"),
+        (17.0, "clip two"),
+    ]
+    assert source == "lyriq (LRCLib)"
+    assert file_lines == []
+    assert quality_report["lyrics_source_selection_mode"] == "provider_clip_window"
 
 
 def test_apply_whisper_alignment_records_fixes(monkeypatch):

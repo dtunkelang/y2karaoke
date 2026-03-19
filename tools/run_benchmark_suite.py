@@ -156,6 +156,7 @@ class BenchmarkSong:
     clip_id: str | None = None
     clip_tags: tuple[str, ...] = ()
     audio_start_sec: float = 0.0
+    clip_duration_sec: float | None = None
     lyrics_file: str | None = None
     preferred_lyrics_provider: str | None = None
     lrc_duration_tolerance_sec: int | None = None
@@ -192,6 +193,7 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
             audio_start_sec = song.get("audio_start_sec", 0.0)
             if audio_start_sec is None:
                 audio_start_sec = 0.0
+            clip_duration_sec = song.get("clip_duration_sec")
             songs.append(
                 BenchmarkSong(
                     manifest_index=idx + 1,
@@ -202,6 +204,11 @@ def _parse_manifest(path: Path) -> list[BenchmarkSong]:
                     clip_id=_normalize_optional_manifest_text(song.get("clip_id")),
                     clip_tags=_normalize_manifest_tag_list(song.get("clip_tags")),
                     audio_start_sec=float(audio_start_sec),
+                    clip_duration_sec=(
+                        float(clip_duration_sec)
+                        if clip_duration_sec is not None
+                        else None
+                    ),
                     lyrics_file=_resolve_manifest_optional_path(
                         path.parent, song.get("lyrics_file")
                     ),
@@ -1002,6 +1009,38 @@ def _load_gold_doc(
     return loaded
 
 
+def _should_use_gold_clip_lyrics(song: BenchmarkSong) -> bool:
+    return bool(
+        song.clip_id
+        and not song.lyrics_file
+        and "source-text" not in set(song.clip_tags)
+    )
+
+
+def _materialize_gold_clip_lyrics_file(
+    *,
+    index: int,
+    song: BenchmarkSong,
+    gold_doc: dict[str, Any] | None,
+    run_dir: Path,
+) -> str | None:
+    if not _should_use_gold_clip_lyrics(song) or not isinstance(gold_doc, dict):
+        return None
+    lines = gold_doc.get("lines")
+    if not isinstance(lines, list) or not lines:
+        return None
+    texts = [
+        str(line.get("text") or "").strip()
+        for line in lines
+        if isinstance(line, dict) and str(line.get("text") or "").strip()
+    ]
+    if not texts:
+        return None
+    lyrics_path = run_dir / f"{index:02d}_{song.slug}_clip_lyrics.txt"
+    lyrics_path.write_text("\n".join(texts) + "\n", encoding="utf-8")
+    return str(lyrics_path)
+
+
 def _build_generate_command(
     *,
     python_bin: str,
@@ -1015,6 +1054,7 @@ def _build_generate_command(
     drop_lrc_line_timings: bool = False,
     evaluate_lyrics_sources: bool = False,
     fast_clip_probe: bool = False,
+    lyrics_file_override: str | None = None,
 ) -> list[str]:
     cmd = [
         python_bin,
@@ -1032,10 +1072,17 @@ def _build_generate_command(
     ]
     if cache_dir is not None:
         cmd.extend(["--work-dir", str(cache_dir)])
-    if song.lyrics_file:
-        cmd.extend(["--lyrics-file", song.lyrics_file])
+    lyrics_file = lyrics_file_override or song.lyrics_file
+    if lyrics_file:
+        cmd.extend(["--lyrics-file", lyrics_file])
     if song.audio_start_sec > 0.0:
         cmd.extend(["--audio-start", f"{song.audio_start_sec:g}"])
+    if (
+        song.clip_duration_sec is not None
+        and song.clip_duration_sec > 0.0
+        and song.clip_id
+    ):
+        cmd.extend(["--audio-duration", f"{song.clip_duration_sec:g}"])
     if fast_clip_probe and song.clip_id:
         cmd.append("--skip-separation")
     if offline:
@@ -1907,6 +1954,7 @@ def _compute_timing_quality_score(values: dict[str, Any]) -> tuple[float, str, s
     gold_cov_raw = values.get("gold_word_coverage_ratio")
     gold_start_raw = values.get("gold_start_mean_abs_sec")
     gold_comp_raw = values.get("gold_comparable_word_count")
+    gold_word_count_raw = values.get("gold_word_count")
 
     dtw_line = float(dtw_line_raw) if isinstance(dtw_line_raw, (int, float)) else 0.0
     dtw_word = float(dtw_word_raw) if isinstance(dtw_word_raw, (int, float)) else 0.0
@@ -1923,6 +1971,9 @@ def _compute_timing_quality_score(values: dict[str, Any]) -> tuple[float, str, s
     )
     gold_comparable_words = (
         int(gold_comp_raw) if isinstance(gold_comp_raw, (int, float)) else 0
+    )
+    gold_word_count = (
+        int(gold_word_count_raw) if isinstance(gold_word_count_raw, (int, float)) else 0
     )
 
     agreement_score = (
@@ -1947,12 +1998,14 @@ def _compute_timing_quality_score(values: dict[str, Any]) -> tuple[float, str, s
         internal_score = (0.7 * anchor_score) + (0.3 * low_conf_score)
         score_mode = "anchor_fallback"
 
+    gold_timing_score = 1.0 - _clamp01(gold_start_mean / 1.25)
+    gold_score = (0.35 * _clamp01(gold_cov)) + (0.65 * gold_timing_score)
     if gold_comparable_words >= 20:
-        gold_score = (0.55 * _clamp01(gold_cov)) + (
-            0.45 * (1.0 - _clamp01(gold_start_mean / 1.25))
-        )
         final_score = (0.78 * internal_score) + (0.22 * gold_score)
         score_mode = f"{score_mode}+gold"
+    elif gold_word_count <= 40 and gold_comparable_words >= 8 and gold_cov >= 0.75:
+        final_score = min(internal_score, gold_score)
+        score_mode = f"{score_mode}+gold_clip"
     else:
         final_score = internal_score
 
@@ -7759,6 +7812,13 @@ def _run_single_song_generation(
     env: dict[str, str],
 ) -> tuple[dict[str, Any], Path]:
     report_path = run_dir / f"{index:02d}_{song.slug}_timing_report.json"
+    gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
+    lyrics_file_override = _materialize_gold_clip_lyrics_file(
+        index=index,
+        song=song,
+        gold_doc=gold_doc,
+        run_dir=run_dir,
+    )
     auto_offline_allowed = not (
         song.preferred_lyrics_provider
         and song.preferred_lyrics_provider.strip().lower() != "lyriq"
@@ -7784,11 +7844,11 @@ def _run_single_song_generation(
         drop_lrc_line_timings=(args.scenario == "lyrics_no_timing"),
         evaluate_lyrics_sources=bool(getattr(args, "evaluate_lyrics_sources", False)),
         fast_clip_probe=bool(getattr(args, "fast_clip_probe", False)),
+        lyrics_file_override=lyrics_file_override,
     )
     print(f"[{index}/{total_songs}] {song.artist} - {song.title}")
     start = time.monotonic()
     song_log_path = run_dir / f"{index:02d}_{song.slug}_generate.log"
-    gold_doc = _load_gold_doc(index=index, song=song, gold_root=gold_root)
     song_env = dict(env)
     if song.preferred_lyrics_provider:
         song_env["Y2K_PREFERRED_LYRICS_PROVIDER"] = song.preferred_lyrics_provider

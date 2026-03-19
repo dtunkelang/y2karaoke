@@ -34,6 +34,7 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
         youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
         clip_id="intro-30s",
         audio_start_sec=12.5,
+        clip_duration_sec=30.0,
         lyrics_file=str(lyrics_file),
     )
     report_path = tmp_path / "report.json"
@@ -62,6 +63,8 @@ def test_build_generate_command_includes_expected_flags(tmp_path):
     assert str(lyrics_file) in cmd
     assert "--audio-start" in cmd
     assert "12.5" in cmd
+    assert "--audio-duration" in cmd
+    assert "30" in cmd
     assert "--skip-separation" in cmd
 
 
@@ -88,6 +91,82 @@ def test_build_generate_command_fast_clip_probe_skips_non_clip_song(tmp_path):
         fast_clip_probe=True,
     )
     assert "--skip-separation" not in cmd
+
+
+def test_build_generate_command_prefers_lyrics_file_override(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+        lyrics_file="/tmp/original.txt",
+    )
+    report_path = tmp_path / "report.json"
+    cmd = module._build_generate_command(
+        python_bin="python",
+        song=song,
+        report_path=report_path,
+        cache_dir=None,
+        offline=False,
+        force=False,
+        whisper_map_lrc_dtw=True,
+        strategy="hybrid_dtw",
+        drop_lrc_line_timings=False,
+        fast_clip_probe=False,
+        lyrics_file_override="/tmp/override.txt",
+    )
+    assert "/tmp/original.txt" not in cmd
+    assert "/tmp/override.txt" in cmd
+
+
+def test_materialize_gold_clip_lyrics_file_for_non_source_text_clip(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+        clip_id="chorus",
+        clip_tags=("stress", "chorus"),
+    )
+    gold_doc = {
+        "lines": [
+            {"text": "first line"},
+            {"text": "second line"},
+        ]
+    }
+    path = module._materialize_gold_clip_lyrics_file(
+        index=1,
+        song=song,
+        gold_doc=gold_doc,
+        run_dir=tmp_path,
+    )
+    assert path is not None
+    assert Path(path).read_text(encoding="utf-8") == "first line\nsecond line\n"
+
+
+def test_materialize_gold_clip_lyrics_file_skips_source_text_clip(tmp_path):
+    module = _load_module()
+    song = module.BenchmarkSong(
+        manifest_index=1,
+        artist="X",
+        title="Y",
+        youtube_id="abcdefghijk",
+        youtube_url="https://www.youtube.com/watch?v=abcdefghijk",
+        clip_id="chorus",
+        clip_tags=("source-text", "chorus"),
+    )
+    gold_doc = {"lines": [{"text": "first line"}]}
+    path = module._materialize_gold_clip_lyrics_file(
+        index=1,
+        song=song,
+        gold_doc=gold_doc,
+        run_dir=tmp_path,
+    )
+    assert path is None
 
 
 def test_build_generate_command_strategy_variants(tmp_path):
@@ -423,6 +502,7 @@ def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
                 "      - control",
                 "      - intro",
                 "    audio_start_sec: 18.25",
+                "    clip_duration_sec: 30",
                 "    lyrics_file: lyrics/song.txt",
             ]
         ),
@@ -435,6 +515,7 @@ def test_parse_manifest_resolves_optional_lyrics_file(tmp_path):
     assert songs[0].clip_id == "intro-30s"
     assert songs[0].clip_tags == ("control", "intro")
     assert songs[0].audio_start_sec == 18.25
+    assert songs[0].clip_duration_sec == 30.0
     assert songs[0].lyrics_file == str(lyrics.resolve())
 
 

@@ -8,6 +8,7 @@ from y2karaoke.core.components.lyrics.sync_pipeline import (
 )
 from y2karaoke.core.components.lyrics.runtime_config import LyricsRuntimeConfig
 from y2karaoke.core.components.lyrics.lyrics_whisper_pipeline import (
+    _load_preferred_lrc_source,
     get_lyrics_simple_impl,
 )
 
@@ -435,3 +436,69 @@ def test_get_lyrics_simple_impl_whisper_only_no_vocals():
     )
     assert lines == ["placeholder"]
     assert metadata is None
+
+
+def test_load_preferred_lrc_source_skips_provider_fetch_for_plain_text_file(tmp_path):
+    lyrics_file = tmp_path / "clip.txt"
+    lyrics_file.write_text("Take on me\nTake me on\n", encoding="utf-8")
+    fetch_called = False
+
+    def _fetch_provider(*_args, **_kwargs):
+        nonlocal fetch_called
+        fetch_called = True
+        return ("[00:01.00]provider", [(1.0, "provider")], "provider")
+
+    lrc_text, line_timings, file_lines = _load_preferred_lrc_source(
+        title="Song",
+        artist="Artist",
+        lyrics_file=lyrics_file,
+        filter_promos=True,
+        target_duration=22,
+        vocals_path="vocals.wav",
+        evaluate_sources=False,
+        offline=False,
+        load_lyrics_file_fn=lambda *_a, **_k: (None, None, ["Take on me", "Take me on"]),
+        fetch_lrc_text_and_timings_for_state_fn=_fetch_provider,
+        get_lrc_duration_fn=lambda *_a, **_k: None,
+        logger=_DummyLogger(),
+    )
+
+    assert lrc_text is None
+    assert line_timings is None
+    assert file_lines == ["Take on me", "Take me on"]
+    assert fetch_called is False
+
+
+def test_load_preferred_lrc_source_keeps_provider_fetch_for_timed_lrc_file(tmp_path):
+    lyrics_file = tmp_path / "clip.lrc"
+    lyrics_file.write_text("[00:01.00]Take on me\n", encoding="utf-8")
+    fetch_called = False
+
+    def _fetch_provider(*_args, **_kwargs):
+        nonlocal fetch_called
+        fetch_called = True
+        return ("[00:01.50]provider", [(1.5, "provider")], "provider")
+
+    lrc_text, line_timings, file_lines = _load_preferred_lrc_source(
+        title="Song",
+        artist="Artist",
+        lyrics_file=lyrics_file,
+        filter_promos=True,
+        target_duration=22,
+        vocals_path="vocals.wav",
+        evaluate_sources=False,
+        offline=False,
+        load_lyrics_file_fn=lambda *_a, **_k: (
+            "[00:01.00]Take on me\n",
+            [(1.0, "Take on me")],
+            ["Take on me"],
+        ),
+        fetch_lrc_text_and_timings_for_state_fn=_fetch_provider,
+        get_lrc_duration_fn=lambda *_a, **_k: 22,
+        logger=_DummyLogger(),
+    )
+
+    assert lrc_text == "[00:01.00]Take on me\n"
+    assert line_timings == [(1.0, "Take on me")]
+    assert file_lines == ["Take on me"]
+    assert fetch_called is True

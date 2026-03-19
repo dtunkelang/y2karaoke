@@ -292,6 +292,7 @@ songs:
   clip_id: rapid-verse
   clip_tags: [stress, rapid, dense-lyrics, verse]
   audio_start_sec: 6.0
+  clip_duration_sec: 30.0
   youtube_id: soNLLPokjC4
   youtube_url: https://www.youtube.com/watch?v=soNLLPokjC4
   preferred_lyrics_provider: lyriq
@@ -303,6 +304,7 @@ songs:
   clip_id: first-chorus-bilingual
   clip_tags: [stress, chorus, bilingual, handoff]
   audio_start_sec: 30.0
+  clip_duration_sec: 30.0
   youtube_id: r_wb7GAiCg4
   youtube_url: https://www.youtube.com/watch?v=r_wb7GAiCg4
   preferred_lyrics_provider: lyriq
@@ -314,6 +316,7 @@ songs:
   clip_id: sparse-opening
   clip_tags: [stress, sparse-support, weak-onset, verse]
   audio_start_sec: 12.0
+  clip_duration_sec: 30.0
   youtube_id: 8AHCfZTRGiI
   youtube_url: https://www.youtube.com/watch?v=8AHCfZTRGiI
   preferred_lyrics_provider: lyriq
@@ -325,6 +328,7 @@ songs:
   clip_id: first-chorus
   clip_tags: [stress, chorus, singalong, sustained]
   audio_start_sec: 62.0
+  clip_duration_sec: 26.0
   youtube_id: 4F_RCWVoL4s
   youtube_url: https://www.youtube.com/watch?v=4F_RCWVoL4s
   preferred_lyrics_provider: lyriq
@@ -336,6 +340,7 @@ songs:
   clip_id: first-chorus
   clip_tags: [stress, chorus, falsetto, sustained]
   audio_start_sec: 50.0
+  clip_duration_sec: 22.0
   youtube_id: NaQ083rNUwc
   youtube_url: https://www.youtube.com/watch?v=NaQ083rNUwc
   preferred_lyrics_provider: lyriq
@@ -347,6 +352,7 @@ songs:
   clip_id: first-chorus
   clip_tags: [control, chorus, modern-pop, source-text]
   audio_start_sec: 23.0
+  clip_duration_sec: 20.0
   youtube_id: -5GI38vWew8
   youtube_url: https://www.youtube.com/watch?v=-5GI38vWew8
   preferred_lyrics_provider: lyriq

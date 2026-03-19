@@ -200,6 +200,12 @@ def doctor():
     default=0.0,
     help="Start audio processing from this many seconds (skip intro)",
 )
+@click.option(
+    "--audio-duration",
+    type=float,
+    default=None,
+    help="Limit audio processing to this many seconds after --audio-start",
+)
 @click.option("--title", help="Override song title for lyrics search")
 @click.option("--artist", help="Override artist for lyrics search")
 @click.option(
@@ -373,6 +379,7 @@ def generate(
     key,
     tempo,
     audio_start,
+    audio_duration,
     title,
     artist,
     lyrics_offset,
@@ -419,6 +426,7 @@ def generate(
         key=key,
         tempo=tempo,
         audio_start=audio_start,
+        audio_duration=audio_duration,
         title=title,
         artist=artist,
         lyrics_offset=lyrics_offset,

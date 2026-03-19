@@ -457,6 +457,27 @@ def test_compute_timing_quality_score_anchor_with_gold_mode() -> None:
     assert mode == "anchor_fallback+gold"
 
 
+def test_compute_timing_quality_score_short_clip_gold_guardrail() -> None:
+    module = _load_module()
+    score, band, mode = module._compute_timing_quality_score(
+        {
+            "dtw_line_coverage": 1.0,
+            "dtw_word_coverage": 1.0,
+            "low_confidence_ratio": 0.0,
+            "agreement_coverage_ratio": 0.0,
+            "agreement_start_p95_abs_sec": 0.0,
+            "agreement_bad_ratio": 0.0,
+            "gold_word_count": 14,
+            "gold_word_coverage_ratio": 1.0,
+            "gold_start_mean_abs_sec": 6.9,
+            "gold_comparable_word_count": 14,
+        }
+    )
+    assert score < 0.5
+    assert band == "poor"
+    assert mode == "dtw_internal+gold_clip"
+
+
 def test_extract_song_metrics_supports_env_agreement_threshold_overrides(
     monkeypatch,
 ) -> None:

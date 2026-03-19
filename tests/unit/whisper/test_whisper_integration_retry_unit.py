@@ -122,3 +122,46 @@ def test_align_lrc_text_pipeline_keeps_base_when_aggressive_retry_not_better(
     assert corrections == ["base"]
     assert metrics["aggressive_retry_attempted"] == 1.0
     assert metrics["aggressive_retry_applied"] == 0.0
+
+
+def test_align_lrc_text_pipeline_retries_empty_transcription_for_short_clip(
+    monkeypatch,
+):
+    lines = [
+        Line(words=[Word(text=f"w{i}", start_time=float(i), end_time=float(i) + 0.4)])
+        for i in range(4)
+    ]
+    calls = {"normal": 0, "aggressive": 0}
+
+    def fake_align(_lines, *_args, **_kwargs):
+        aggressive = bool(_args[3])
+        if aggressive:
+            calls["aggressive"] += 1
+            return (
+                _lines,
+                ["retry"],
+                {
+                    "matched_ratio": 1.0,
+                    "line_coverage": 1.0,
+                    "phonetic_similarity_coverage": 1.0,
+                },
+            )
+        calls["normal"] += 1
+        return (
+            _lines,
+            ["base"],
+            {
+                "transcription_empty": 1.0,
+                "matched_ratio": 0.0,
+                "line_coverage": 0.0,
+                "phonetic_similarity_coverage": 0.0,
+            },
+        )
+
+    monkeypatch.setattr(wipa, "_align_lrc_text_to_whisper_timings_impl", fake_align)
+    mapped, corrections, metrics = _dummy_align_call(lines)
+
+    assert len(mapped) == len(lines)
+    assert calls == {"normal": 1, "aggressive": 1}
+    assert metrics["aggressive_retry_applied"] == 1.0
+    assert any("Accepted aggressive Whisper retry" in msg for msg in corrections)

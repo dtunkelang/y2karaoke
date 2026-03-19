@@ -221,6 +221,38 @@ def test_validate_manifest_rejects_negative_audio_start_sec(tmp_path):
     assert "songs[0].audio_start_sec must be >= 0" in errors
 
 
+def test_validate_manifest_rejects_non_positive_clip_duration_sec(tmp_path):
+    module = _load_module()
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "name: Clip Pack",
+                "songs:",
+                "  - artist: Artist",
+                "    title: Song",
+                "    youtube_id: abcdefghijk",
+                "    youtube_url: https://www.youtube.com/watch?v=abcdefghijk",
+                "    preferred_lyrics_provider: lyriq",
+                "    fallback_lyrics_provider: syncedlyrics",
+                "    lrc_duration_tolerance_sec: 30",
+                "    clip_id: intro",
+                "    clip_tags:",
+                "      - control",
+                "    audio_start_sec: 1",
+                "    clip_duration_sec: 0",
+                "    notes: Invalid duration",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    errors = module.validate_manifest(manifest)
+
+    assert "songs[0].clip_duration_sec must be > 0" in errors
+
+
 def test_validate_manifest_requires_clip_tags_for_clip_entries(tmp_path):
     module = _load_module()
     manifest = tmp_path / "manifest.yaml"

@@ -62,6 +62,7 @@ def _build_generate_kwargs(
     key,
     tempo,
     audio_start,
+    audio_duration,
     title,
     artist,
     track_info,
@@ -103,6 +104,7 @@ def _build_generate_kwargs(
         "key_shift": key,
         "tempo_multiplier": tempo,
         "audio_start": audio_start,
+        "audio_duration": audio_duration,
         "lyrics_title": title or track_info.title,
         "lyrics_artist": artist or track_info.artist,
         "lyrics_offset": lyrics_offset,
@@ -141,12 +143,15 @@ def _build_generate_kwargs(
 def _validate_generate_probe_options(
     *,
     audio_start: float,
+    audio_duration: float | None,
     skip_separation: bool,
     no_render: bool,
     shorten_breaks: bool,
 ) -> None:
     if audio_start < 0:
         raise click.BadParameter("--audio-start must be non-negative")
+    if audio_duration is not None and audio_duration <= 0:
+        raise click.BadParameter("--audio-duration must be positive")
     if skip_separation and not no_render:
         raise click.BadParameter("--skip-separation requires --no-render")
     if skip_separation and shorten_breaks:
@@ -165,6 +170,7 @@ def run_generate_command(
     key,
     tempo,
     audio_start,
+    audio_duration,
     title,
     artist,
     lyrics_offset,
@@ -246,6 +252,7 @@ def run_generate_command(
 
         _validate_generate_probe_options(
             audio_start=audio_start,
+            audio_duration=audio_duration,
             skip_separation=skip_separation,
             no_render=no_render,
             shorten_breaks=shorten_breaks,
@@ -263,7 +270,10 @@ def run_generate_command(
             logger, shorten_breaks, track_info
         )
 
-        target_duration = track_info.duration if track_info.duration > 0 else None
+        if audio_duration is not None and audio_duration > 0:
+            target_duration = max(1, int(round(audio_duration)))
+        else:
+            target_duration = track_info.duration if track_info.duration > 0 else None
 
         result = generator.generate(
             **_build_generate_kwargs(
@@ -273,6 +283,7 @@ def run_generate_command(
                 key=key,
                 tempo=tempo,
                 audio_start=audio_start,
+                audio_duration=audio_duration,
                 title=title,
                 artist=artist,
                 track_info=track_info,

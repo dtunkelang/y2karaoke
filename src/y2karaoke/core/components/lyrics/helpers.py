@@ -258,6 +258,47 @@ def _create_lines_from_plain_text(text_lines: List[str]) -> List[Line]:
     return lines
 
 
+def _spread_lines_across_target_duration(
+    lines: List[Line],
+    target_duration: Optional[float],
+    *,
+    edge_padding_sec: float = 1.0,
+    min_expansion_ratio: float = 1.15,
+) -> List[Line]:
+    """Stretch untimed plain-text lines across the known audio window.
+
+    Plain-text lyrics are initially packed using local duration heuristics, which can
+    compress a short clip's entire lyric block into the first few seconds. When the
+    clip duration is known, spreading that sketch across the full window produces much
+    saner seed timings for downstream Whisper alignment.
+    """
+    if not lines or not target_duration or float(target_duration) <= 0.0:
+        return lines
+
+    populated_lines = [line for line in lines if line.words]
+    if not populated_lines:
+        return lines
+
+    current_start = min(line.start_time for line in populated_lines)
+    current_end = max(line.end_time for line in populated_lines)
+    current_span = current_end - current_start
+    if current_span <= 0.0:
+        return lines
+
+    duration = float(target_duration)
+    padding = min(float(edge_padding_sec), max(duration * 0.08, 0.0))
+    usable_span = max(duration - (padding * 2.0), current_span)
+    if usable_span <= current_span * float(min_expansion_ratio):
+        return lines
+
+    scale = usable_span / current_span
+    for line in populated_lines:
+        for word in line.words:
+            word.start_time = padding + (word.start_time - current_start) * scale
+            word.end_time = padding + (word.end_time - current_start) * scale
+    return lines
+
+
 def _clean_text_lines(lines: List[str]) -> List[str]:
     cleaned = []
     for line in lines:

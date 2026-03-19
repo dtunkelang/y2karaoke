@@ -31,6 +31,7 @@ class TestTrimAudioIfNeeded:
             "start_time",
             "video_id",
             "cache_manager",
+            "audio_duration",
             "force",
         ]
         for param in expected_params:
@@ -80,6 +81,28 @@ class TestTrimAudioIfNeeded:
         mock_run.assert_called_once()
         mock_from_wav.assert_not_called()
 
+    @patch("y2karaoke.core.components.audio.audio_utils.Path.exists", return_value=True)
+    @patch("y2karaoke.core.components.audio.audio_utils.subprocess.run")
+    def test_trim_audio_with_duration_passes_ffmpeg_t_flag(
+        self, mock_run, _mock_exists
+    ):
+        mock_cache = Mock()
+        mock_cache.get_file_path.return_value = "/trimmed_audio.wav"
+        mock_cache.file_exists.return_value = False
+
+        result = trim_audio_if_needed(
+            "/audio.wav",
+            5.0,
+            "video123",
+            mock_cache,
+            audio_duration=12.0,
+        )
+
+        assert result == "/trimmed_audio.wav"
+        cmd = mock_run.call_args.args[0]
+        assert "-t" in cmd
+        assert "12.000" in cmd
+
     @patch(
         "y2karaoke.core.components.audio.audio_utils.subprocess.run",
         side_effect=subprocess.CalledProcessError(1, ["ffmpeg"]),
@@ -114,6 +137,37 @@ class TestTrimAudioIfNeeded:
         result = trim_audio_if_needed("/audio.wav", 5.0, "video123", mock_cache)
 
         assert result == "/audio.wav"
+
+    @patch(
+        "y2karaoke.core.components.audio.audio_utils.subprocess.run",
+        side_effect=subprocess.CalledProcessError(1, ["ffmpeg"]),
+    )
+    @patch("y2karaoke.core.components.audio.audio_utils.AudioSegment.from_wav")
+    def test_trim_audio_with_duration_uses_bounded_slice(
+        self, mock_from_wav, _mock_run
+    ):
+        mock_cache = Mock()
+        mock_cache.get_file_path.return_value = "/trimmed_audio.wav"
+        mock_cache.file_exists.return_value = False
+
+        mock_audio = Mock()
+        sliced = Mock()
+        mock_audio.__len__ = Mock(return_value=30000)
+        mock_audio.__getitem__ = Mock(return_value=sliced)
+        sliced.export = Mock()
+        mock_from_wav.return_value = mock_audio
+
+        result = trim_audio_if_needed(
+            "/audio.wav",
+            5.0,
+            "video123",
+            mock_cache,
+            audio_duration=12.0,
+        )
+
+        assert result == "/trimmed_audio.wav"
+        mock_audio.__getitem__.assert_called_once_with(slice(5000, 17000, None))
+        sliced.export.assert_called_once_with("/trimmed_audio.wav", format="wav")
 
     def test_uses_cached_result_when_available(self):
         """Test that cached result is used when available and not forced."""
@@ -431,9 +485,9 @@ class TestSeparateVocals:
 
         mock_separator = Mock()
 
-        def _fake_trim(audio_path, start_time, output_path):
+        def _fake_trim(audio_path, start_time, output_path, *, duration=None):
             Path(output_path).write_text(
-                f"{Path(audio_path).name}@{start_time}", encoding="utf-8"
+                f"{Path(audio_path).name}@{start_time}@{duration}", encoding="utf-8"
             )
             return True
 

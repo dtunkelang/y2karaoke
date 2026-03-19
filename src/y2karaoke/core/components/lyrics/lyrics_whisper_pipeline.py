@@ -204,6 +204,11 @@ def _load_preferred_lrc_source(
         )
         if file_lines or file_lrc_text:
             logger.info(f"Using lyrics from file: {lyrics_file}")
+        if file_lines and not file_lrc_text and not file_line_timings:
+            logger.debug(
+                "Plain text lyrics file provided; skipping provider LRC fetch"
+            )
+            return None, None, file_lines
 
     logger.debug(
         f"Fetching LRC lyrics... (target_duration={target_duration}, evaluate={evaluate_sources})"
@@ -312,6 +317,10 @@ def _build_lines_from_lrc_source(
     else:
         text_lines = file_lines or extract_text_lines_from_lrc_fn(lrc_text or "")
         lines = create_lines_from_plain_text_fn(text_lines)
+        if target_duration:
+            from .helpers import _spread_lines_across_target_duration
+
+            lines = _spread_lines_across_target_duration(lines, target_duration)
 
     if vocals_path and line_timings and len(line_timings) > 1:
         lines = refine_timing_with_audio_for_state_fn(

@@ -16,6 +16,50 @@ def _should_suppress_disagreement_negative_offset(issues_list: list[str]) -> boo
     return not any("Ignoring provider LRC timestamps" in issue for issue in issues_list)
 
 
+def _format_lrc_timestamp(seconds: float) -> str:
+    total_centiseconds = max(0, int(round(float(seconds) * 100)))
+    minutes, centiseconds = divmod(total_centiseconds, 6000)
+    secs, hundredths = divmod(centiseconds, 100)
+    return f"[{minutes:02d}:{secs:02d}.{hundredths:02d}]"
+
+
+def _rebase_line_timings_to_audio_window(
+    line_timings: List[Tuple[float, str]],
+    *,
+    audio_start: float,
+    target_duration: Optional[int],
+    trailing_line_estimate_sec: float = 5.0,
+) -> List[Tuple[float, str]]:
+    if not line_timings or audio_start <= 0.0 or not target_duration:
+        return line_timings
+
+    clip_start = float(audio_start)
+    clip_end = clip_start + float(target_duration)
+    rebased: List[Tuple[float, str]] = []
+    for index, (line_start, text) in enumerate(line_timings):
+        next_start = (
+            float(line_timings[index + 1][0])
+            if index + 1 < len(line_timings)
+            else float(line_start) + float(trailing_line_estimate_sec)
+        )
+        if next_start <= clip_start or float(line_start) >= clip_end:
+            continue
+        rebased.append((max(0.0, float(line_start) - clip_start), text))
+    return rebased or line_timings
+
+
+def _build_lrc_text_from_line_timings(
+    line_timings: List[Tuple[float, str]],
+) -> Optional[str]:
+    if not line_timings:
+        return None
+    return "\n".join(
+        f"{_format_lrc_timestamp(timestamp)}{text}"
+        for timestamp, text in line_timings
+        if text.strip()
+    )
+
+
 def _apply_lrc_timing_trust_policy(
     *,
     line_timings: Optional[List[Tuple[float, str]]],
@@ -80,6 +124,7 @@ def _resolve_lrc_inputs(
     title: str,
     artist: str,
     lyrics_file: Optional[Path],
+    audio_start: float,
     filter_promos: bool,
     target_duration: Optional[int],
     vocals_path: Optional[str],
@@ -110,6 +155,19 @@ def _resolve_lrc_inputs(
         )
         if file_lrc_text or file_lines:
             quality_report["source"] = f"lyrics_file:{lyrics_file}"
+        if file_lines and not file_lrc_text and not file_line_timings:
+            quality_report.update(
+                {
+                    "lyrics_source_audio_scoring_used": False,
+                    "lyrics_source_disagreement_flagged": False,
+                    "lyrics_source_disagreement_reasons": [],
+                    "lyrics_source_candidate_count": 0,
+                    "lyrics_source_comparable_candidate_count": 0,
+                    "lyrics_source_selection_mode": "lyrics_file_plain_text",
+                    "lyrics_source_routing_skip_reason": "lyrics_file_plain_text",
+                }
+            )
+            return None, None, str(quality_report["source"]), file_lines
 
     routing_diagnostics = {
         "lyrics_source_audio_scoring_used": False,
@@ -144,6 +202,17 @@ def _resolve_lrc_inputs(
         lrc_text = file_lrc_text
         line_timings = file_line_timings
         source = "lyrics_file_lrc"
+    elif line_timings and audio_start > 0.0 and target_duration:
+        rebased_line_timings = _rebase_line_timings_to_audio_window(
+            line_timings,
+            audio_start=audio_start,
+            target_duration=target_duration,
+        )
+        if rebased_line_timings != line_timings:
+            line_timings = rebased_line_timings
+            lrc_text = _build_lrc_text_from_line_timings(line_timings)
+            quality_report["lyrics_source_selection_mode"] = "provider_clip_window"
+            quality_report["lyrics_source_routing_skip_reason"] = "provider_clip_window"
     if not quality_report["source"]:
         quality_report["source"] = source
 

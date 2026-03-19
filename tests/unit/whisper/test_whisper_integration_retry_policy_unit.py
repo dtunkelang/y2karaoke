@@ -37,6 +37,17 @@ def test_should_retry_with_aggressive_whisper_non_borderline_false():
     )
 
 
+def test_should_retry_with_aggressive_whisper_on_empty_transcription_short_clip():
+    assert (
+        should_retry_with_aggressive_whisper(
+            line_count=4,
+            aggressive=False,
+            metrics={"transcription_empty": 1.0},
+        )
+        is True
+    )
+
+
 def test_retry_improves_alignment_true_on_coverage_gain():
     assert (
         retry_improves_alignment(

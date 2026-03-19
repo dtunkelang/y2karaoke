@@ -11,29 +11,43 @@ from ....config import DEFAULT_CACHE_DIR
 from ....utils.logging import get_logger
 
 logger = get_logger(__name__)
-_TRIMMED_AUDIO_RE = re.compile(r"trimmed_from_(\d+(?:\.\d+)?)s$", re.IGNORECASE)
+_TRIMMED_AUDIO_RE = re.compile(
+    r"trimmed_from_(\d+(?:\.\d+)?)s(?:_for_(\d+(?:\.\d+)?)s)?$",
+    re.IGNORECASE,
+)
 
 
 def _trim_audio_with_ffmpeg(
-    audio_path: str, start_time: float, output_path: str
+    audio_path: str,
+    start_time: float,
+    output_path: str,
+    *,
+    duration: float | None = None,
 ) -> bool:
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-ss",
+        f"{start_time:.3f}",
+        "-i",
+        audio_path,
+    ]
+    if duration is not None:
+        cmd.extend(["-t", f"{duration:.3f}"])
+    cmd.extend(
+        [
+            "-vn",
+            "-acodec",
+            "pcm_s16le",
+            output_path,
+        ]
+    )
     try:
         subprocess.run(
-            [
-                "ffmpeg",
-                "-y",
-                "-hide_banner",
-                "-loglevel",
-                "error",
-                "-ss",
-                f"{start_time:.3f}",
-                "-i",
-                audio_path,
-                "-vn",
-                "-acodec",
-                "pcm_s16le",
-                output_path,
-            ],
+            cmd,
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -85,6 +99,19 @@ def _parse_trimmed_start_time(audio_path: str) -> float | None:
     return float(match.group(1))
 
 
+def _parse_trimmed_duration(audio_path: str) -> float | None:
+    match = _TRIMMED_AUDIO_RE.match(Path(audio_path).stem)
+    if match is None or match.group(2) is None:
+        return None
+    return float(match.group(2))
+
+
+def _trimmed_audio_name(start_time: float, duration: float | None) -> str:
+    if duration is None:
+        return f"trimmed_from_{start_time:.2f}s.wav"
+    return f"trimmed_from_{start_time:.2f}s_for_{duration:.2f}s.wav"
+
+
 def _select_full_length_cached_stem(
     cache_dirs: list[Path],
     pattern: str,
@@ -105,24 +132,29 @@ def _derive_trimmed_stem_paths(
     *,
     cache_dir: Path,
     start_time: float,
+    duration: float | None,
     vocals_stem: Path,
     instrumental_stem: Path,
     force: bool,
 ) -> dict[str, Path] | None:
-    trimmed_vocals = (
-        cache_dir / f"trimmed_from_{start_time:.2f}s_(Vocals)_htdemucs_ft.wav"
+    trim_prefix = (
+        f"trimmed_from_{start_time:.2f}s"
+        if duration is None
+        else f"trimmed_from_{start_time:.2f}s_for_{duration:.2f}s"
     )
-    trimmed_instrumental = (
-        cache_dir / f"trimmed_from_{start_time:.2f}s_instrumental.wav"
-    )
+    trimmed_vocals = cache_dir / f"{trim_prefix}_(Vocals)_htdemucs_ft.wav"
+    trimmed_instrumental = cache_dir / f"{trim_prefix}_instrumental.wav"
     if force or not trimmed_vocals.exists():
         if not _trim_audio_with_ffmpeg(
-            str(vocals_stem), start_time, str(trimmed_vocals)
+            str(vocals_stem), start_time, str(trimmed_vocals), duration=duration
         ):
             return None
     if force or not trimmed_instrumental.exists():
         if not _trim_audio_with_ffmpeg(
-            str(instrumental_stem), start_time, str(trimmed_instrumental)
+            str(instrumental_stem),
+            start_time,
+            str(trimmed_instrumental),
+            duration=duration,
         ):
             return None
     return {
@@ -136,13 +168,16 @@ def trim_audio_if_needed(
     start_time: float,
     video_id: str,
     cache_manager: Any,
+    audio_duration: float | None = None,
     force: bool = False,
 ) -> str:
     """Trim the audio from start_time onward, caching the result."""
-    if start_time <= 0:
+    if start_time <= 0 and (audio_duration is None or audio_duration <= 0):
+        return audio_path
+    if audio_duration is not None and audio_duration <= 0:
         return audio_path
 
-    trimmed_name = f"trimmed_from_{start_time:.2f}s.wav"
+    trimmed_name = _trimmed_audio_name(start_time, audio_duration)
     if not force and cache_manager.file_exists(video_id, trimmed_name):
         logger.debug("📁 Using cached trimmed audio")
         return str(cache_manager.get_file_path(video_id, trimmed_name))
@@ -155,9 +190,16 @@ def trim_audio_if_needed(
             logger.debug("📁 Using shared cached trimmed audio")
             return str(cached_trimmed)
 
-    logger.info(f"✂️ Trimming audio from {start_time:.2f}s")
+    if audio_duration is None:
+        logger.info(f"✂️ Trimming audio from {start_time:.2f}s")
+    else:
+        logger.info(
+            f"✂️ Trimming audio from {start_time:.2f}s for {audio_duration:.2f}s"
+        )
     trimmed_path = cache_manager.get_file_path(video_id, trimmed_name)
-    if _trim_audio_with_ffmpeg(audio_path, start_time, str(trimmed_path)):
+    if _trim_audio_with_ffmpeg(
+        audio_path, start_time, str(trimmed_path), duration=audio_duration
+    ):
         return str(trimmed_path)
 
     audio = AudioSegment.from_wav(audio_path)
@@ -166,7 +208,12 @@ def trim_audio_if_needed(
         logger.warning("Start time beyond audio length, using original")
         return audio_path
 
-    trimmed = audio[start_ms:]
+    end_ms = (
+        min(len(audio), start_ms + int(audio_duration * 1000))
+        if audio_duration is not None
+        else len(audio)
+    )
+    trimmed = audio[start_ms:end_ms]
     trimmed.export(str(trimmed_path), format="wav")
     return str(trimmed_path)
 
@@ -205,6 +252,7 @@ def separate_vocals(
     """Separate vocals and instrumental from audio, using cache if available."""
     cache_dirs = _candidate_video_cache_dirs(cache_manager, video_id)
     trimmed_start_time = _parse_trimmed_start_time(audio_path)
+    trimmed_duration = _parse_trimmed_duration(audio_path)
     audio_filename = Path(audio_path).name.lower()
     if any(
         marker in audio_filename
@@ -272,6 +320,7 @@ def separate_vocals(
             derived = _derive_trimmed_stem_paths(
                 cache_dir=cache_dirs[0],
                 start_time=trimmed_start_time,
+                duration=trimmed_duration,
                 vocals_stem=full_vocals,
                 instrumental_stem=full_instrumental,
                 force=force,

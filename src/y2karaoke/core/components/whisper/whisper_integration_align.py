@@ -330,7 +330,16 @@ def _finalize_prepared_alignment_inputs(
     if not transcription or not all_words:
         logger.warning("No transcription available, skipping Whisper timing map")
         return None, _return_alignment_result_with_trace(
-            result=(baseline_lines, [], {}),
+            result=(
+                baseline_lines,
+                [],
+                {
+                    "transcription_empty": 1.0,
+                    "matched_ratio": 0.0,
+                    "line_coverage": 0.0,
+                    "phonetic_similarity_coverage": 0.0,
+                },
+            ),
             trace_snapshots=trace_snapshots,
             trace_path=trace_path,
         )
@@ -453,7 +462,7 @@ def _prepare_alignment_inputs(
     if forced_result is not None:
         return None, forced_result
 
-    sparse_whisper_output = (
+    sparse_whisper_output = bool(all_words) and (
         len(all_words) < config.sparse_word_threshold
         or len(transcription) <= config.sparse_segment_threshold
     )

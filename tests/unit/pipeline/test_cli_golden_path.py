@@ -98,3 +98,29 @@ def test_cli_generate_skip_separation_wiring(monkeypatch):
     assert generator is not None
     assert generator.generate_kwargs is not None
     assert generator.generate_kwargs["skip_separation"] is True
+
+
+def test_cli_generate_audio_duration_overrides_target_duration(monkeypatch):
+    monkeypatch.setattr(cli_commands, "TrackIdentifier", _DummyIdentifier)
+    monkeypatch.setattr(cli, "KaraokeGenerator", _DummyGenerator)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli.cli,
+        [
+            "generate",
+            "song artist query",
+            "--no-render",
+            "--audio-start",
+            "50",
+            "--audio-duration",
+            "22",
+        ],
+    )
+
+    assert result.exit_code == 0
+    generator = _DummyGenerator.last_instance
+    assert generator is not None
+    assert generator.generate_kwargs is not None
+    assert generator.generate_kwargs["audio_duration"] == 22.0
+    assert generator.generate_kwargs["target_duration"] == 22

@@ -93,6 +93,12 @@ def _validate_song(song: Any, index: int) -> list[str]:
             errors.append(f"songs[{index}].audio_start_sec must be >= 0")
     elif is_clip_entry:
         errors.append(f"songs[{index}].audio_start_sec is required for clip entries")
+    if "clip_duration_sec" in song:
+        clip_duration_sec = song["clip_duration_sec"]
+        if not isinstance(clip_duration_sec, (int, float)):
+            errors.append(f"songs[{index}].clip_duration_sec must be numeric")
+        elif float(clip_duration_sec) <= 0.0:
+            errors.append(f"songs[{index}].clip_duration_sec must be > 0")
     if "lyrics_file" in song:
         lyrics_file = song["lyrics_file"]
         if lyrics_file is not None and (
