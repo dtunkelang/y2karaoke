@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""Deterministic helper for curated clip audio and editor setup."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+import webbrowser
+from pathlib import Path
+from urllib.parse import urlencode
+
+import yaml  # type: ignore[import-untyped]
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+MANIFEST_PATH = REPO_ROOT / "benchmarks" / "curated_clip_songs.yaml"
+CLIP_GOLD_ROOT = (
+    REPO_ROOT / "benchmarks" / "clip_gold_candidate" / "20260312T_curated_clips"
+)
+EDITOR_BASE_URL = "http://127.0.0.1:8765/"
+
+
+def _slugify(text: str) -> str:
+    import re
+
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+
+
+def _base_slug(artist: str, title: str, youtube_id: str) -> str:
+    slug = _slugify(f"{artist}-{title}")
+    return slug or youtube_id
+
+
+def _song_slug(song: dict[str, object]) -> str:
+    base = _base_slug(
+        str(song["artist"]),
+        str(song["title"]),
+        str(song["youtube_id"]),
+    )
+    clip_id = str(song.get("clip_id") or "").strip()
+    if not clip_id:
+        return base
+    clip_slug = _slugify(clip_id)
+    return f"{base}-{clip_slug}" if clip_slug else base
+
+
+def _load_manifest(path: Path) -> list[dict[str, object]]:
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    songs = raw.get("songs", [])
+    if not isinstance(songs, list):
+        raise ValueError("Manifest songs must be a list")
+    return [song for song in songs if isinstance(song, dict)]
+
+
+def _match_song(songs: list[dict[str, object]], match: str) -> tuple[int, dict[str, object]]:
+    lowered = match.lower()
+    hits: list[tuple[int, dict[str, object]]] = []
+    for index, song in enumerate(songs, start=1):
+        haystack = " ".join(
+            [
+                str(song.get("artist", "")),
+                str(song.get("title", "")),
+                str(song.get("clip_id", "")),
+            ]
+        ).lower()
+        if lowered in haystack:
+            hits.append((index, song))
+    if not hits:
+        raise ValueError(f"No curated clip matched {match!r}")
+    if len(hits) > 1:
+        labels = [f"{i}: {s['artist']} - {s['title']} [{s.get('clip_id', '')}]" for i, s in hits]
+        raise ValueError(f"Multiple curated clips matched {match!r}: {labels}")
+    return hits[0]
+
+
+def _gold_path(index: int, song: dict[str, object]) -> Path:
+    slug = _song_slug(song)
+    indexed = CLIP_GOLD_ROOT / f"{index:02d}_{slug}.gold.json"
+    if indexed.exists():
+        return indexed
+    matches = sorted(CLIP_GOLD_ROOT.glob(f"*_{slug}.gold.json"))
+    if matches:
+        return matches[0]
+    fallback = CLIP_GOLD_ROOT / f"{slug}.gold.json"
+    if fallback.exists():
+        return fallback
+    raise FileNotFoundError(f"No gold file found for curated clip {slug}")
+
+
+def _cache_dir(song: dict[str, object]) -> Path:
+    return Path.home() / ".cache" / "karaoke" / str(song["youtube_id"])
+
+
+def _canonical_trimmed_clip_path(song: dict[str, object]) -> Path:
+    start = float(song.get("audio_start_sec") or 0.0)
+    duration = float(song.get("clip_duration_sec") or 0.0)
+    if duration <= 0:
+        raise ValueError("clip_duration_sec must be set for canonical clip audio")
+    return _cache_dir(song) / f"trimmed_from_{start:.2f}s_for_{duration:.2f}s.wav"
+
+
+def _source_audio_candidates(song: dict[str, object]) -> list[Path]:
+    cache_dir = _cache_dir(song)
+    title = str(song["title"])
+    start = float(song.get("audio_start_sec") or 0.0)
+    candidates = [
+        cache_dir / f"{title}.wav",
+        cache_dir / f"trimmed_from_{start:.2f}s.wav",
+    ]
+    return candidates
+
+
+def _ensure_clip_audio(song: dict[str, object]) -> Path:
+    clip_path = _canonical_trimmed_clip_path(song)
+    if clip_path.exists():
+        return clip_path
+
+    source = next((path for path in _source_audio_candidates(song) if path.exists()), None)
+    if source is None:
+        raise FileNotFoundError(
+            f"No source audio found in {_cache_dir(song)}; expected one of "
+            f"{[str(path) for path in _source_audio_candidates(song)]}"
+        )
+
+    start = float(song.get("audio_start_sec") or 0.0)
+    duration = float(song.get("clip_duration_sec") or 0.0)
+    clip_path.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-ss",
+            f"{start:g}",
+            "-t",
+            f"{duration:g}",
+            "-i",
+            str(source),
+            "-c",
+            "copy",
+            str(clip_path),
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return clip_path
+
+
+def _update_gold_audio_path(gold_path: Path, audio_path: Path) -> None:
+    doc = json.loads(gold_path.read_text(encoding="utf-8"))
+    doc["audio_path"] = str(audio_path)
+    gold_path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+
+
+def _editor_url(gold_path: Path, audio_path: Path) -> str:
+    query = urlencode(
+        {
+            "timing": str(gold_path),
+            "audio": str(audio_path),
+            "save": str(gold_path),
+        }
+    )
+    return f"{EDITOR_BASE_URL}?{query}"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--match", required=True, help="Substring match for artist/title/clip_id")
+    parser.add_argument(
+        "--open-editor",
+        action="store_true",
+        help="Open the resolved curated clip in the local gold editor",
+    )
+    args = parser.parse_args()
+
+    songs = _load_manifest(MANIFEST_PATH)
+    index, song = _match_song(songs, args.match)
+    gold_path = _gold_path(index, song)
+    audio_path = _ensure_clip_audio(song)
+    _update_gold_audio_path(gold_path, audio_path)
+    url = _editor_url(gold_path, audio_path)
+
+    print(json.dumps({"gold_path": str(gold_path), "audio_path": str(audio_path), "editor_url": url}, indent=2))
+    if args.open_editor:
+        webbrowser.open(url)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

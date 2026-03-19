@@ -292,13 +292,13 @@ songs:
   clip_id: rapid-verse
   clip_tags: [stress, rapid, dense-lyrics, verse]
   audio_start_sec: 6.0
-  clip_duration_sec: 30.0
+  clip_duration_sec: 15.0
   youtube_id: soNLLPokjC4
   youtube_url: https://www.youtube.com/watch?v=soNLLPokjC4
   preferred_lyrics_provider: lyriq
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
-  notes: Dense rapid-fire verse clip from 0:06 to 0:36 using lines 7-15 as the curation target.
+  notes: Dense repeated-hook clip from 0:06 to 0:21 using the first six chant lines only.
 - artist: Daddy Yankee & Snow
   title: Con Calma
   clip_id: first-chorus-bilingual
