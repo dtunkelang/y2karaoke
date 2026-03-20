@@ -39,6 +39,16 @@ def test_load_whisper_runtime_config_reads_env(monkeypatch):
     )
 
 
+def test_load_whisper_runtime_config_allows_disabling_default_restored_run_shift(
+    monkeypatch,
+):
+    monkeypatch.setenv("Y2K_WHISPER_ENABLE_RESTORED_RUN_ONSET_SHIFT", "0")
+
+    config = load_whisper_runtime_config()
+
+    assert config.restored_run_onset_shift is False
+
+
 def test_load_whisper_runtime_config_explicit_overrides_take_precedence(monkeypatch):
     monkeypatch.setenv("Y2K_WHISPER_PROFILE", "safe")
     monkeypatch.setenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", "1")

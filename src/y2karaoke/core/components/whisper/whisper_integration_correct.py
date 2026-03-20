@@ -76,6 +76,23 @@ def _line_set_end(lines: List[models.Line]) -> float:
     return end_time
 
 
+def _should_ignore_trimmed_transcript(
+    *,
+    trimmed_end: Optional[float],
+    original_transcription: List[timing_models.TranscriptionSegment],
+    lines: List[models.Line],
+    min_cutoff_gap_sec: float = 10.0,
+) -> bool:
+    if trimmed_end is None:
+        return False
+    transcript_end = max((seg.end for seg in original_transcription), default=trimmed_end)
+    lyric_end = _line_set_end(lines)
+    return (
+        transcript_end - trimmed_end >= min_cutoff_gap_sec
+        and lyric_end - trimmed_end >= min_cutoff_gap_sec
+    )
+
+
 def _call_apply_low_quality_postpasses_with_metrics(
     apply_low_quality_segment_postpasses_fn: Callable[..., Any],
     *,
@@ -227,9 +244,19 @@ def correct_timing_with_whisper_impl(  # noqa: C901
         audio_features = extract_audio_features_fn(vocals_path)
 
     line_texts = [line.text for line in lines if line.text.strip()]
+    original_transcription = transcription
+    original_all_words = all_words
     transcription, all_words, trimmed_end = trim_whisper_transcription_by_lyrics_fn(
         transcription, all_words, line_texts
     )
+    if _should_ignore_trimmed_transcript(
+        trimmed_end=trimmed_end,
+        original_transcription=original_transcription,
+        lines=lines,
+    ):
+        transcription = original_transcription
+        all_words = original_all_words
+        trimmed_end = None
     if trimmed_end:
         logger.info(
             "Truncated Whisper transcript to %.2f s (last matching lyric).", trimmed_end

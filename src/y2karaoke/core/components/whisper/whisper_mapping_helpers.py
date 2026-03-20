@@ -249,7 +249,24 @@ def _has_ambiguous_repetitive_tail_match(
     avg_words_per_line = sum(len(lyric.split()) for lyric in normalized_lyrics) / max(
         1, len(normalized_lyrics)
     )
-    return avg_words_per_line <= 4.0
+    if avg_words_per_line <= 4.0:
+        return True
+
+    matched_tokens = matched_segment_text.split()
+    if not matched_tokens:
+        return False
+
+    repeated_lyrics = [lyric for lyric in unique_lyrics if normalized_lyrics.count(lyric) >= 2]
+    for lyric in repeated_lyrics:
+        lyric_tokens = lyric.split()
+        if len(lyric_tokens) <= len(matched_tokens):
+            continue
+        if (
+            lyric_tokens[: len(matched_tokens)] == matched_tokens
+            or lyric_tokens[-len(matched_tokens) :] == matched_tokens
+        ):
+            return True
+    return False
 
 
 def _choose_segment_for_line(

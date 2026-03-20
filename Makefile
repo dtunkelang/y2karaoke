@@ -9,7 +9,7 @@ ifdef CI
 TEST_FAST_PYTEST_FLAGS += --durations=20 --durations-min=0.1
 endif
 
-.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill curated-canary-prewarm-sources curated-canary-guardrails curated-canary-compare curated-canary-eval curated-canary-experiment check ci-fast ci-full
+.PHONY: bootstrap dep-check fmt fmt-check lint type test-fast test-full perf-smoke quality-guardrails bootstrap-quality-guardrails visual-eval visual-eval-guardrails bootstrap-calibrate benchmark-validate benchmark-run benchmark-aggregate-only benchmark-matrix benchmark-recommend benchmark-compare-correction benchmark-classify-failures benchmark-profile-runtime benchmark-compare-runtime benchmark-recommend-human-guidance benchmark-analyze-agreement benchmark-sweep-agreement benchmark-run-bg benchmark-status benchmark-kill curated-open curated-canary-prewarm-sources curated-canary-guardrails curated-canary-compare curated-canary-eval curated-canary-experiment check ci-fast ci-full
 
 bootstrap:
 	./tools/bootstrap_dev.sh
@@ -128,6 +128,10 @@ benchmark-status:
 
 benchmark-kill:
 	./tools/kill_benchmark_suites.sh
+
+curated-open:
+	@test -n "$(MATCH)" || (echo "MATCH is required (e.g. MATCH=\"Con Calma\")"; exit 2)
+	PYTHONPATH=src $(PYTHON) tools/curated_clip_helper.py --match "$(MATCH)" --open-editor
 
 curated-canary-prewarm-sources:
 	$(PYTHON) tools/prewarm_lyrics_source_cache.py --manifest benchmarks/benchmark_songs.yaml --match "Blinding Lights|Derniere danse|Mi Gente|DESPECHA" --max-songs 4

@@ -344,7 +344,7 @@ Benchmark metric interpretation:
 For benchmark ground-truth curation, use the local gold timing editor:
 
 ```bash
-python tools/gold_timing_editor.py --host 127.0.0.1 --port 8765
+./venv/bin/python tools/gold_timing_editor.py --host 127.0.0.1 --port 8765
 ```
 
 Then open `http://127.0.0.1:8765`.

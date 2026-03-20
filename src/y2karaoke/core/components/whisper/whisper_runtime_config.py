@@ -29,7 +29,7 @@ class WhisperRuntimeConfig:
     tail_shortfall_forced_fallback: bool = False
     low_support_onset_reanchor: bool = False
     repeat_cadence_reanchor: bool = False
-    restored_run_onset_shift: bool = False
+    restored_run_onset_shift: bool = True
     repeat_duration_normalize: bool = False
     disable_repeat_shift: bool = False
     disable_monotonic_start_enforce: bool = False
@@ -66,7 +66,7 @@ def load_whisper_runtime_config(
             else repeat_cadence_reanchor
         ),
         restored_run_onset_shift=(
-            _env_flag("Y2K_WHISPER_ENABLE_RESTORED_RUN_ONSET_SHIFT")
+            _env_flag("Y2K_WHISPER_ENABLE_RESTORED_RUN_ONSET_SHIFT", default=True)
             if restored_run_onset_shift is None
             else restored_run_onset_shift
         ),

@@ -115,6 +115,37 @@ def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match():
     assert len(trimmed_words) == len(words)
 
 
+def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match_with_longer_repeated_lines():
+    segments = [
+        TranscriptionSegment(start=0, end=3, text="guess whos back back again", words=[]),
+        TranscriptionSegment(start=3, end=6, text="shadys back tell a friend", words=[]),
+        TranscriptionSegment(start=6, end=9.3, text="guess whos back", words=[]),
+        TranscriptionSegment(start=9.3, end=14.8, text="crowd noise and more vocals", words=[]),
+    ]
+    words = [
+        TranscriptionWord(text="guess", start=0, end=0.5, probability=1.0),
+        TranscriptionWord(text="friend", start=5.5, end=6.0, probability=1.0),
+        TranscriptionWord(text="guess", start=6.2, end=6.7, probability=1.0),
+        TranscriptionWord(text="vocals", start=13.5, end=14.0, probability=1.0),
+    ]
+    line_texts = [
+        "Guess who's back, back again?",
+        "Shady's back, tell a friend",
+        "Guess who's back? Guess who's back?",
+        "Guess who's back? Guess who's back?",
+        "Guess who's back? Guess who's back?",
+        "Guess who's back?",
+    ]
+
+    trimmed_segs, trimmed_words, end_time = wi._trim_whisper_transcription_by_lyrics(
+        segments, words, line_texts
+    )
+
+    assert end_time is None
+    assert len(trimmed_segs) == len(segments)
+    assert len(trimmed_words) == len(words)
+
+
 def test_should_ignore_trimmed_transcript_when_it_cuts_lyric_tail():
     segments = [
         TranscriptionSegment(start=0, end=20, text="early", words=[]),
@@ -143,6 +174,40 @@ def test_should_ignore_trimmed_transcript_keeps_normal_tail_trim():
     ]
 
     assert not wialign._should_ignore_trimmed_transcript(
+        trimmed_end=184.44,
+        original_transcription=segments,
+        lines=lines,
+    )
+
+
+def test_correction_should_ignore_trimmed_transcript_when_it_cuts_lyric_tail():
+    segments = [
+        TranscriptionSegment(start=0, end=20, text="early", words=[]),
+        TranscriptionSegment(start=180, end=198, text="late", words=[]),
+    ]
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=195.0, end_time=196.0)]),
+    ]
+
+    assert wicorrect._should_ignore_trimmed_transcript(
+        trimmed_end=184.44,
+        original_transcription=segments,
+        lines=lines,
+    )
+
+
+def test_correction_should_ignore_trimmed_transcript_keeps_normal_tail_trim():
+    segments = [
+        TranscriptionSegment(start=0, end=20, text="early", words=[]),
+        TranscriptionSegment(start=180, end=190, text="late", words=[]),
+    ]
+    lines = [
+        Line(words=[Word(text="a", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="b", start_time=185.0, end_time=186.0)]),
+    ]
+
+    assert not wicorrect._should_ignore_trimmed_transcript(
         trimmed_end=184.44,
         original_transcription=segments,
         lines=lines,

@@ -23,7 +23,7 @@ The Gold Timing Editor is a local web application for manual refinement of word-
 1. **Bootstrap**: Generate a candidate gold set using `tools/bootstrap_gold_from_karaoke.py`.
 2. **Launch Editor**: Start the editor server:
    ```bash
-   python tools/gold_timing_editor.py
+   ./venv/bin/python tools/gold_timing_editor.py
    ```
 3. **Refine**: Open the provided URL in Chrome.
 4. **Save**: Click "Save Gold JSON" to commit your changes back to the benchmark set.

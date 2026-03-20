@@ -150,6 +150,8 @@ def _find_repeated_compact_run_end(
     max_source_duration: float,
     min_late_shift: float,
     min_pair_overlap: float,
+    max_start_shift_for_duration_restore: float = 0.15,
+    min_end_shift_for_duration_restore: float = 0.18,
 ) -> int:
     src = source_lines[start_idx]
     dst = repaired_lines[start_idx]
@@ -158,7 +160,13 @@ def _find_repeated_compact_run_end(
     src_duration = src.end_time - src.start_time
     if src_duration > max_source_duration:
         return start_idx
-    if dst.start_time - src.start_time < min_late_shift:
+    if not _is_repeated_compact_restore_candidate(
+        source_line=src,
+        repaired_line=dst,
+        min_late_shift=min_late_shift,
+        max_start_shift_for_duration_restore=max_start_shift_for_duration_restore,
+        min_end_shift_for_duration_restore=min_end_shift_for_duration_restore,
+    ):
         return start_idx
 
     run_end = start_idx + 1
@@ -171,12 +179,36 @@ def _find_repeated_compact_run_end(
         cur_duration = cur_src.end_time - cur_src.start_time
         if cur_duration > max_source_duration:
             break
-        if cur_dst.start_time - cur_src.start_time < min_late_shift:
+        if not _is_repeated_compact_restore_candidate(
+            source_line=cur_src,
+            repaired_line=cur_dst,
+            min_late_shift=min_late_shift,
+            max_start_shift_for_duration_restore=max_start_shift_for_duration_restore,
+            min_end_shift_for_duration_restore=min_end_shift_for_duration_restore,
+        ):
             break
         if _line_text_token_overlap(prev_src.text, cur_src.text) < min_pair_overlap:
             break
         run_end += 1
     return run_end
+
+
+def _is_repeated_compact_restore_candidate(
+    *,
+    source_line: models.Line,
+    repaired_line: models.Line,
+    min_late_shift: float,
+    max_start_shift_for_duration_restore: float,
+    min_end_shift_for_duration_restore: float,
+) -> bool:
+    start_shift = repaired_line.start_time - source_line.start_time
+    if start_shift >= min_late_shift:
+        return True
+    return (
+        abs(start_shift) <= max_start_shift_for_duration_restore
+        and abs(repaired_line.end_time - source_line.end_time)
+        >= min_end_shift_for_duration_restore
+    )
 
 
 def _restore_split_short_refrains_to_matching_segments(

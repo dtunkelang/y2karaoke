@@ -50,7 +50,9 @@ Use a small set of stable tags rather than inventing one-off labels.
 3. Validate the manifest:
    `./venv/bin/python tools/validate_benchmark_manifest.py benchmarks/curated_clip_songs.yaml`
 4. Open the saved gold file, not a timing-report seed:
-   `./venv/bin/python tools/curated_clip_helper.py --match "Song Or Clip Id" --open-editor`
+   `make curated-open MATCH="Song Or Clip Id"`
+   Direct helper form:
+   `PYTHONPATH=src ./.venv/bin/python tools/curated_clip_helper.py --match "Song Or Clip Id" --open-editor`
 5. If the song is cold, use a quick first probe:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --clip-tag stress --fast-clip-probe --max-songs 1`
 6. For apples-to-apples measurement, rerun on the normal path and let the runner reuse full-song results where possible:
@@ -77,6 +79,8 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 ## Curation Discipline
 
 - Always open the editor from the saved gold JSON and canonical clip audio path.
+- Prefer the stable shortcut:
+  `make curated-open MATCH="Song Or Clip Id"`
 - Use `tools/curated_clip_helper.py` instead of hand-building editor URLs or filenames.
 - After any manual curation change:
   - verify the saved gold JSON on disk

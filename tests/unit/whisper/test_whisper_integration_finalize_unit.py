@@ -367,6 +367,78 @@ def test_restore_repeated_compact_runs_from_source_restores_late_hook_run():
     assert repaired[2].start_time == pytest.approx(9.0)
 
 
+def test_restore_repeated_compact_runs_from_source_restores_duration_distorted_tail_run():
+    source = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=8.46, end_time=8.67),
+                Word(text="who's", start_time=8.67, end_time=8.93),
+                Word(text="back?", start_time=8.93, end_time=9.22),
+                Word(text="Guess", start_time=9.22, end_time=9.43),
+                Word(text="who's", start_time=9.43, end_time=9.66),
+                Word(text="back?", start_time=9.66, end_time=9.94),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=9.95, end_time=10.18),
+                Word(text="who's", start_time=10.18, end_time=10.4),
+                Word(text="back?", start_time=10.4, end_time=10.68),
+                Word(text="Guess", start_time=10.68, end_time=10.91),
+                Word(text="who's", start_time=10.91, end_time=11.13),
+                Word(text="back?", start_time=11.13, end_time=11.43),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=11.44, end_time=11.89),
+                Word(text="who's", start_time=11.89, end_time=12.35),
+                Word(text="back?", start_time=12.35, end_time=12.8),
+                Word(text="Guess", start_time=12.8, end_time=12.84),
+                Word(text="who's", start_time=12.84, end_time=12.88),
+                Word(text="back?", start_time=12.88, end_time=12.94),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=13.39, end_time=13.83),
+                Word(text="who's", start_time=13.87, end_time=14.31),
+                Word(text="back?", start_time=14.36, end_time=14.8),
+            ]
+        ),
+    ]
+    aligned = [
+        source[0],
+        source[1],
+        Line(
+            words=[
+                Word(text="Guess", start_time=11.44, end_time=11.68),
+                Word(text="who's", start_time=11.68, end_time=11.93),
+                Word(text="back?", start_time=11.93, end_time=12.27),
+                Word(text="Guess", start_time=12.27, end_time=12.52),
+                Word(text="who's", start_time=12.52, end_time=12.74),
+                Word(text="back?", start_time=12.74, end_time=13.16),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=13.39, end_time=13.67),
+                Word(text="who's", start_time=13.67, end_time=13.87),
+                Word(text="back?", start_time=13.87, end_time=14.09),
+            ]
+        ),
+    ]
+
+    repaired, restored = wifin._restore_repeated_compact_runs_from_source(
+        source,
+        aligned,
+    )
+
+    assert restored == 2
+    assert repaired[2].end_time == pytest.approx(source[2].end_time)
+    assert repaired[3].end_time == pytest.approx(source[3].end_time)
+
+
 def test_finalize_whisper_line_set_rolls_back_on_text_divergence():
     source_lines = [
         Line(words=[Word(text=f"s{i}", start_time=float(i), end_time=float(i) + 0.5)])
