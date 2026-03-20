@@ -394,6 +394,32 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_mixed_density_chorus
     assert lines[-1].end_time > 29.8
 
 
+def test_anchor_plain_text_lines_to_audio_window_rebalances_short_title_chorus_clip(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Sweet Caroline",
+            "Good times never seemed so good",
+            "I been inclined",
+            "To believe they never would",
+            "But now I look at the night",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.04,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 26.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(0.95, abs=0.05)
+    assert lines[0].end_time < 3.3
+    assert 5.4 < lines[1].start_time < 6.3
+    assert 11.7 < lines[2].start_time < 12.7
+    assert lines[-1].end_time == pytest.approx(25.92, abs=0.08)
+
+
 def test_romanize_lines_only_non_ascii(monkeypatch):
     line = _line_with_words(["hello", "café"])
     monkeypatch.setattr(
