@@ -117,10 +117,16 @@ def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match():
 
 def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match_with_longer_repeated_lines():
     segments = [
-        TranscriptionSegment(start=0, end=3, text="guess whos back back again", words=[]),
-        TranscriptionSegment(start=3, end=6, text="shadys back tell a friend", words=[]),
+        TranscriptionSegment(
+            start=0, end=3, text="guess whos back back again", words=[]
+        ),
+        TranscriptionSegment(
+            start=3, end=6, text="shadys back tell a friend", words=[]
+        ),
         TranscriptionSegment(start=6, end=9.3, text="guess whos back", words=[]),
-        TranscriptionSegment(start=9.3, end=14.8, text="crowd noise and more vocals", words=[]),
+        TranscriptionSegment(
+            start=9.3, end=14.8, text="crowd noise and more vocals", words=[]
+        ),
     ]
     words = [
         TranscriptionWord(text="guess", start=0, end=0.5, probability=1.0),

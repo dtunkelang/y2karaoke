@@ -256,7 +256,9 @@ def _has_ambiguous_repetitive_tail_match(
     if not matched_tokens:
         return False
 
-    repeated_lyrics = [lyric for lyric in unique_lyrics if normalized_lyrics.count(lyric) >= 2]
+    repeated_lyrics = [
+        lyric for lyric in unique_lyrics if normalized_lyrics.count(lyric) >= 2
+    ]
     for lyric in repeated_lyrics:
         lyric_tokens = lyric.split()
         if len(lyric_tokens) <= len(matched_tokens):

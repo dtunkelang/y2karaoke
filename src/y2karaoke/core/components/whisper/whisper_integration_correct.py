@@ -85,7 +85,9 @@ def _should_ignore_trimmed_transcript(
 ) -> bool:
     if trimmed_end is None:
         return False
-    transcript_end = max((seg.end for seg in original_transcription), default=trimmed_end)
+    transcript_end = max(
+        (seg.end for seg in original_transcription), default=trimmed_end
+    )
     lyric_end = _line_set_end(lines)
     return (
         transcript_end - trimmed_end >= min_cutoff_gap_sec
