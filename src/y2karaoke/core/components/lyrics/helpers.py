@@ -342,7 +342,7 @@ def _anchor_plain_text_lines_to_audio_window(
     mixed_density_chorus_clip_min_duration_sec: float = 24.0,
     mixed_density_chorus_clip_min_lines: int = 8,
     mixed_density_chorus_clip_anchor_ratio: float = 0.026,
-    mixed_density_chorus_clip_trailing_padding_sec: float = 0.05,
+    mixed_density_chorus_clip_trailing_padding_sec: float = 0.02,
 ) -> List[Line]:
     """Anchor untimed plain-text lines to the detected vocal onset when available.
 
@@ -808,7 +808,7 @@ def _mixed_density_chorus_gap_weight(current: Line, next_line: Line) -> float:
     if next_words >= 10 and current_words <= 6:
         return 0.25
     if current_words >= 8 and next_words <= 4:
-        return 0.08
+        return 0.11
     return 0.08
 
 

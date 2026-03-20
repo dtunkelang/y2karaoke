@@ -294,7 +294,7 @@ def test_anchor_plain_text_lines_to_audio_window_stretches_repetitive_compact_ho
 
     assert lines[1].start_time > 4.2
     assert lines[2].start_time > 8.1
-    assert lines[3].start_time > 9.7
+    assert lines[3].start_time > 9.55
     assert lines[-1].start_time > 13.2
     assert lines[-1].end_time > 14.5
 

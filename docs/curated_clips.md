@@ -108,6 +108,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - widen the setup gap into line 2
   - leave more room for the tail line
 - Mixed-density chorus clips like `Con Calma` still need a bit more span on the repeated long lines than the generic chorus weighting gives them. A small increase there, plus a slightly looser long-line to short-response gap, improved the clip without hurting the focused lyrics tests.
+- The remaining `Con Calma` miss was still mostly seed-shaped rather than Whisper-shaped:
+  - `gold_pre_whisper_start_mean_abs_sec` was already close to the final error
+  - the later tail lines were still compressed early
+  - reducing mixed-density chorus trailing pad slightly, while widening long-line to short-response gaps a bit more, improved `Con Calma` again without disturbing `Sweet Caroline`
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

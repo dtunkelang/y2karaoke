@@ -75,7 +75,10 @@ Only continue if there is a concrete reason:
 
 Most likely next inspection targets:
 - rerun the broader cached canary subset after the `Sweet Caroline` improvement and identify the next true outlier
-- likely remaining mixed-density target: `Con Calma`
+- latest mixed-density result:
+  - `Con Calma` improved again after reducing mixed-density trailing pad and widening long-line -> short-response gaps slightly
+  - representative run: `benchmarks/results/20260320T063430Z`
+- likely remaining broad target: `Houdini`
 - treat `Johnny Cash - Hurt` as a standalone hard canary unless a closer companion clip finally reproduces its line-end overextension
 
 ## Guardrails
