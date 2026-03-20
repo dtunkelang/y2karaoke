@@ -33,16 +33,20 @@ def apply_short_title_chorus_layout(
     estimate_singing_duration_fn: Callable[[str, int], float],
     apply_weighted_line_layout_fn: Callable[..., List[Line]],
 ) -> List[Line]:
+    # Short-title chorus clips like "Sweet Caroline" need a wider setup gap after
+    # the title line and a roomier tail than the generic duration estimate gives
+    # them; otherwise line 1 runs long and line 3 enters too late.
     base_weights = [
         estimate_singing_duration_fn(line.text, len(line.words))
         for line in populated_lines
     ]
     line_weights = list(base_weights)
-    line_weights[0] *= 0.68
-    line_weights[1] *= 0.86
-    line_weights[2] *= 0.76
-    line_weights[3] *= 1.0
-    gap_weights = [1.0, 0.55, 0.22, 0.08]
+    line_weights[0] *= 0.56
+    line_weights[1] *= 0.8
+    line_weights[2] *= 0.78
+    line_weights[3] *= 0.96
+    line_weights[4] *= 1.16
+    gap_weights = [1.6, 0.34, 0.18, 0.03]
     return apply_weighted_line_layout_fn(
         lines=lines,
         populated_lines=populated_lines,

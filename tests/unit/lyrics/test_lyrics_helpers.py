@@ -414,9 +414,9 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_short_title_chorus_c
     lh._anchor_plain_text_lines_to_audio_window(lines, 26.0, "vocals.wav")
 
     assert lines[0].start_time == pytest.approx(0.95, abs=0.05)
-    assert lines[0].end_time < 3.3
-    assert 5.4 < lines[1].start_time < 6.3
-    assert 11.7 < lines[2].start_time < 12.7
+    assert lines[0].end_time < 4.5
+    assert 6.9 < lines[1].start_time < 7.7
+    assert 11.6 < lines[2].start_time < 12.8
     assert lines[-1].end_time == pytest.approx(25.92, abs=0.08)
 
 

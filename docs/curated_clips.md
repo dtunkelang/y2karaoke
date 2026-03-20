@@ -72,6 +72,7 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - Prefer normal offline reruns once a song has cached audio and stems.
 - The runner can now score many clip entries directly from a compatible cached full-song result, which avoids rerunning generation for those clips.
 - `--fast-clip-probe` is still useful for a cold first pass, but it is a triage path, not the final benchmark path.
+- Broad offline tag runs are still noisy if the selected pack includes uncached clips; use known cached match-based subsets when you need a clean quality signal.
 
 ## Curation Discipline
 
@@ -97,6 +98,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `Without Me`
   - `I Gotta Feeling`
 - Plain-text clip lyrics need an audio-window-aware timing seed. Starting every plain-text clip at `0.0s` hides useful structure and biases repeated hooks toward early collapse.
+- Short-title chorus clips like `Sweet Caroline` need a different seed from the generic compact spread:
+  - give the title line less span
+  - widen the setup gap into line 2
+  - leave more room for the tail line
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

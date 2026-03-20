@@ -31,6 +31,8 @@ Use this file as a session handoff, not as a second backlog.
   - driver: 2-line forced-alignment unlock plus better weak-onset seed fallback for two-line subset-refrain clips
   - `Take On Me` improved from `0.4731s` to `0.151s` start error in `benchmarks/results/20260320T023956Z`
   - driver: sparse-support forced fallback now redistributes words inside short sustained 5-word lines so held final words are not compressed into the tail
+  - `Sweet Caroline` improved from `0.4788s` to `0.3104s` start error in `benchmarks/results/20260320T051849Z`
+  - driver: short-title chorus layout now shortens the title line, widens the setup gap, and leaves more room for the tail line
 
 ## If Quality Work Resumes
 
@@ -39,9 +41,12 @@ Use this file as a session handoff, not as a second backlog.
 - If focusing on clip families, use:
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Without Me|Gotta Feeling" --offline`
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Take On Me|Time After Time|Total Eclipse|Stayin' Alive" --offline`
+- For mixed-density chorus / phrase-boundary checks, use:
+  - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Con Calma|Sweet Caroline" --offline`
 - Treat hard clips as valid targets if they reflect real production problems.
 - Do not optimize against a single hard clip in isolation when the failure mode is still ambiguous; add companion clips first.
 - Prefer fixes that improve clip-scoped priors or shared alignment behavior over song-specific heuristics.
+- Broad offline tag runs can still be dominated by uncached clips; prefer known cached match-based subsets for clean quality comparisons.
 - For stubborn clips, inspect in this order:
   - helper-generated seed on the real cached clip audio
   - accepted forced-alignment output
@@ -69,9 +74,9 @@ Only continue if there is a concrete reason:
 - a test seam still depends on hidden state or unstable internals
 
 Most likely next inspection targets:
-- rerun the full curated pack and identify the next true outlier after the `Stayin' Alive` fix
-- likely remaining sparse/falsetto target: `Take On Me`
-- otherwise next likely broader target: whichever clip is now worst in the full-pack rerun, not whichever was worst before this session
+- rerun the broader cached canary subset after the `Sweet Caroline` improvement and identify the next true outlier
+- likely remaining mixed-density target: `Con Calma`
+- treat `Johnny Cash - Hurt` as a standalone hard canary unless a closer companion clip finally reproduces its line-end overextension
 
 ## Guardrails
 
