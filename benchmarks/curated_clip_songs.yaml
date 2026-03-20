@@ -561,3 +561,19 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Sparse paired-line chorus clip for Hurt-style long shared segment failures.
+- artist: R.E.M.
+  title: Everybody Hurts
+  clip_id: paired-lines-verse
+  clip_tags:
+  - stress
+  - sparse-support
+  - paired-lines
+  - verse
+  audio_start_sec: 16.0
+  clip_duration_sec: 27.0
+  youtube_id: mhIay4-PbCY
+  youtube_url: https://www.youtube.com/watch?v=mhIay4-PbCY
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Sparse paired-line verse clip for Hurt-style shared-segment overextension.

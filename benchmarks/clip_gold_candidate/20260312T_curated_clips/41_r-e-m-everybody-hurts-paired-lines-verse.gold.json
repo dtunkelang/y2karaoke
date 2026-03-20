@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "title": "Everybody Hurts [paired-lines-verse]",
+  "artist": "R.E.M.",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/mhIay4-PbCY/trimmed_from_16.00s_for_27.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "When your day is long",
+      "start": 1.05,
+      "end": 3.3,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "When",
+          "start": 1.05,
+          "end": 1.25
+        },
+        {
+          "word_index": 2,
+          "text": "your",
+          "start": 1.25,
+          "end": 1.5
+        },
+        {
+          "word_index": 3,
+          "text": "day",
+          "start": 1.5,
+          "end": 1.9
+        },
+        {
+          "word_index": 4,
+          "text": "is",
+          "start": 1.9,
+          "end": 2.2
+        },
+        {
+          "word_index": 5,
+          "text": "long",
+          "start": 2.2,
+          "end": 3.3
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "And the night, the night is yours alone",
+      "start": 6.5,
+      "end": 12.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 6.5,
+          "end": 6.8
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 6.8,
+          "end": 7.1
+        },
+        {
+          "word_index": 3,
+          "text": "night,",
+          "start": 7.1,
+          "end": 8.25
+        },
+        {
+          "word_index": 4,
+          "text": "the",
+          "start": 8.55,
+          "end": 8.9
+        },
+        {
+          "word_index": 5,
+          "text": "night",
+          "start": 8.9,
+          "end": 9.5
+        },
+        {
+          "word_index": 6,
+          "text": "is",
+          "start": 9.5,
+          "end": 9.85
+        },
+        {
+          "word_index": 7,
+          "text": "yours",
+          "start": 9.85,
+          "end": 10.5
+        },
+        {
+          "word_index": 8,
+          "text": "alone",
+          "start": 10.5,
+          "end": 12.0
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "When you're sure you've had enough",
+      "start": 16.3,
+      "end": 20.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "When",
+          "start": 16.3,
+          "end": 16.55
+        },
+        {
+          "word_index": 2,
+          "text": "you're",
+          "start": 16.55,
+          "end": 16.8
+        },
+        {
+          "word_index": 3,
+          "text": "sure",
+          "start": 16.8,
+          "end": 17.3
+        },
+        {
+          "word_index": 4,
+          "text": "you've",
+          "start": 17.3,
+          "end": 17.85
+        },
+        {
+          "word_index": 5,
+          "text": "had",
+          "start": 17.85,
+          "end": 18.4
+        },
+        {
+          "word_index": 6,
+          "text": "enough",
+          "start": 18.4,
+          "end": 20.0
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Of this life, well hang on",
+      "start": 22.15,
+      "end": 27.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Of",
+          "start": 22.15,
+          "end": 22.3
+        },
+        {
+          "word_index": 2,
+          "text": "this",
+          "start": 22.3,
+          "end": 22.5
+        },
+        {
+          "word_index": 3,
+          "text": "life,",
+          "start": 22.5,
+          "end": 23.3
+        },
+        {
+          "word_index": 4,
+          "text": "well",
+          "start": 25.65,
+          "end": 26.1
+        },
+        {
+          "word_index": 5,
+          "text": "hang",
+          "start": 26.1,
+          "end": 26.5
+        },
+        {
+          "word_index": 6,
+          "text": "on",
+          "start": 26.5,
+          "end": 27.0
+        }
+      ]
+    }
+  ]
+}
