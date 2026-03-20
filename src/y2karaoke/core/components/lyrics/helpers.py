@@ -330,6 +330,10 @@ def _anchor_plain_text_lines_to_audio_window(
     short_phrase_sustained_clip_min_duration_sec: float = 20.0,
     short_phrase_sustained_clip_max_lines: int = 4,
     short_phrase_sustained_clip_max_avg_words_per_line: float = 4.2,
+    mixed_density_chorus_clip_min_duration_sec: float = 24.0,
+    mixed_density_chorus_clip_min_lines: int = 8,
+    mixed_density_chorus_clip_anchor_ratio: float = 0.026,
+    mixed_density_chorus_clip_trailing_padding_sec: float = 0.05,
 ) -> List[Line]:
     """Anchor untimed plain-text lines to the detected vocal onset when available.
 
@@ -353,6 +357,7 @@ def _anchor_plain_text_lines_to_audio_window(
         compact_short_clip,
         short_phrase_sustained_clip,
         two_line_subset_refrain_clip,
+        mixed_density_chorus_clip,
     ) = _classify_plain_text_clip_layout(
         populated_lines=populated_lines,
         duration=duration,
@@ -368,6 +373,8 @@ def _anchor_plain_text_lines_to_audio_window(
         short_phrase_sustained_clip_min_duration_sec=short_phrase_sustained_clip_min_duration_sec,
         short_phrase_sustained_clip_max_lines=short_phrase_sustained_clip_max_lines,
         short_phrase_sustained_clip_max_avg_words_per_line=short_phrase_sustained_clip_max_avg_words_per_line,
+        mixed_density_chorus_clip_min_duration_sec=mixed_density_chorus_clip_min_duration_sec,
+        mixed_density_chorus_clip_min_lines=mixed_density_chorus_clip_min_lines,
     )
     if not vocals_path:
         return _spread_lines_across_target_duration(lines, target_duration)
@@ -393,6 +400,9 @@ def _anchor_plain_text_lines_to_audio_window(
         repetitive_compact_clip_trailing_padding_sec=repetitive_compact_clip_trailing_padding_sec,
         compact_short_clip_trailing_padding_sec=compact_short_clip_trailing_padding_sec,
         sparse_sustained_clip_trailing_padding_sec=sparse_sustained_clip_trailing_padding_sec,
+        mixed_density_chorus_clip=mixed_density_chorus_clip,
+        mixed_density_chorus_clip_anchor_ratio=mixed_density_chorus_clip_anchor_ratio,
+        mixed_density_chorus_clip_trailing_padding_sec=mixed_density_chorus_clip_trailing_padding_sec,
     )
     desired_end = max(anchor_start, duration - trailing_padding)
     available_span = desired_end - anchor_start
@@ -403,6 +413,7 @@ def _anchor_plain_text_lines_to_audio_window(
         average_words_per_line > compact_line_word_threshold
         and not repetitive_compact_clip
         and not two_line_subset_refrain_clip
+        and not mixed_density_chorus_clip
     ):
         return _scale_dense_plain_text_lines(
             lines=lines,
@@ -418,6 +429,7 @@ def _anchor_plain_text_lines_to_audio_window(
         short_phrase_sustained_clip=short_phrase_sustained_clip,
         two_line_subset_refrain_clip=two_line_subset_refrain_clip,
         repetitive_compact_clip=repetitive_compact_clip,
+        mixed_density_chorus_clip=mixed_density_chorus_clip,
     )
     return _apply_weighted_line_layout(
         lines=lines,
@@ -449,7 +461,9 @@ def _classify_plain_text_clip_layout(
     short_phrase_sustained_clip_min_duration_sec: float,
     short_phrase_sustained_clip_max_lines: int,
     short_phrase_sustained_clip_max_avg_words_per_line: float,
-) -> Tuple[float, bool, bool, bool, bool, bool]:
+    mixed_density_chorus_clip_min_duration_sec: float,
+    mixed_density_chorus_clip_min_lines: int,
+) -> Tuple[float, bool, bool, bool, bool, bool, bool]:
     average_words_per_line = sum(len(line.words) for line in populated_lines) / max(
         len(populated_lines), 1
     )
@@ -458,6 +472,12 @@ def _classify_plain_text_clip_layout(
         _normalize_line_weight_text(line.text) for line in populated_lines
     ]
     two_line_subset_refrain_clip = _is_two_line_subset_refrain_clip(populated_lines)
+    mixed_density_chorus_clip = _is_mixed_density_chorus_clip(
+        lines=populated_lines,
+        duration=duration,
+        min_duration_sec=mixed_density_chorus_clip_min_duration_sec,
+        min_lines=mixed_density_chorus_clip_min_lines,
+    )
     repetitive_compact_clip = len(set(normalized_line_texts)) < len(
         normalized_line_texts
     ) and max_words_per_line <= max(compact_line_word_threshold, 6.0)
@@ -488,6 +508,7 @@ def _classify_plain_text_clip_layout(
         compact_short_clip,
         short_phrase_sustained_clip,
         two_line_subset_refrain_clip,
+        mixed_density_chorus_clip,
     )
 
 
@@ -505,6 +526,9 @@ def _resolve_plain_text_clip_anchor(
     repetitive_compact_clip_trailing_padding_sec: float,
     compact_short_clip_trailing_padding_sec: float,
     sparse_sustained_clip_trailing_padding_sec: float,
+    mixed_density_chorus_clip: bool,
+    mixed_density_chorus_clip_anchor_ratio: float,
+    mixed_density_chorus_clip_trailing_padding_sec: float,
 ) -> Tuple[float, float]:
     anchor_start = min(max(detected_start, 0.0), duration * float(max_anchor_ratio))
     if compact_short_clip:
@@ -514,6 +538,10 @@ def _resolve_plain_text_clip_anchor(
     if sparse_sustained_clip:
         anchor_start = max(
             anchor_start, duration * float(sparse_sustained_clip_anchor_ratio)
+        )
+    if mixed_density_chorus_clip:
+        anchor_start = max(
+            anchor_start, duration * float(mixed_density_chorus_clip_anchor_ratio)
         )
 
     trailing_padding = min(float(trailing_padding_sec), 1.2)
@@ -531,6 +559,11 @@ def _resolve_plain_text_clip_anchor(
         trailing_padding = min(
             trailing_padding,
             float(sparse_sustained_clip_trailing_padding_sec),
+        )
+    elif mixed_density_chorus_clip:
+        trailing_padding = min(
+            trailing_padding,
+            float(mixed_density_chorus_clip_trailing_padding_sec),
         )
     return anchor_start, trailing_padding
 
@@ -574,6 +607,7 @@ def _build_plain_text_clip_layout(
     short_phrase_sustained_clip: bool,
     two_line_subset_refrain_clip: bool,
     repetitive_compact_clip: bool,
+    mixed_density_chorus_clip: bool,
 ) -> Tuple[List[float], List[float]]:
     if sparse_sustained_clip:
         if short_phrase_sustained_clip:
@@ -588,6 +622,9 @@ def _build_plain_text_clip_layout(
 
     if two_line_subset_refrain_clip:
         return [3.4, 6.4], [0.12]
+
+    if mixed_density_chorus_clip:
+        return _build_mixed_density_chorus_layout(populated_lines)
 
     line_weights = [
         _compact_line_weight(line, prefer_unique_tokens=repetitive_compact_clip)
@@ -732,6 +769,67 @@ def _is_two_line_subset_refrain_clip(lines: List[Line]) -> bool:
         and any(first_counts[token] > count for token, count in second_counts.items())
         and len(lines[1].words) < len(lines[0].words)
     )
+
+
+def _is_mixed_density_chorus_clip(
+    *,
+    lines: List[Line],
+    duration: float,
+    min_duration_sec: float,
+    min_lines: int,
+) -> bool:
+    if duration < min_duration_sec or len(lines) < min_lines:
+        return False
+    normalized_texts = [_normalize_line_weight_text(line.text) for line in lines]
+    counts = Counter(normalized_texts)
+    repeated_exact_lines = sum(1 for count in counts.values() if count >= 2)
+    word_counts = [len(line.words) for line in lines]
+    if repeated_exact_lines < 2:
+        return False
+    if min(word_counts) > 4 or max(word_counts) < 8:
+        return False
+    parenthetical_lines = sum(1 for line in lines if "(" in line.text and ")" in line.text)
+    return parenthetical_lines >= 1
+
+
+def _build_mixed_density_chorus_layout(lines: List[Line]) -> Tuple[List[float], List[float]]:
+    normalized_texts = [_normalize_line_weight_text(line.text) for line in lines]
+    counts = Counter(normalized_texts)
+    line_weights = [
+        _mixed_density_chorus_line_weight(line, repeated_count=counts[text])
+        for line, text in zip(lines, normalized_texts)
+    ]
+    gap_weights = [
+        _mixed_density_chorus_gap_weight(current=line, next_line=lines[idx + 1])
+        for idx, line in enumerate(lines[:-1])
+    ]
+    return line_weights, gap_weights
+
+
+def _mixed_density_chorus_line_weight(line: Line, *, repeated_count: int) -> float:
+    words = len(line.words)
+    weight = _estimate_singing_duration(line.text, words)
+    if repeated_count >= 2 and words >= 8:
+        weight *= 1.22
+    elif repeated_count >= 2 and words <= 4:
+        weight *= 1.02
+    if "(" in line.text and ")" in line.text and words <= 7:
+        weight *= 0.72
+    return max(weight, 1.0)
+
+
+def _mixed_density_chorus_gap_weight(current: Line, next_line: Line) -> float:
+    current_words = len(current.words)
+    next_words = len(next_line.words)
+    if current_words <= 4 and next_words >= current_words + 5:
+        return 0.8
+    if "(" in current.text and ")" in current.text and current_words <= 7:
+        return 0.35
+    if next_words >= 10 and current_words <= 6:
+        return 0.25
+    if current_words >= 8 and next_words <= 4:
+        return 0.05
+    return 0.08
 
 
 def _sparse_sustained_line_weight(line: Line) -> float:

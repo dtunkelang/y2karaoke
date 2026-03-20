@@ -363,6 +363,37 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_two_line_repeated_ho
     assert lines[1].end_time > 14.8
 
 
+def test_anchor_plain_text_lines_to_audio_window_rebalances_mixed_density_chorus_clip(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Call and response we want to hear the chorus now",
+            "Move it, girl",
+            "This is the longer answer line that carries the phrase",
+            "I like that move (hey, hey)",
+            "Call and response we want to hear the chorus now",
+            "Move it, girl",
+            "This is the longer answer line that carries the phrase",
+            "I like that move (hey, hey)",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.51,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 30.0, "vocals.wav")
+
+    assert lines[0].start_time > 0.75
+    assert lines[0].end_time > 4.0
+    assert lines[1].start_time > 4.0
+    assert lines[2].start_time > 6.2
+    assert lines[4].start_time > 11.0
+    assert lines[6].start_time > 16.0
+    assert lines[-1].end_time > 29.8
+
+
 def test_romanize_lines_only_non_ascii(monkeypatch):
     line = _line_with_words(["hello", "café"])
     monkeypatch.setattr(
