@@ -762,7 +762,7 @@ def _adjust_dominant_repetition_layout(
         remaining_prefix_gaps = first_dominant_idx - gap_idx - 1
         gap_weights[gap_idx] = max(
             gap_weights[gap_idx],
-            2.7 + remaining_prefix_gaps * 0.3,
+            2.95 + remaining_prefix_gaps * 0.35,
         )
 
     for gap_idx in range(first_dominant_idx, last_dominant_idx):
