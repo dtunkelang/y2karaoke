@@ -9,6 +9,10 @@ from typing import Dict, List, Optional, Tuple
 
 from ...models import Word, Line, SongMetadata
 from ...romanization import romanize_line
+from .lyrics_clip_layout_helpers import (
+    apply_short_title_chorus_layout as _apply_short_title_chorus_layout,
+    is_short_title_chorus_clip as _is_short_title_chorus_clip,
+)
 from .lrc import (
     parse_lrc_with_timing,
     create_lines_from_lrc,
@@ -387,6 +391,8 @@ def _anchor_plain_text_lines_to_audio_window(
                 populated_lines=populated_lines,
                 anchor_start=max(0.95, duration * 0.038),
                 desired_end=duration,
+                estimate_singing_duration_fn=_estimate_singing_duration,
+                apply_weighted_line_layout_fn=_apply_weighted_line_layout,
             )
         return _spread_lines_across_target_duration(lines, target_duration)
 
@@ -400,6 +406,8 @@ def _anchor_plain_text_lines_to_audio_window(
                 populated_lines=populated_lines,
                 anchor_start=max(0.95, duration * 0.038),
                 desired_end=duration,
+                estimate_singing_duration_fn=_estimate_singing_duration,
+                apply_weighted_line_layout_fn=_apply_weighted_line_layout,
             )
         if not two_line_subset_refrain_clip:
             return _spread_lines_across_target_duration(lines, target_duration)
@@ -811,50 +819,6 @@ def _is_mixed_density_chorus_clip(
         1 for line in lines if "(" in line.text and ")" in line.text
     )
     return parenthetical_lines >= 1
-
-
-def _is_short_title_chorus_clip(
-    *,
-    populated_lines: List[Line],
-    duration: float,
-) -> bool:
-    if duration < 20.0 or len(populated_lines) != 5:
-        return False
-    word_counts = [len(line.words) for line in populated_lines]
-    return (
-        word_counts[0] == 2
-        and word_counts[1] >= 5
-        and word_counts[2] <= 3
-        and word_counts[3] >= 4
-        and word_counts[4] >= 5
-    )
-
-
-def _apply_short_title_chorus_layout(
-    *,
-    lines: List[Line],
-    populated_lines: List[Line],
-    anchor_start: float,
-    desired_end: float,
-) -> List[Line]:
-    base_weights = [
-        _estimate_singing_duration(line.text, len(line.words))
-        for line in populated_lines
-    ]
-    line_weights = list(base_weights)
-    line_weights[0] *= 0.68
-    line_weights[1] *= 0.86
-    line_weights[2] *= 0.76
-    line_weights[3] *= 1.0
-    gap_weights = [1.0, 0.55, 0.22, 0.08]
-    return _apply_weighted_line_layout(
-        lines=lines,
-        populated_lines=populated_lines,
-        line_weights=line_weights,
-        gap_weights=gap_weights,
-        anchor_start=anchor_start,
-        desired_end=desired_end,
-    )
 
 
 def _build_mixed_density_chorus_layout(
