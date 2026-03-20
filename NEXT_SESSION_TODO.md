@@ -35,8 +35,8 @@ Use this file as a session handoff, not as a second backlog.
   - driver: sparse-support forced fallback now redistributes words inside short sustained 5-word lines so held final words are not compressed into the tail
   - `Sweet Caroline` improved from `0.4788s` to `0.3104s` start error in `benchmarks/results/20260320T051849Z`
   - driver: short-title chorus layout now shortens the title line, widens the setup gap, and leaves more room for the tail line
-  - `Con Calma` improved from `0.3497s / 0.3901s` to `0.3426s / 0.3825s` in `benchmarks/results/20260320T063430Z`
-  - driver: mixed-density chorus clips improved again after slightly reducing trailing pad and slightly widening long-line -> short-response gaps
+  - `Con Calma` improved from `0.3426s / 0.3825s` to `0.2886s / 0.3020s` in `benchmarks/results/20260320T232439Z`
+  - driver: mixed-density chorus clips now rebalance the late coda when the repeated response pair is followed by a denser four-line tail, which moved the seed later without hurting the broad cached canary
   - `Rap God` improved from `0.702s / 0.705s` to `0.233s / 0.213s` in `benchmarks/results/20260320T061849Z`
   - driver: dense short non-repeated rap verses need their own seed layout, distinct from both repeated-hook clips and the generic dense spread
 
@@ -66,13 +66,13 @@ Use this file as a session handoff, not as a second backlog.
   - confirmed early:
     - `Houdini`: flat at `0.3772 / 0.3991`
     - `Con Calma`: improved at `0.3426 / 0.3825`
-- Latest broad cached canary subset after enabling default restored-run onset shifts:
-  - `benchmarks/results/20260320T224908Z/benchmark_progress.json`
-  - curated canary weighted start mean: `0.2606s`
+- Latest broad cached canary subset after enabling default restored-run onset shifts and the `Con Calma` coda rebalance:
+  - `benchmarks/results/20260320T232439Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.2478s`
   - key ordering:
-    - `Con Calma`: `0.3426 / 0.3825`
     - `Taste`: `0.3194 / 0.3125`
     - `Sweet Caroline`: `0.3104 / 0.265`
+    - `Con Calma`: `0.2886 / 0.3020`
     - `Without Me`: `0.2792 / 0.2243`
     - `Houdini`: `0.2551 / 0.2771`
     - `Rap God`: `0.2329 / 0.2128`
@@ -82,7 +82,8 @@ Use this file as a session handoff, not as a second backlog.
     - `Royals`: `0.1882 / 0.1555`
     - `Take On Me`: `0.1513 / 0.3345`
     - `Stayin' Alive`: `0.1374 / 0.6253`
-  - likely remaining broad target: `Con Calma`
+  - only material movement from the prior broad cached subset was `Con Calma`
+  - likely remaining broad target: `Taste`
 
 ## New Curated Clips Added This Session
 
@@ -102,7 +103,8 @@ Use this file as a session handoff, not as a second backlog.
 ## Current Diagnosis
 
 - `Houdini` is no longer the clearest broad-return start-time outlier after the default restored-run onset shift change.
-- `Con Calma` is now the clearest remaining broad-return clip and still yields small but real layout-level gains.
+- `Con Calma` is materially healthier after the mixed-density coda rebalance and is no longer the top broad-return target.
+- `Taste` is now the clearest remaining broad-return clip in the cached canary.
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.
@@ -155,12 +157,12 @@ Only continue if there is a concrete reason:
 - a test seam still depends on hidden state or unstable internals
 
 Most likely next inspection targets:
-- let `benchmarks/results/20260320T063518Z` finish if a full final report is still wanted
-- likely remaining broad target: `Con Calma`
-- next broad-return fallback after `Con Calma`: `Taste` or `Sweet Caroline`
+- likely remaining broad target: `Taste`
+- next broad-return fallback after `Taste`: `Sweet Caroline`
 - latest mixed-density result:
-  - `Con Calma` improved again after reducing mixed-density trailing pad and widening long-line -> short-response gaps slightly
-  - representative run: `benchmarks/results/20260320T063430Z`
+  - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
+  - representative broad canary run: `benchmarks/results/20260320T232439Z`
+  - focused confirmation run: `benchmarks/results/20260320T232236Z`
 - treat `Johnny Cash - Hurt` as a standalone hard canary unless a closer companion clip finally reproduces its line-end overextension
 
 ## Guardrails
