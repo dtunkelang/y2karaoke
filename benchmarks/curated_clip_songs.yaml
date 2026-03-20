@@ -577,3 +577,19 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Sparse paired-line verse clip for Hurt-style shared-segment overextension.
+- artist: Gary Jules
+  title: Mad World
+  clip_id: opening-verse-paired-lines
+  clip_tags:
+  - stress
+  - sparse-support
+  - paired-lines
+  - verse
+  audio_start_sec: 10.0
+  clip_duration_sec: 23.0
+  youtube_id: Y2ASwtK1yrQ
+  youtube_url: https://www.youtube.com/watch?v=Y2ASwtK1yrQ
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Sparse paired-line opening verse clip for Hurt-style shared-segment overextension.
