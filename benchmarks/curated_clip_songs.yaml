@@ -593,3 +593,19 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Sparse paired-line opening verse clip for Hurt-style shared-segment overextension.
+- artist: Nine Inch Nails
+  title: Hurt
+  clip_id: opening-verse-paired-lines
+  clip_tags:
+  - stress
+  - sparse-support
+  - paired-lines
+  - verse
+  audio_start_sec: 22.0
+  clip_duration_sec: 37.0
+  youtube_id: OvoTktdpIiI
+  youtube_url: https://www.youtube.com/watch?v=OvoTktdpIiI
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: NIN Hurt opening verse companion clip for sparse paired-line comparison.
