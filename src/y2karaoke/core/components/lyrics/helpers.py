@@ -10,8 +10,10 @@ from typing import Dict, List, Optional, Tuple
 from ...models import Word, Line, SongMetadata
 from ...romanization import romanize_line
 from .lyrics_clip_layout_helpers import (
-    apply_short_title_chorus_layout as _apply_short_title_chorus_layout,
+    adjust_repetitive_compact_layout as _adjust_repetitive_compact_layout,
+    apply_special_plain_text_layout as _apply_special_plain_text_layout,
     is_short_title_chorus_clip as _is_short_title_chorus_clip,
+    line_tokens_for_weight as _line_tokens_for_weight,
 )
 from .lrc import (
     parse_lrc_with_timing,
@@ -324,6 +326,9 @@ def _anchor_plain_text_lines_to_audio_window(
     compact_short_clip_anchor_ratio: float = 0.24,
     compact_short_clip_trailing_padding_sec: float = 0.15,
     repetitive_compact_clip_trailing_padding_sec: float = 0.15,
+    dense_short_verse_min_avg_words_per_line: float = 6.5,
+    dense_short_verse_max_lines: int = 4,
+    dense_short_verse_max_duration_sec: float = 10.0,
     sparse_sustained_clip_min_duration_sec: float = 18.0,
     sparse_sustained_clip_max_lines: int = 5,
     sparse_sustained_clip_max_words_per_line: int = 5,
@@ -357,6 +362,7 @@ def _anchor_plain_text_lines_to_audio_window(
     (
         average_words_per_line,
         repetitive_compact_clip,
+        dense_short_verse_clip,
         sparse_sustained_clip,
         compact_short_clip,
         short_phrase_sustained_clip,
@@ -369,6 +375,9 @@ def _anchor_plain_text_lines_to_audio_window(
         compact_short_clip_word_threshold=compact_short_clip_word_threshold,
         compact_short_clip_line_count=compact_short_clip_line_count,
         compact_short_clip_duration_sec=compact_short_clip_duration_sec,
+        dense_short_verse_min_avg_words_per_line=dense_short_verse_min_avg_words_per_line,
+        dense_short_verse_max_lines=dense_short_verse_max_lines,
+        dense_short_verse_max_duration_sec=dense_short_verse_max_duration_sec,
         sparse_sustained_clip_min_duration_sec=sparse_sustained_clip_min_duration_sec,
         sparse_sustained_clip_max_lines=sparse_sustained_clip_max_lines,
         sparse_sustained_clip_max_words_per_line=sparse_sustained_clip_max_words_per_line,
@@ -385,30 +394,34 @@ def _anchor_plain_text_lines_to_audio_window(
         duration=duration,
     )
     if not vocals_path:
-        if short_title_chorus_clip:
-            return _apply_short_title_chorus_layout(
-                lines=lines,
-                populated_lines=populated_lines,
-                anchor_start=max(0.95, duration * 0.038),
-                desired_end=duration,
-                estimate_singing_duration_fn=_estimate_singing_duration,
-                apply_weighted_line_layout_fn=_apply_weighted_line_layout,
-            )
+        special_layout = _apply_special_plain_text_layout(
+            lines=lines,
+            populated_lines=populated_lines,
+            duration=duration,
+            short_title_chorus_clip=short_title_chorus_clip,
+            dense_short_verse_clip=dense_short_verse_clip,
+            estimate_singing_duration_fn=_estimate_singing_duration,
+            apply_weighted_line_layout_fn=_apply_weighted_line_layout,
+        )
+        if special_layout is not None:
+            return special_layout
         return _spread_lines_across_target_duration(lines, target_duration)
 
     from ..alignment.alignment import detect_song_start
 
     detected_start = float(detect_song_start(vocals_path))
     if detected_start < float(min_detectable_start_sec):
-        if short_title_chorus_clip:
-            return _apply_short_title_chorus_layout(
-                lines=lines,
-                populated_lines=populated_lines,
-                anchor_start=max(0.95, duration * 0.038),
-                desired_end=duration,
-                estimate_singing_duration_fn=_estimate_singing_duration,
-                apply_weighted_line_layout_fn=_apply_weighted_line_layout,
-            )
+        special_layout = _apply_special_plain_text_layout(
+            lines=lines,
+            populated_lines=populated_lines,
+            duration=duration,
+            short_title_chorus_clip=short_title_chorus_clip,
+            dense_short_verse_clip=dense_short_verse_clip,
+            estimate_singing_duration_fn=_estimate_singing_duration,
+            apply_weighted_line_layout_fn=_apply_weighted_line_layout,
+        )
+        if special_layout is not None:
+            return special_layout
         if not two_line_subset_refrain_clip:
             return _spread_lines_across_target_duration(lines, target_duration)
         detected_start = duration * float(fallback_anchor_ratio)
@@ -438,6 +451,7 @@ def _anchor_plain_text_lines_to_audio_window(
     if (
         average_words_per_line > compact_line_word_threshold
         and not repetitive_compact_clip
+        and not dense_short_verse_clip
         and not two_line_subset_refrain_clip
         and not mixed_density_chorus_clip
         and not short_title_chorus_clip
@@ -480,6 +494,9 @@ def _classify_plain_text_clip_layout(
     compact_short_clip_word_threshold: float,
     compact_short_clip_line_count: int,
     compact_short_clip_duration_sec: float,
+    dense_short_verse_min_avg_words_per_line: float,
+    dense_short_verse_max_lines: int,
+    dense_short_verse_max_duration_sec: float,
     sparse_sustained_clip_min_duration_sec: float,
     sparse_sustained_clip_max_lines: int,
     sparse_sustained_clip_max_words_per_line: int,
@@ -490,7 +507,7 @@ def _classify_plain_text_clip_layout(
     short_phrase_sustained_clip_max_avg_words_per_line: float,
     mixed_density_chorus_clip_min_duration_sec: float,
     mixed_density_chorus_clip_min_lines: int,
-) -> Tuple[float, bool, bool, bool, bool, bool, bool]:
+) -> Tuple[float, bool, bool, bool, bool, bool, bool, bool]:
     average_words_per_line = sum(len(line.words) for line in populated_lines) / max(
         len(populated_lines), 1
     )
@@ -508,8 +525,15 @@ def _classify_plain_text_clip_layout(
     repetitive_compact_clip = len(set(normalized_line_texts)) < len(
         normalized_line_texts
     ) and max_words_per_line <= max(compact_line_word_threshold, 6.0)
+    dense_short_verse_clip = (
+        not repetitive_compact_clip
+        and len(populated_lines) <= dense_short_verse_max_lines
+        and duration <= dense_short_verse_max_duration_sec
+        and average_words_per_line >= dense_short_verse_min_avg_words_per_line
+    )
     sparse_sustained_clip = (
         not repetitive_compact_clip
+        and not dense_short_verse_clip
         and duration >= sparse_sustained_clip_min_duration_sec
         and len(populated_lines) <= sparse_sustained_clip_max_lines
         and max_words_per_line <= sparse_sustained_clip_max_words_per_line
@@ -531,6 +555,7 @@ def _classify_plain_text_clip_layout(
     return (
         average_words_per_line,
         repetitive_compact_clip,
+        dense_short_verse_clip,
         sparse_sustained_clip,
         compact_short_clip,
         short_phrase_sustained_clip,
@@ -658,7 +683,11 @@ def _build_plain_text_clip_layout(
         for line in populated_lines
     ]
     if repetitive_compact_clip:
-        return _adjust_repetitive_compact_layout(populated_lines, line_weights)
+        return _adjust_repetitive_compact_layout(
+            populated_lines,
+            line_weights,
+            normalize_text_fn=_normalize_line_weight_text,
+        )
     return line_weights, [1.0] * max(len(populated_lines) - 1, 0)
 
 
@@ -700,86 +729,6 @@ def _compact_line_weight(line: Line, *, prefer_unique_tokens: bool) -> float:
         return max(float(len(words)), 2.0)
     unique_count = len(dict.fromkeys(words))
     return max(float(unique_count), 2.0)
-
-
-def _line_tokens_for_weight(line: Line) -> List[str]:
-    words = [re.sub(r"[^a-z0-9]", "", word.text.lower()) for word in line.words]
-    return [word for word in words if word]
-
-
-def _adjust_repetitive_compact_layout(
-    lines: List[Line], line_weights: List[float]
-) -> Tuple[List[float], List[float]]:
-    """Bias repetitive compact hooks toward wider setup gaps and a tighter tail."""
-    gap_weights = [1.0] * max(len(lines) - 1, 0)
-    if not lines:
-        return line_weights, gap_weights
-
-    if len(lines) == 2:
-        return _adjust_two_line_repetitive_layout(lines, line_weights, gap_weights)
-
-    if len(lines) < 4:
-        return line_weights, gap_weights
-
-    return _adjust_dominant_repetition_layout(lines, line_weights, gap_weights)
-
-
-def _adjust_two_line_repetitive_layout(
-    lines: List[Line], line_weights: List[float], gap_weights: List[float]
-) -> Tuple[List[float], List[float]]:
-    first_tokens = _line_tokens_for_weight(lines[0])
-    second_tokens = _line_tokens_for_weight(lines[1])
-    if (
-        first_tokens
-        and second_tokens
-        and set(second_tokens) < set(first_tokens)
-        and len(lines[1].words) < len(lines[0].words)
-    ):
-        line_weights = list(line_weights)
-        line_weights[0] = max(2.0, min(line_weights[0], line_weights[1] * 0.53))
-        line_weights[1] = max(line_weights[1], line_weights[0] * 1.85)
-        gap_weights[0] = min(gap_weights[0], 0.1)
-    return line_weights, gap_weights
-
-
-def _adjust_dominant_repetition_layout(
-    lines: List[Line], line_weights: List[float], gap_weights: List[float]
-) -> Tuple[List[float], List[float]]:
-    normalized_texts = [_normalize_line_weight_text(line.text) for line in lines]
-    dominant_text, dominant_count = Counter(normalized_texts).most_common(1)[0]
-    if dominant_count < 3:
-        return line_weights, gap_weights
-
-    dominant_indices = [
-        i for i, text in enumerate(normalized_texts) if text == dominant_text
-    ]
-    first_dominant_idx = dominant_indices[0]
-    last_dominant_idx = dominant_indices[-1]
-    if first_dominant_idx <= 0:
-        return line_weights, gap_weights
-
-    for gap_idx in range(first_dominant_idx):
-        remaining_prefix_gaps = first_dominant_idx - gap_idx - 1
-        gap_weights[gap_idx] = max(
-            gap_weights[gap_idx],
-            2.95 + remaining_prefix_gaps * 0.35,
-        )
-
-    for gap_idx in range(first_dominant_idx, last_dominant_idx):
-        gap_weights[gap_idx] = min(gap_weights[gap_idx], 0.05)
-
-    if last_dominant_idx + 1 == len(lines) - 1:
-        dominant_tokens = set(_line_tokens_for_weight(lines[last_dominant_idx]))
-        tail_tokens = set(_line_tokens_for_weight(lines[-1]))
-        if (
-            tail_tokens
-            and tail_tokens < dominant_tokens
-            and len(lines[-1].words) < len(lines[last_dominant_idx].words)
-        ):
-            line_weights[-1] = max(1.0, line_weights[-1] * 0.34)
-            gap_weights[last_dominant_idx] = min(gap_weights[last_dominant_idx], 0.15)
-
-    return line_weights, gap_weights
 
 
 def _is_two_line_subset_refrain_clip(lines: List[Line]) -> bool:

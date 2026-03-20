@@ -98,6 +98,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `Without Me`
   - `I Gotta Feeling`
 - For longer repeated-hook clips where the dominant repeated block starts after one or two unique setup lines, the prefix gap before the repeated block needs to be wider than the simpler compact-hook layout gives it. That improved `Houdini` without disturbing `Without Me` or `I Gotta Feeling`.
+- Dense non-repeated short rap verses like `Rap God` need a different seed from both the repeated-hook path and the generic dense spread:
+  - keep the opening anchor early
+  - weight the first two dense lines heavily
+  - preserve enough tail span for the final long line instead of letting the generic spread collapse it
 - Plain-text clip lyrics need an audio-window-aware timing seed. Starting every plain-text clip at `0.0s` hides useful structure and biases repeated hooks toward early collapse.
 - Short-title chorus clips like `Sweet Caroline` need a different seed from the generic compact spread:
   - give the title line less span

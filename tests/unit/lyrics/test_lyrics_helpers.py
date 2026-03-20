@@ -299,6 +299,32 @@ def test_anchor_plain_text_lines_to_audio_window_stretches_repetitive_compact_ho
     assert lines[-1].end_time > 14.5
 
 
+def test_anchor_plain_text_lines_to_audio_window_rebalances_dense_short_verse(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Uh, summa-lumma, dooma-lumma, you assumin' I'm a human",
+            "What I gotta do to get it through to you I'm superhuman",
+            "Innovative and I'm made of rubber",
+            "So that anything you say is ricochetin' off of me and it'll glue to you",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.0,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 8.0, "vocals.wav")
+
+    assert 0.3 < lines[0].start_time < 0.5
+    assert lines[0].end_time > 2.0
+    assert 2.0 < lines[1].start_time < 2.7
+    assert 4.3 < lines[2].start_time < 5.3
+    assert lines[-1].start_time > 5.4
+    assert lines[-1].end_time > 7.7
+
+
 def test_anchor_plain_text_lines_to_audio_window_spreads_sparse_sustained_clip(
     monkeypatch,
 ):
