@@ -157,6 +157,41 @@ def _ensure_clip_audio(song: dict[str, object]) -> Path:
 def _update_gold_audio_path(gold_path: Path, audio_path: Path) -> None:
     doc = json.loads(gold_path.read_text(encoding="utf-8"))
     doc["audio_path"] = str(audio_path)
+    lines = doc.get("lines", [])
+    if isinstance(lines, list):
+        repaired_lines = []
+        for line_index, line in enumerate(lines, start=1):
+            if not isinstance(line, dict):
+                continue
+            text = str(line.get("text", "")).strip()
+            start = float(line.get("start", 0.0) or 0.0)
+            end = float(line.get("end", start) or start)
+            words = line.get("words", [])
+            if not isinstance(words, list) or not words:
+                tokens = [token for token in text.split() if token]
+                if tokens and end > start:
+                    step = (end - start) / len(tokens)
+                    rebuilt_words = []
+                    for word_index, token in enumerate(tokens, start=1):
+                        word_start = start + (word_index - 1) * step
+                        word_end = end if word_index == len(tokens) else start + word_index * step
+                        rebuilt_words.append(
+                            {
+                                "word_index": word_index,
+                                "text": token,
+                                "start": round(word_start, 3),
+                                "end": round(word_end, 3),
+                            }
+                        )
+                    line = {
+                        "line_index": line_index,
+                        "text": text,
+                        "start": round(start, 3),
+                        "end": round(end, 3),
+                        "words": rebuilt_words,
+                    }
+            repaired_lines.append(line)
+        doc["lines"] = repaired_lines
     gold_path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
 
 

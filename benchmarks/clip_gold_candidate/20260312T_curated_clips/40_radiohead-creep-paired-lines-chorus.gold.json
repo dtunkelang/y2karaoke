@@ -1,0 +1,148 @@
+{
+  "schema_version": "1.0",
+  "title": "Creep [paired-lines-chorus]",
+  "artist": "Radiohead",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/fAuT8_dboWo/trimmed_from_60.00s_for_20.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "But I'm a creep",
+      "start": 1.3,
+      "end": 2.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "But",
+          "start": 1.3,
+          "end": 1.55
+        },
+        {
+          "word_index": 2,
+          "text": "I'm",
+          "start": 1.55,
+          "end": 1.8
+        },
+        {
+          "word_index": 3,
+          "text": "a",
+          "start": 1.8,
+          "end": 2.4
+        },
+        {
+          "word_index": 4,
+          "text": "creep",
+          "start": 2.4,
+          "end": 2.65
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "I'm a weirdo",
+      "start": 6.85,
+      "end": 10.0,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I'm",
+          "start": 6.85,
+          "end": 7.0
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 7.0,
+          "end": 7.5
+        },
+        {
+          "word_index": 3,
+          "text": "weirdo",
+          "start": 7.5,
+          "end": 10.0
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "What the hell am I doing here?",
+      "start": 11.2,
+      "end": 15.4,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "What",
+          "start": 11.2,
+          "end": 11.5
+        },
+        {
+          "word_index": 2,
+          "text": "the",
+          "start": 11.5,
+          "end": 11.8
+        },
+        {
+          "word_index": 3,
+          "text": "hell",
+          "start": 11.8,
+          "end": 12.1
+        },
+        {
+          "word_index": 4,
+          "text": "am",
+          "start": 12.1,
+          "end": 12.45
+        },
+        {
+          "word_index": 5,
+          "text": "I",
+          "start": 12.45,
+          "end": 12.75
+        },
+        {
+          "word_index": 6,
+          "text": "doing",
+          "start": 12.75,
+          "end": 13.05
+        },
+        {
+          "word_index": 7,
+          "text": "here?",
+          "start": 13.05,
+          "end": 15.4
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "I don't belong here",
+      "start": 17.1,
+      "end": 19.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 17.1,
+          "end": 17.5
+        },
+        {
+          "word_index": 2,
+          "text": "don't",
+          "start": 17.5,
+          "end": 17.85
+        },
+        {
+          "word_index": 3,
+          "text": "belong",
+          "start": 17.85,
+          "end": 18.7
+        },
+        {
+          "word_index": 4,
+          "text": "here",
+          "start": 18.7,
+          "end": 19.65
+        }
+      ]
+    }
+  ]
+}
