@@ -841,7 +841,7 @@ def _mixed_density_chorus_line_weight(line: Line, *, repeated_count: int) -> flo
     words = len(line.words)
     weight = _estimate_singing_duration(line.text, words)
     if repeated_count >= 2 and words >= 8:
-        weight *= 1.22
+        weight *= 1.28
     elif repeated_count >= 2 and words <= 4:
         weight *= 1.02
     if "(" in line.text and ")" in line.text and words <= 7:
@@ -859,7 +859,7 @@ def _mixed_density_chorus_gap_weight(current: Line, next_line: Line) -> float:
     if next_words >= 10 and current_words <= 6:
         return 0.25
     if current_words >= 8 and next_words <= 4:
-        return 0.05
+        return 0.08
     return 0.08
 
 

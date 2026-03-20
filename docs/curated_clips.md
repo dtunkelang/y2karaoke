@@ -102,6 +102,7 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - give the title line less span
   - widen the setup gap into line 2
   - leave more room for the tail line
+- Mixed-density chorus clips like `Con Calma` still need a bit more span on the repeated long lines than the generic chorus weighting gives them. A small increase there, plus a slightly looser long-line to short-response gap, improved the clip without hurting the focused lyrics tests.
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
