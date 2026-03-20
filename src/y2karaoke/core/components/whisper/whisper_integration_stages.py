@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import statistics
 from typing import Any, Callable, List, Optional, Set, Tuple
+import numpy as np
 
 from ... import models
 from ..alignment import timing_models

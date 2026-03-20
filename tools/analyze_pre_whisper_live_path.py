@@ -19,9 +19,13 @@ from y2karaoke.core.components.lyrics.helpers import (  # noqa: E402
 from y2karaoke.core.components.lyrics.lyrics_whisper import (  # noqa: E402
     _detect_offset_with_issues,
     _refine_timing_with_quality,
+    resolve_lyrics_whisper_hooks,
 )
 from y2karaoke.core.components.lyrics.lyrics_whisper_quality import (  # noqa: E402
     _resolve_lrc_inputs,
+)
+from y2karaoke.core.components.lyrics.runtime_config import (  # noqa: E402
+    load_lyrics_runtime_config,
 )
 from y2karaoke.core.components.lyrics.lrc import create_lines_from_lrc  # noqa: E402
 
@@ -94,11 +98,14 @@ def main() -> int:
         "lyrics_source_routing_skip_reason": "none",
         "source": "",
     }
+    hooks = resolve_lyrics_whisper_hooks()
+    runtime_config = load_lyrics_runtime_config()
 
     lrc_text, line_timings, source, file_lines = _resolve_lrc_inputs(
         title=args.title,
         artist=args.artist,
         lyrics_file=None,
+        audio_start=0.0,
         filter_promos=True,
         target_duration=args.target_duration,
         vocals_path=args.vocals_path,
@@ -109,6 +116,8 @@ def main() -> int:
         use_whisper=True,
         whisper_map_lrc=False,
         offline=args.offline,
+        hooks=hooks,
+        runtime_config=runtime_config,
     )
     if not (lrc_text and line_timings):
         raise SystemExit("No LRC timings available for trace")

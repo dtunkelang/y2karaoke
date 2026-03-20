@@ -29,6 +29,8 @@ Use this file as a session handoff, not as a second backlog.
 - Key latest result:
   - `Stayin' Alive` improved from `2.5739s` to `0.1374s` start error in `benchmarks/results/20260319T223815Z`
   - driver: 2-line forced-alignment unlock plus better weak-onset seed fallback for two-line subset-refrain clips
+  - `Take On Me` improved from `0.4731s` to `0.151s` start error in `benchmarks/results/20260320T023956Z`
+  - driver: sparse-support forced fallback now redistributes words inside short sustained 5-word lines so held final words are not compressed into the tail
 
 ## If Quality Work Resumes
 
@@ -44,6 +46,10 @@ Use this file as a session handoff, not as a second backlog.
   - helper-generated seed on the real cached clip audio
   - accepted forced-alignment output
   - final timing report
+- For sparse/falsetto clips, distinguish:
+  - line-boundary problems
+  - within-line word-distribution problems
+  `Take On Me` turned out to be the second kind.
 
 ## Curation Process
 

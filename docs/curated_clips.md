@@ -101,6 +101,11 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
   - subset-refrain clips need their own plain-text seed layout when line 2 is a shorter tail of line 1
+- `Take On Me` revealed a different sparse/falsetto issue:
+  - the accepted forced alignment can have correct line boundaries but poor within-line word distribution
+  - the worst case is a short-function-word lead-in followed by a held final word
+  - compare raw forced word timings against gold before changing line-level seeding again
+  - a narrow within-line redistribution fix can improve this family without disturbing `Stayin' Alive`, `Time After Time`, or `Total Eclipse`
 - When a live clip still looks wrong after a plausible fix, compare:
   - the helper-generated seed on the real cached clip audio
   - the accepted forced-alignment output

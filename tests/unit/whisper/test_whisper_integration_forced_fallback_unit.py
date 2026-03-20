@@ -708,3 +708,48 @@ def test_attempt_whisperx_forced_alignment_restores_sparse_support_line_starts()
     repaired_lines, _corrections, _payload = result
     assert repaired_lines[2].start_time == pytest.approx(11.91)
     assert repaired_lines[3].start_time == pytest.approx(17.37)
+
+
+def test_attempt_whisperx_forced_alignment_redistributes_sparse_sustained_words():
+    baseline_lines = [
+        _dur_multi_line(0.99, 4.57, ["Take", "on", "me"]),
+        _dur_multi_line(6.45, 10.03, ["Take", "me", "on"]),
+        _dur_multi_line(11.91, 15.49, ["I'll", "be", "gone"]),
+        _dur_multi_line(17.37, 21.42, ["In", "a", "day", "or", "two"]),
+    ]
+    forced_lines = [
+        _dur_multi_line(1.12, 4.15, ["Take", "on", "me"]),
+        _dur_multi_line(6.84, 10.42, ["Take", "me", "on"]),
+        _dur_multi_line(12.23, 15.81, ["I'll", "be", "gone"]),
+        _dur_multi_line(17.2, 21.25, ["In", "a", "day", "or", "two"]),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="Okay", start=0.05, end=0.63, probability=0.3),
+        TranscriptionWord(text="take", start=0.63, end=1.55, probability=0.8),
+        TranscriptionWord(text="off", start=1.55, end=2.77, probability=0.5),
+    ]
+
+    result = attempt_whisperx_forced_alignment(
+        lines=baseline_lines,
+        baseline_lines=baseline_lines,
+        vocals_path="vocals.wav",
+        language="en",
+        detected_lang="en",
+        logger=_Logger(),
+        used_model="base",
+        reason="test",
+        align_lines_with_whisperx_fn=lambda *_a, **_k: (
+            forced_lines,
+            {"forced_word_coverage": 1.0, "forced_line_coverage": 1.0},
+        ),
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: (forced_lines, 0),
+        whisper_words=whisper_words,
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+    )
+
+    assert result is not None
+    repaired_lines, _corrections, _payload = result
+    assert repaired_lines[3].words[-1].start_time < forced_lines[3].words[-1].start_time

@@ -8,6 +8,10 @@ import numpy as np
 
 from ... import models
 from ..alignment import timing_models
+from .whisper_forced_word_redistribution import (
+    redistribute_line_with_word_weights as _redistribute_line_with_word_weights,
+    sustained_word_layout_weights as _sustained_word_layout_weights,
+)
 from .whisper_split_refrain_restore import (
     restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
 )
@@ -732,6 +736,47 @@ def _restore_sparse_support_line_starts_from_source(
     return repaired, restored
 
 
+def _redistribute_sparse_support_sustained_words(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    *,
+    min_baseline_duration_sec: float = 3.0,
+    max_words_per_line: int = 5,
+) -> tuple[List[models.Line], int]:
+    populated_lines = [line for line in forced_lines if line.words]
+    if not populated_lines:
+        return forced_lines, 0
+    if _non_placeholder_whisper_word_count(whisper_words) > max(
+        3, int(len(populated_lines) * 0.6)
+    ):
+        return forced_lines, 0
+
+    repaired = list(forced_lines)
+    redistributed = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        if len(forced_line.words) != len(baseline_line.words):
+            continue
+        word_count = len(forced_line.words)
+        if word_count < 3 or word_count > max_words_per_line:
+            continue
+        baseline_duration = baseline_line.end_time - baseline_line.start_time
+        line_duration = forced_line.end_time - forced_line.start_time
+        if baseline_duration < min_baseline_duration_sec or line_duration <= 0.0:
+            continue
+
+        weights = _sustained_word_layout_weights(forced_line)
+        if weights is None:
+            continue
+        repaired[idx] = _redistribute_line_with_word_weights(forced_line, weights)
+        redistributed += 1
+    return repaired, redistributed
+
+
 def _count_compact_line_drift(
     baseline_lines: List[models.Line],
     forced_lines: List[models.Line],
@@ -1069,6 +1114,18 @@ def _post_normalize_sparse_support_repairs(
             "Restored %d sparse-support line start(s) from source after normalization",
             sparse_start_restore_count,
         )
+    forced_lines, sustained_word_redistributed_count = (
+        _redistribute_sparse_support_sustained_words(
+            baseline_lines,
+            forced_lines,
+            whisper_words,
+        )
+    )
+    if sustained_word_redistributed_count:
+        logger.info(
+            "Redistributed %d sparse-support sustained line(s) for held final words",
+            sustained_word_redistributed_count,
+        )
     return forced_lines
 
 
@@ -1252,7 +1309,6 @@ def attempt_whisperx_forced_alignment(
         logger=logger,
     ):
         return None
-
     forced_lines = _repair_short_line_degradation_if_possible(
         baseline_lines=baseline_lines,
         forced_lines=forced_lines,

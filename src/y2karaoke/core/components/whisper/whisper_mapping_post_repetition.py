@@ -1,6 +1,5 @@
 """Post-processing helpers for repetitive Whisper mapping patterns."""
 
-from collections import Counter
 from typing import List, Optional
 
 from ... import models
