@@ -1,0 +1,232 @@
+{
+  "schema_version": "1.0",
+  "title": "",
+  "artist": "",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/ncgsL1GCFms/trimmed_from_0.00s_for_22.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "I've never seen a diamond in the flesh",
+      "start": 0.0,
+      "end": 3.35,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I've",
+          "start": 0.0,
+          "end": 0.25
+        },
+        {
+          "word_index": 2,
+          "text": "never",
+          "start": 0.25,
+          "end": 0.5
+        },
+        {
+          "word_index": 3,
+          "text": "seen",
+          "start": 0.5,
+          "end": 0.7
+        },
+        {
+          "word_index": 4,
+          "text": "a",
+          "start": 0.7,
+          "end": 0.95
+        },
+        {
+          "word_index": 5,
+          "text": "diamond",
+          "start": 0.95,
+          "end": 1.3
+        },
+        {
+          "word_index": 6,
+          "text": "in",
+          "start": 1.3,
+          "end": 1.55
+        },
+        {
+          "word_index": 7,
+          "text": "the",
+          "start": 1.55,
+          "end": 1.8
+        },
+        {
+          "word_index": 8,
+          "text": "flesh",
+          "start": 1.8,
+          "end": 3.35
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "I cut my teeth on wedding rings in the movies",
+      "start": 5.7,
+      "end": 10.7,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "I",
+          "start": 5.7,
+          "end": 5.9
+        },
+        {
+          "word_index": 2,
+          "text": "cut",
+          "start": 5.9,
+          "end": 6.3
+        },
+        {
+          "word_index": 3,
+          "text": "my",
+          "start": 6.3,
+          "end": 6.65
+        },
+        {
+          "word_index": 4,
+          "text": "teeth",
+          "start": 6.65,
+          "end": 7.0
+        },
+        {
+          "word_index": 5,
+          "text": "on",
+          "start": 7.0,
+          "end": 7.4
+        },
+        {
+          "word_index": 6,
+          "text": "wedding",
+          "start": 7.4,
+          "end": 7.9
+        },
+        {
+          "word_index": 7,
+          "text": "rings",
+          "start": 7.9,
+          "end": 8.4
+        },
+        {
+          "word_index": 8,
+          "text": "in",
+          "start": 8.85,
+          "end": 9.3
+        },
+        {
+          "word_index": 9,
+          "text": "the",
+          "start": 9.3,
+          "end": 9.55
+        },
+        {
+          "word_index": 10,
+          "text": "movies",
+          "start": 9.55,
+          "end": 10.7
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "And I'm not proud of my address",
+      "start": 11.4,
+      "end": 14.85,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 11.4,
+          "end": 11.6
+        },
+        {
+          "word_index": 2,
+          "text": "I'm",
+          "start": 11.6,
+          "end": 11.85
+        },
+        {
+          "word_index": 3,
+          "text": "not",
+          "start": 11.85,
+          "end": 12.15
+        },
+        {
+          "word_index": 4,
+          "text": "proud",
+          "start": 12.15,
+          "end": 12.55
+        },
+        {
+          "word_index": 5,
+          "text": "of",
+          "start": 12.55,
+          "end": 12.95
+        },
+        {
+          "word_index": 6,
+          "text": "my",
+          "start": 12.95,
+          "end": 13.5
+        },
+        {
+          "word_index": 7,
+          "text": "address",
+          "start": 13.5,
+          "end": 14.85
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "In a torn-up town, no postcode envy",
+      "start": 16.7,
+      "end": 22.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "In",
+          "start": 16.7,
+          "end": 17.05
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 17.05,
+          "end": 17.4
+        },
+        {
+          "word_index": 3,
+          "text": "torn-up",
+          "start": 17.4,
+          "end": 17.8
+        },
+        {
+          "word_index": 4,
+          "text": "town,",
+          "start": 17.8,
+          "end": 18.9
+        },
+        {
+          "word_index": 5,
+          "text": "no",
+          "start": 19.25,
+          "end": 19.95
+        },
+        {
+          "word_index": 6,
+          "text": "postcode",
+          "start": 19.95,
+          "end": 20.8
+        },
+        {
+          "word_index": 7,
+          "text": "envy",
+          "start": 20.8,
+          "end": 22.05
+        }
+      ]
+    }
+  ]
+}

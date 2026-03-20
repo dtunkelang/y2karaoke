@@ -113,6 +113,16 @@ def _source_audio_candidates(song: dict[str, object]) -> list[Path]:
         cache_dir / f"{title}.wav",
         cache_dir / f"trimmed_from_{start:.2f}s.wav",
     ]
+    if cache_dir.exists():
+        for path in sorted(cache_dir.iterdir()):
+            if not path.is_file():
+                continue
+            if path.suffix.lower() not in {".wav", ".m4a", ".mp3", ".webm", ".mp4"}:
+                continue
+            if "trimmed_from_" in path.name:
+                continue
+            if path not in candidates:
+                candidates.append(path)
     return candidates
 
 

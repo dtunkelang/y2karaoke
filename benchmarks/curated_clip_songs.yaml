@@ -609,3 +609,35 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: NIN Hurt opening verse companion clip for sparse paired-line comparison.
+- artist: Eminem
+  title: Rap God
+  clip_id: dense-verse
+  clip_tags:
+  - stress
+  - rapid
+  - dense-lyrics
+  - verse
+  audio_start_sec: 265.0
+  clip_duration_sec: 8.0
+  youtube_id: S7cQ3b0iqLo
+  youtube_url: https://www.youtube.com/watch?v=S7cQ3b0iqLo
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Dense non-repeated rapid verse clip for high-syllable-rate alignment stress.
+- artist: Lorde
+  title: Royals
+  clip_id: opening-verse-conversational
+  clip_tags:
+  - stress
+  - conversational
+  - verse
+  - low-energy
+  audio_start_sec: 0.0
+  clip_duration_sec: 22.0
+  youtube_id: ncgsL1GCFms
+  youtube_url: https://www.youtube.com/watch?v=ncgsL1GCFms
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Low-energy conversational opening verse clip for subtle onset and phrasing timing.
