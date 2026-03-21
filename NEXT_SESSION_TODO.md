@@ -164,6 +164,7 @@ Use this file as a session handoff, not as a second backlog.
 - `Without Me` line 2 now has a direct mapped-line postpass repro:
   - `_pull_late_lines_to_matching_segments()` can pull a `Guess who's back` / `Back again` toy pair from `4.692s` to about `3.63s`
   - a characterization test for that shape now lives in `tests/unit/whisper/test_whisper_mapping_post.py`
+  - live-path ordering note: in `whisper_integration_stages.py`, `_pull_late_lines_to_matching_segments()` runs twice in the mapped-line postpasses (`postpass_pull_late_segments`, then `postpass_pull_late_segments_second`) before the onset snap stages
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.
