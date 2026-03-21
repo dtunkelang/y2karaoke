@@ -135,6 +135,7 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 
 ## Process Learnings
 
+- See also `docs/development.md` for the broader local workflow and documentation-maintenance rules around this loop.
 - Use the narrow iteration loop when:
   - one clip is clearly the top outlier
   - a clip has split into separate line-level failure modes
