@@ -132,3 +132,24 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   This is faster than guessing which postpass is to blame.
 - If a focused canary improves cleanly, commit and push before widening the benchmark set. That keeps the next step recoverable when iteration budget is tight.
 - Do not drop difficult clips just because they are difficult. Keep them if they reflect real production failures, but add companion clips when a single clip is too underdetermined to tune against safely.
+
+## Process Learnings
+
+- The recent time-pressure loop was useful, and not only because of the deadline.
+- The parts worth keeping even when time pressure is lower are:
+  - narrow the next step to one concrete code path plus one concrete artifact before editing
+  - state explicit success and failure criteria before broadening a fix
+  - save negative results, not just wins, when they materially eliminate a suspect path
+  - keep the current target clip split into separate failure modes when the lines are clearly failing for different reasons
+  - pin the exact rerun command, trace env, unit check, and lint check next to the current hypothesis
+- The part not worth keeping at full intensity is constant commit/push churn after every tiny note.
+- Preferred normal mode:
+  - commit/push after a clean behavioral win
+  - commit/push after a meaningful diagnostic artifact that would be expensive to rediscover
+  - batch small handoff-note updates together unless there is a real risk of losing context
+- In practice, the good default loop is:
+  1. identify one clip, one line, one likely code path
+  2. name the exact artifact and rerun command
+  3. run one focused probe
+  4. either keep the win or record the elimination
+  5. only then widen to the broader canary
