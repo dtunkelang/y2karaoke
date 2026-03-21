@@ -238,6 +238,7 @@ Most likely next inspection targets:
   - direct-path narrowing: in the non-force-DTW flow, the first stage family worth instrumenting is `_apply_baseline_restore_corrections()` / `_apply_audio_alignment_corrections()`, especially `snap_first_word_to_whisper_onset()` and `reanchor_late_supported_lines_to_earlier_whisper()`, because those are the obvious early-start movers on short hook lines
   - failed direct-path probe: blocking `reanchor_late_supported_lines_to_earlier_whisper()` for 2-word lines produced no change at all on `Without Me|Con Calma|Houdini|I Gotta Feeling` (`20260321T010836Z`), so that helper is also unlikely to be the active `Without Me` culprit
   - toy-path probe: `snap_first_word_to_whisper_onset()` also leaves the `Guess who's back` / `Back again` toy pair unchanged, so the stronger remaining suspects are now the baseline/restore passes rather than the obvious onset shifters
+  - baseline-restore narrowing: the current weak-evidence restore helpers also look unlikely for line 2, because they mainly restore large late shifts or unsupported early duplicate lines, while the live `Without Me` shape is asymmetric (`Back again` moves earlier than pre-Whisper by `-0.292s`, while `Shady's back` moves later by `+0.598s`)
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
