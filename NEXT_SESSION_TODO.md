@@ -161,6 +161,9 @@ Use this file as a session handoff, not as a second backlog.
 - `Without Me` is the next target, but the failure shape is narrow:
   - line 2 (`Back again`) is the one clear downstream regression
   - line 4 (`Tell a friend`) is mostly still a weak-seed / weak-onset miss
+- `Without Me` line 2 now has a direct mapped-line postpass repro:
+  - `_pull_late_lines_to_matching_segments()` can pull a `Guess who's back` / `Back again` toy pair from `4.692s` to about `3.63s`
+  - a characterization test for that shape now lives in `tests/unit/whisper/test_whisper_mapping_post.py`
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.

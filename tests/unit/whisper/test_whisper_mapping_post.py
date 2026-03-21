@@ -53,6 +53,37 @@ def test_pull_late_lines_to_matching_segments_moves_late_line_earlier() -> None:
     assert adjusted[1].end_time < adjusted[2].start_time
 
 
+def test_pull_late_lines_to_matching_segments_reflows_without_me_like_short_line() -> None:
+    lines = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=2.75, end_time=3.03),
+                Word(text="who's", start_time=3.03, end_time=3.31),
+                Word(text="back", start_time=3.31, end_time=3.58),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Back", start_time=4.692, end_time=5.10),
+                Word(text="again", start_time=5.10, end_time=5.781),
+            ]
+        ),
+        Line(words=[Word(text="Shady's", start_time=6.412, end_time=7.5)]),
+    ]
+    segments = [
+        TranscriptionSegment(start=1.77, end=3.55, text="Guess who's back", words=[]),
+        TranscriptionSegment(start=3.61, end=5.41, text="back again", words=[]),
+        TranscriptionSegment(start=6.35, end=7.07, text="Shane,", words=[]),
+    ]
+
+    adjusted = wm._pull_late_lines_to_matching_segments(
+        lines, segments, language="eng-Latn"
+    )
+
+    assert adjusted[1].start_time == pytest.approx(3.63, abs=0.01)
+    assert adjusted[1].start_time < lines[1].start_time - 1.0
+
+
 def test_distribute_words_within_segments_skips_extremely_wide_segments() -> None:
     assignments = whisper_blocks._distribute_words_within_segments(
         line_to_seg=[0, 0, 0],
