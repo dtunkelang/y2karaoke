@@ -22,6 +22,7 @@ Generate karaoke videos from YouTube URLs or song titles with word-by-word highl
 - Documentation index: `docs/README.md`
 - Architecture overview: `ARCHITECTURE.md`
 - Development workflow: `docs/development.md`
+- Curated clip workflow and quality-iteration guidance: `docs/curated_clips.md`
 - Tech debt and cleanup status: `docs/tech_debt_backlog.md`
 - Pipeline docs: `docs/pipelines/`
 
