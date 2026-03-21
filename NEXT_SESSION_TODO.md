@@ -263,6 +263,7 @@ Most likely next inspection targets:
   - line-split note: line 2 and line 4 should stay separated in future probes; line 2 shows a real negative Whisper start delta (`-0.79`) against merged-segment context, while line 4 has no Whisper start delta at all and stays near pre-Whisper timing, so they are not the same repeated-hook failure mode
   - line-4 reality check: `Tell a friend` drifts only `-0.011s` from pre-Whisper timing (`8.131 -> 8.120`) despite a 5-word local Whisper window, which is more evidence that line 4 is a weak-seed / weak-onset miss rather than the same mapped-window placement bug as line 2
   - next-step order for `Without Me`: inspect line 2 first in the direct late-pull placement path inside `whisper_mapping_post_segment_pull.py`; only after that is understood should line 4 reopen the weaker seed/onset path
+  - do-not-start-here note: for the next `Without Me` pass, do not begin by changing repeated-run helpers, broad duration restores, or line-4 seed heuristics; the first code read should stay on line 2 placement inside the direct segment-pull path
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
