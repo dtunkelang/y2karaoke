@@ -43,3 +43,4 @@ This directory is the canonical entry point for project documentation.
 - Prefer stable ownership docs over change logs.
 - Update `ARCHITECTURE.md`, `development.md`, and `tech_debt_backlog.md` when structural changes land.
 - Put reusable workflow/process guidance in `development.md` or `curated_clips.md`; keep `NEXT_SESSION_TODO.md` tactical and lightweight.
+- When a handoff pattern proves reusable, migrate it into the workflow docs and leave only a pointer in `NEXT_SESSION_TODO.md`.
