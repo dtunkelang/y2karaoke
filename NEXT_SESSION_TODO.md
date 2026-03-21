@@ -11,6 +11,14 @@ Use this file as a session handoff, not as a second backlog.
 - The main structure doc is `ARCHITECTURE.md`.
 - The active work is quality iteration on curated short clips, not further broad architecture cleanup.
 
+## Next Week Plan
+
+1. Rerank the broad cached canary before choosing the next target:
+   `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
+2. If `Con Calma` still leads after the rerank, inspect whether lines 9-12 can be improved with the same correction-pass evidence model without reopening seed helpers.
+3. If `Con Calma` drops out of first place, pivot to the new top broad-return clip rather than extending the `Con Calma` heuristics.
+4. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure.
+
 ## Current Quality Position
 
 - Recent short-clip improvements came from:
@@ -48,30 +56,6 @@ Use this file as a session handoff, not as a second backlog.
 
 ## Current Cached Canary Baseline
 
-- Best broad cached comparison set before the latest tiny `Con Calma` follow-up was:
-  - `benchmarks/results/20260320T062234Z`
-- Current broad cached ordering from that run:
-  - `Houdini`: `0.377 / 0.399`
-  - `Con Calma`: `0.350 / 0.390`
-  - `Taste`: `0.319 / 0.312`
-  - `Sweet Caroline`: `0.310 / 0.265`
-  - `Without Me`: `0.279 / 0.224`
-  - `Rap God`: `0.233 / 0.213`
-  - `Time After Time`: `0.226 / 0.289`
-  - `I Gotta Feeling`: `0.203 / 0.151`
-  - `Total Eclipse of the Heart`: `0.196 / 0.298`
-  - `Royals`: `0.188 / 0.156`
-  - `Take On Me`: `0.151 / 0.335`
-  - `Stayin' Alive`: `0.137 / 0.625`
-- The latest focused chorus rerun is:
-  - `benchmarks/results/20260320T063430Z`
-  - `Con Calma`: `0.3426 / 0.3825`
-  - `Sweet Caroline`: `0.3104 / 0.265`
-- The latest broad rerun started clean in:
-  - `benchmarks/results/20260320T063518Z`
-  - confirmed early:
-    - `Houdini`: flat at `0.3772 / 0.3991`
-    - `Con Calma`: improved at `0.3426 / 0.3825`
 - Latest broad cached canary subset after enabling default restored-run onset shifts and the `Con Calma` coda rebalance:
   - `benchmarks/results/20260320T232439Z/benchmark_report.json`
   - curated canary weighted start mean: `0.2478s`
@@ -123,7 +107,16 @@ Use this file as a session handoff, not as a second backlog.
     - `Take On Me`: `0.1513 / 0.3345`
     - `Stayin' Alive`: `0.1374 / 0.6253`
   - only material movement from `20260320T235217Z` was the `Sweet Caroline` improvement
-  - likely remaining broad target: `Con Calma`
+  - broad target at that point: `Con Calma`
+- Latest focused 4-song canary after the earlier-Whisper late-start reanchor:
+  - `benchmarks/results/20260321T004151Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.239s`
+  - key results:
+    - `Con Calma`: `0.2430 / 0.2662`
+    - `Houdini`: `0.2463 / 0.2562`
+    - `Without Me`: `0.2792 / 0.2243`
+    - `I Gotta Feeling`: `0.2034 / 0.1510`
+  - this is a kept focused win, not a full rerank of the 12-song cached canary
 
 ## New Curated Clips Added This Session
 
@@ -143,7 +136,7 @@ Use this file as a session handoff, not as a second backlog.
 ## Current Diagnosis
 
 - `Houdini` is no longer the clearest broad-return start-time outlier after the default restored-run onset shift change.
-- `Con Calma` is materially healthier after the mixed-density coda rebalance and is no longer the top broad-return target.
+- `Con Calma` is materially healthier after the mixed-density coda rebalance and is no longer the obvious top target on seed layout alone.
 - `Taste` is materially healthier after the recent gold refresh and is no longer the top broad-return target.
 - `Sweet Caroline` is materially healthier after the latest short-title chorus rebalance and is no longer the top broad-return target.
 - `Con Calma` is materially healthier again after the late-start Whisper reanchor and should be reranked with the next broad cached canary before choosing the next target.
@@ -211,6 +204,9 @@ Most likely next inspection targets:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
   - focused confirmation run: `benchmarks/results/20260320T232236Z`
+- latest correction-pass result:
+  - `Con Calma` improved again after reanchoring late line starts to earlier in-order Whisper prefix support
+  - representative focused canary run: `benchmarks/results/20260321T004151Z`
 - latest curated refresh:
   - `Taste` gold timing cleanup improved the clip substantially without code changes
   - representative rerun: `benchmarks/results/20260320T234335Z`
