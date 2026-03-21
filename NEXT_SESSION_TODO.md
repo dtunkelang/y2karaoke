@@ -233,6 +233,7 @@ Most likely next inspection targets:
     - `whisper_alignment_pull_rules._pull_lines_near_segment_end()`
   - follow-up code read note: `_merge_short_following_line_into_segment()` is now the most plausible first culprit for line 2, because it can explicitly reflow lines 1 and 2 together into one segment window when the second line is very short; `_pull_lines_near_segment_end()` still looks secondary, and `_clamp_repeated_line_duration()` looks less likely for this exact shape
   - important failed probe: the helper above can reproduce the `Guess who's back` / `Back again` collapse in isolation (see unit test added in commit `22c6b22`), but a narrow live guard there did not move the `Without Me|Houdini|I Gotta Feeling` canary, so `Without Me` is probably not hitting that helper on the active path
+  - result-payload note: the live `Without Me` benchmark artifact only exposes `whisper_corrections: 1`, no lexical mismatch diagnostics, and no stage metrics, so the next pass will need direct code-path inspection rather than relying on the saved JSON to identify the active helper
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
