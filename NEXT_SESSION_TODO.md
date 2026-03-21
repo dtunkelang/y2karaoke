@@ -250,6 +250,7 @@ Most likely next inspection targets:
   - sub-pass ranking note: for `Without Me` line 2 specifically, `_pull_adjacent_similar_lines_across_long_gaps()` and `_rebalance_short_question_pairs()` look effectively irrelevant, while `_retime_split_short_refrains_to_matching_segments()` is a real candidate because it explicitly retimes short repeated refrains to later matching segment windows
   - elimination note: `_retime_split_short_refrains_to_matching_segments()` is not a live fit for `Without Me` line 2 after all, because its shared helper only fires when the normalized line text appears at least twice in the clip, and `Back again` is unique in the current gold clip
   - stronger structural eliminations: `_realign_repetitive_runs_to_matching_segments()` and `_retime_repetitive_question_runs_to_segment_windows()` also look non-viable for the current `Without Me` clip, because both require repeated runs of length at least 3, and the question-run path additionally requires `?` lines
+  - practical short list now: for `Without Me` line 2, the remaining plausible movers inside or immediately after the segment-pull stage are the direct top-level pull logic itself, `_smooth_adjacent_duplicate_line_cadence()`, and possibly a later non-repetition postpass rather than the broader repeated-run helpers
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
