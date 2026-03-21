@@ -53,7 +53,9 @@ def test_pull_late_lines_to_matching_segments_moves_late_line_earlier() -> None:
     assert adjusted[1].end_time < adjusted[2].start_time
 
 
-def test_pull_late_lines_to_matching_segments_reflows_without_me_like_short_line() -> None:
+def test_pull_late_lines_to_matching_segments_reflows_without_me_like_short_line() -> (
+    None
+):
     lines = [
         Line(
             words=[
