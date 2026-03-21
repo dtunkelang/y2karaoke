@@ -225,6 +225,7 @@ Most likely next inspection targets:
   - line 2 `Back again` regressed from a decent pre-Whisper start `4.692` to final `4.400`, while gold is `4.950`
   - line 4 `Tell a friend` stayed near its pre-Whisper timing (`8.131 -> 8.120`) while gold is later at `9.050`
   - this suggests the first pass should inspect downstream compaction/rollback on line 2 before changing the repeated-hook seed again
+  - code read note: the current finalize restore for repeated compact runs only protects late-shifted or end-collapsed runs in `whisper_integration_finalize.py`; it does not obviously catch this early-compaction shape on line 2
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
