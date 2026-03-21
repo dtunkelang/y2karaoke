@@ -9,7 +9,7 @@ This directory is the canonical entry point for project documentation.
 - `../ARCHITECTURE.md`
   - current system structure and major module boundaries
 - `development.md`
-  - local workflow, quality gates, CI lanes, artifact policy
+  - local workflow, quality gates, CI lanes, artifact policy, narrow iteration loop guidance
 - `tech_debt_backlog.md`
   - current debt assessment, completed cleanup, remaining priorities
 - `../NEXT_SESSION_TODO.md`
@@ -29,7 +29,7 @@ This directory is the canonical entry point for project documentation.
 ## Tooling Docs
 
 - `curated_clips.md`
-  - workflow for adding and running short curated benchmark clips
+  - workflow for adding and running short curated benchmark clips, plus quality-iteration process learnings
 - `gold_timing_editor.md`
   - manual gold-timing refinement workflow
 - `karaoke_visual_bootstrap.md`
