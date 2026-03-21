@@ -117,6 +117,23 @@ Use this file as a session handoff, not as a second backlog.
     - `Without Me`: `0.2792 / 0.2243`
     - `I Gotta Feeling`: `0.2034 / 0.1510`
   - this is a kept focused win, not a full rerank of the 12-song cached canary
+- Latest broad cached canary rerank after the earlier-Whisper late-start reanchor:
+  - `benchmarks/results/20260321T004829Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.221s`
+  - updated ordering:
+    - `Without Me`: `0.2792 / 0.2243`
+    - `Houdini`: `0.2463 / 0.2562`
+    - `Con Calma`: `0.2430 / 0.2662`
+    - `Rap God`: `0.2329 / 0.2128`
+    - `Time After Time`: `0.2261 / 0.2892`
+    - `Taste`: `0.2240 / 0.2626`
+    - `Sweet Caroline`: `0.2154 / 0.2513`
+    - `I Gotta Feeling`: `0.2034 / 0.1510`
+    - `Total Eclipse of the Heart`: `0.1961 / 0.2979`
+    - `Royals`: `0.1882 / 0.1555`
+    - `Take On Me`: `0.1513 / 0.3345`
+    - `Stayin' Alive`: `0.1374 / 0.6253`
+  - next broad-return target is now `Without Me`, not `Con Calma`
 
 ## New Curated Clips Added This Session
 
@@ -139,7 +156,8 @@ Use this file as a session handoff, not as a second backlog.
 - `Con Calma` is materially healthier after the mixed-density coda rebalance and is no longer the obvious top target on seed layout alone.
 - `Taste` is materially healthier after the recent gold refresh and is no longer the top broad-return target.
 - `Sweet Caroline` is materially healthier after the latest short-title chorus rebalance and is no longer the top broad-return target.
-- `Con Calma` is materially healthier again after the late-start Whisper reanchor and should be reranked with the next broad cached canary before choosing the next target.
+- `Con Calma` is materially healthier again after the late-start Whisper reanchor and is no longer the top broad-return target after the full rerank.
+- `Without Me` is now the clearest broad-return start-error target in the cached canary.
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.
@@ -198,8 +216,8 @@ Only continue if there is a concrete reason:
 - a test seam still depends on hidden state or unstable internals
 
 Most likely next inspection targets:
-- rerank the broad cached canary before picking the next target; `Con Calma` may no longer be first after `20260321T004151Z`
-- current fallback broad-return target if `Con Calma` drops out of first place: `Without Me`
+- next broad-return target: `Without Me`
+- fallback broad-return targets after `Without Me`: `Houdini`, then `Con Calma`
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
