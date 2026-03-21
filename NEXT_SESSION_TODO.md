@@ -271,6 +271,7 @@ Most likely next inspection targets:
   - exact first traced rerun command: `Y2K_TRACE_WHISPER_STAGES_JSON=/tmp/without_me_trace.json Y2K_TRACE_WHISPER_LINE_RANGE=2-2 PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Without Me|Houdini|Con Calma|I Gotta Feeling" --offline`
   - exact second read for line 4: if line 2 is understood and line 4 still needs work, start in `whisper_integration_align_corrections.py:65-113` (`_apply_baseline_constraint_and_snap`) and then `whisper_integration_align_experimental.py:190-273` (`reanchor_late_supported_lines_to_earlier_whisper`), because those are the concrete weak-seed / onset-style start movers already known to touch this family
   - exact second trace env: if line 4 needs stage snapshots later, use the same JSON env with `Y2K_TRACE_WHISPER_LINE_RANGE=4-4` so the trace stays focused on the weak-seed path rather than the line-2 placement path
+  - exact second traced rerun command: `Y2K_TRACE_WHISPER_STAGES_JSON=/tmp/without_me_trace.json Y2K_TRACE_WHISPER_LINE_RANGE=4-4 PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Without Me|Houdini|Con Calma|I Gotta Feeling" --offline`
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
