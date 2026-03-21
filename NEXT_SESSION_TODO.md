@@ -245,6 +245,7 @@ Most likely next inspection targets:
   - toy-path probe: `snap_first_word_to_whisper_onset()` also leaves the `Guess who's back` / `Back again` toy pair unchanged, so the stronger remaining suspects are now the baseline/restore passes rather than the obvious onset shifters
   - baseline-restore narrowing: the current weak-evidence restore helpers also look unlikely for line 2, because they mainly restore large late shifts or unsupported early duplicate lines, while the live `Without Me` shape is asymmetric (`Back again` moves earlier than pre-Whisper by `-0.292s`, while `Shady's back` moves later by `+0.598s`)
   - stronger live-path suspect: in the mapped-line postpasses, `_pull_late_lines_to_matching_segments()` now looks like the best next target, because it directly shifts a line earlier toward a matching segment start before the later baseline/restore passes run
+  - failed probe: a narrow guard against extreme early pulls on very short handoff lines inside `_pull_late_lines_to_matching_segments()` produced no benchmark movement on `Without Me|Houdini|Con Calma|I Gotta Feeling` (`20260321T011749Z`), so the active `Without Me` miss is likely a subtler condition inside that stage or a neighboring postpass rather than the obvious toy shape alone
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
