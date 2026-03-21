@@ -43,12 +43,12 @@ def apply_short_title_chorus_layout(
         for line in populated_lines
     ]
     line_weights = list(base_weights)
-    line_weights[0] *= 0.56
-    line_weights[1] *= 0.8
-    line_weights[2] *= 0.78
-    line_weights[3] *= 0.96
-    line_weights[4] *= 1.16
-    gap_weights = [1.6, 0.34, 0.18, 0.03]
+    line_weights[0] *= 0.5
+    line_weights[1] *= 0.68
+    line_weights[2] *= 0.82
+    line_weights[3] *= 1.0
+    line_weights[4] *= 1.2
+    gap_weights = [0.95, 0.85, 0.7, 0.06]
     return apply_weighted_line_layout_fn(
         lines=lines,
         populated_lines=populated_lines,
