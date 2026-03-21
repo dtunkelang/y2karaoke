@@ -35,6 +35,8 @@ Use this file as a session handoff, not as a second backlog.
   - driver: sparse-support forced fallback now redistributes words inside short sustained 5-word lines so held final words are not compressed into the tail
   - `Sweet Caroline` improved from `0.4788s` to `0.3104s` start error in `benchmarks/results/20260320T051849Z`
   - driver: short-title chorus layout now shortens the title line, widens the setup gap, and leaves more room for the tail line
+  - `Sweet Caroline` improved again from `0.3104s / 0.2650s` to `0.2154s / 0.2513s` in `benchmarks/results/20260321T000522Z`
+  - driver: the short-title chorus helper was still over-allocating the line-1 setup gap, so tightening that narrow layout moved line 2 into the right window without disturbing the broad cached canary
   - `Con Calma` improved from `0.3426s / 0.3825s` to `0.2886s / 0.3020s` in `benchmarks/results/20260320T232439Z`
   - driver: mixed-density chorus clips now rebalance the late coda when the repeated response pair is followed by a denser four-line tail, which moved the seed later without hurting the broad cached canary
   - `Taste` improved from `0.3194s / 0.3125s` to `0.2240s / 0.2626s` in `benchmarks/results/20260320T234335Z`
@@ -102,7 +104,24 @@ Use this file as a session handoff, not as a second backlog.
     - `Take On Me`: `0.1513 / 0.3345`
     - `Stayin' Alive`: `0.1374 / 0.6253`
   - only material movement from `20260320T232439Z` was the curated `Taste` improvement
-  - likely remaining broad target: `Sweet Caroline`
+- Latest broad cached canary subset after tightening the short-title chorus helper:
+  - `benchmarks/results/20260321T000522Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.232s`
+  - key ordering:
+    - `Con Calma`: `0.2886 / 0.3020`
+    - `Without Me`: `0.2792 / 0.2243`
+    - `Houdini`: `0.2551 / 0.2771`
+    - `Rap God`: `0.2329 / 0.2128`
+    - `Time After Time`: `0.2261 / 0.2892`
+    - `Taste`: `0.2240 / 0.2626`
+    - `Sweet Caroline`: `0.2154 / 0.2513`
+    - `I Gotta Feeling`: `0.2034 / 0.1510`
+    - `Total Eclipse of the Heart`: `0.1961 / 0.2979`
+    - `Royals`: `0.1882 / 0.1555`
+    - `Take On Me`: `0.1513 / 0.3345`
+    - `Stayin' Alive`: `0.1374 / 0.6253`
+  - only material movement from `20260320T235217Z` was the `Sweet Caroline` improvement
+  - likely remaining broad target: `Con Calma`
 
 ## New Curated Clips Added This Session
 
@@ -124,7 +143,8 @@ Use this file as a session handoff, not as a second backlog.
 - `Houdini` is no longer the clearest broad-return start-time outlier after the default restored-run onset shift change.
 - `Con Calma` is materially healthier after the mixed-density coda rebalance and is no longer the top broad-return target.
 - `Taste` is materially healthier after the recent gold refresh and is no longer the top broad-return target.
-- `Sweet Caroline` is now the clearest remaining broad-return clip in the cached canary.
+- `Sweet Caroline` is materially healthier after the latest short-title chorus rebalance and is no longer the top broad-return target.
+- `Con Calma` is back to being the clearest remaining broad-return clip in the cached canary.
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.
@@ -140,6 +160,8 @@ Use this file as a session handoff, not as a second backlog.
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Con Calma|Sweet Caroline" --offline`
 - For the refreshed `Taste` comparison, use:
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Sweet Caroline|Taste|Con Calma" --offline`
+- For the refreshed short-title chorus comparison, use:
+  - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Sweet Caroline|Con Calma|Taste" --offline`
 - For the current broad cached canary subset, use:
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
 - For the new dense/conversational shapes, use:
@@ -179,8 +201,8 @@ Only continue if there is a concrete reason:
 - a test seam still depends on hidden state or unstable internals
 
 Most likely next inspection targets:
-- likely remaining broad target: `Sweet Caroline`
-- next broad-return fallback after `Sweet Caroline`: `Without Me`
+- likely remaining broad target: `Con Calma`
+- next broad-return fallback after `Con Calma`: `Without Me`
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
@@ -188,6 +210,10 @@ Most likely next inspection targets:
 - latest curated refresh:
   - `Taste` gold timing cleanup improved the clip substantially without code changes
   - representative rerun: `benchmarks/results/20260320T234335Z`
+- latest short-title chorus result:
+  - `Sweet Caroline` improved again after tightening the setup-gap allocation inside the narrow short-title chorus helper
+  - representative broad canary run: `benchmarks/results/20260321T000522Z`
+  - focused confirmation run: `benchmarks/results/20260321T000412Z`
 - treat `Johnny Cash - Hurt` as a standalone hard canary unless a closer companion clip finally reproduces its line-end overextension
 
 ## Guardrails
