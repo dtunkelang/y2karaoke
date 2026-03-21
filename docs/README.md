@@ -13,7 +13,7 @@ This directory is the canonical entry point for project documentation.
 - `tech_debt_backlog.md`
   - current debt assessment, completed cleanup, remaining priorities
 - `../NEXT_SESSION_TODO.md`
-  - lightweight handoff for the next coding session
+  - lightweight handoff for the next coding session, with pointers back to the reusable process docs
 
 ## Pipeline Docs
 
