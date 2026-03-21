@@ -90,6 +90,7 @@ When structural work lands, update:
 
 Use `NEXT_SESSION_TODO.md` only as a lightweight handoff, not as a second backlog.
 Keep reusable process guidance in `development.md` or `docs/curated_clips.md`, and keep `NEXT_SESSION_TODO.md` focused on the current tactical target.
+If a tactical handoff pattern keeps recurring, promote it into these workflow docs and replace the handoff detail with a pointer.
 
 When manual curated clip work lands, also update:
 - `docs/curated_clips.md`
