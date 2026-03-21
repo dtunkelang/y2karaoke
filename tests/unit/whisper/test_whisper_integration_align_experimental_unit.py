@@ -184,6 +184,57 @@ def test_reanchor_repeated_cadence_lines_borrows_later_pair_spacing():
     assert adjusted[1].start_time == pytest.approx(56.72, abs=0.01)
 
 
+def test_reanchor_late_supported_lines_to_earlier_whisper_moves_line_earlier():
+    lines = [
+        Line(words=[Word(text="prev", start_time=16.43, end_time=19.58)]),
+        Line(
+            words=[
+                Word(text="I", start_time=20.28, end_time=20.48),
+                Word(text="like", start_time=20.5, end_time=20.7),
+                Word(text="your", start_time=20.72, end_time=20.92),
+                Word(text="poom-poom", start_time=20.94, end_time=21.14),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="I", start=19.44, end=19.82, probability=1.0),
+        TranscriptionWord(text="like", start=19.82, end=20.02, probability=1.0),
+        TranscriptionWord(text="you", start=20.02, end=20.16, probability=1.0),
+    ]
+
+    adjusted, applied = wiaexp.reanchor_late_supported_lines_to_earlier_whisper(
+        lines, whisper_words
+    )
+
+    assert applied == 1
+    assert adjusted[1].start_time == pytest.approx(19.63, abs=0.01)
+    assert adjusted[1].end_time == pytest.approx(21.14, abs=0.01)
+
+
+def test_reanchor_late_supported_lines_to_earlier_whisper_requires_prefix_support():
+    lines = [
+        Line(words=[Word(text="prev", start_time=10.0, end_time=10.8)]),
+        Line(
+            words=[
+                Word(text="Ya", start_time=12.0, end_time=12.3),
+                Word(text="vi", start_time=12.3, end_time=12.6),
+                Word(text="que", start_time=12.6, end_time=12.9),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="ya", start=11.2, end=11.5, probability=1.0),
+        TranscriptionWord(text="solo", start=11.5, end=11.8, probability=1.0),
+    ]
+
+    adjusted, applied = wiaexp.reanchor_late_supported_lines_to_earlier_whisper(
+        lines, whisper_words
+    )
+
+    assert applied == 0
+    assert adjusted[1].start_time == pytest.approx(12.0, abs=0.01)
+
+
 def test_shift_restored_low_support_runs_to_onset_moves_dense_run_together():
     baseline = [
         Line(words=[Word(text="prev", start_time=50.72, end_time=52.98)]),

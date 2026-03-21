@@ -8,6 +8,7 @@ from ... import models
 from ..alignment import timing_models
 from .whisper_integration_align_experimental import (
     reanchor_low_support_lines_to_later_onset as _reanchor_low_support_lines_to_later_onset,
+    reanchor_late_supported_lines_to_earlier_whisper as _reanchor_late_supported_lines_to_earlier_whisper,
     reanchor_repeated_cadence_lines as _reanchor_repeated_cadence_lines,
     reanchor_unsupported_i_said_lines_to_later_onset as _reanchor_unsupported_i_said_lines_to_later_onset,
     shift_restored_low_support_runs_to_onset as _shift_restored_low_support_runs_to_onset,
@@ -345,6 +346,24 @@ def _apply_audio_reanchor_corrections(
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
         stage="after_shift_restored_low_support_runs_to_onset",
+    )
+
+    mapped_lines, earlier_whisper_reanchors = (
+        _reanchor_late_supported_lines_to_earlier_whisper(
+            mapped_lines,
+            all_words,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        earlier_whisper_reanchors,
+        "Reanchored {count} late supported line(s) to earlier Whisper starts",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_reanchor_late_supported_lines_to_earlier_whisper",
     )
 
     mapped_lines, said_reanchors = _reanchor_unsupported_i_said_lines_to_later_onset(

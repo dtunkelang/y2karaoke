@@ -101,6 +101,93 @@ def local_lexical_overlap_ratio(
     return overlap / max(len(line_tokens), len(nearby_tokens))
 
 
+def reanchor_late_supported_lines_to_earlier_whisper(
+    lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_shift: float = 0.18,
+    max_shift: float = 0.95,
+    min_prefix_matches: int = 2,
+    min_gap: float = 0.05,
+    max_prev_overlap: float = 0.18,
+    support_window: float = 1.2,
+) -> tuple[List[models.Line], int]:
+    adjusted = list(lines)
+    applied = 0
+    normalized_whisper = [
+        re.sub(r"[^a-z]+", "", word.text.lower()) for word in whisper_words
+    ]
+    for idx, line in enumerate(adjusted):
+        if len(line.words) < max(2, min_prefix_matches):
+            continue
+        prefix = normalized_prefix_tokens(line, limit=3)
+        if len(prefix) < min_prefix_matches:
+            continue
+
+        prev_end = adjusted[idx - 1].end_time if idx > 0 and adjusted[idx - 1].words else None
+        search_start = line.start_time - max_shift
+        search_end = line.start_time - min_shift
+        best_target: float | None = None
+        best_match_count = 0
+
+        for word_idx, word in enumerate(whisper_words):
+            if word.text == "[VOCAL]":
+                continue
+            if word.start < search_start or word.start > search_end:
+                continue
+            if normalized_whisper[word_idx] != prefix[0]:
+                continue
+            match_count = 1
+            cursor = word_idx + 1
+            last_end = word.end
+            for token in prefix[1:]:
+                while cursor < len(whisper_words):
+                    candidate = whisper_words[cursor]
+                    candidate_norm = normalized_whisper[cursor]
+                    if candidate.start > word.start + support_window:
+                        cursor = len(whisper_words)
+                        break
+                    cursor += 1
+                    if candidate.text == "[VOCAL]" or not candidate_norm:
+                        continue
+                    if candidate.start + 1e-6 < last_end:
+                        continue
+                    if candidate_norm != token:
+                        continue
+                    match_count += 1
+                    last_end = candidate.end
+                    break
+                else:
+                    break
+
+            if match_count < min_prefix_matches:
+                continue
+            target_start = word.start
+            if prev_end is not None:
+                target_start = max(target_start, prev_end + min_gap)
+                overlap = prev_end - word.start
+                if overlap > max_prev_overlap:
+                    continue
+            if target_start > line.start_time - min_shift:
+                continue
+            if (
+                match_count > best_match_count
+                or (
+                    match_count == best_match_count
+                    and (best_target is None or target_start < best_target)
+                )
+            ):
+                best_target = target_start
+                best_match_count = match_count
+
+        if best_target is None:
+            continue
+        adjusted[idx] = rescale_line_to_new_start(line, best_target)
+        applied += 1
+
+    return adjusted, applied
+
+
 def _choose_i_said_reanchor_start(
     line: models.Line,
     next_line: models.Line,

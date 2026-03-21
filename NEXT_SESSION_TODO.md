@@ -37,8 +37,10 @@ Use this file as a session handoff, not as a second backlog.
   - driver: short-title chorus layout now shortens the title line, widens the setup gap, and leaves more room for the tail line
   - `Sweet Caroline` improved again from `0.3104s / 0.2650s` to `0.2154s / 0.2513s` in `benchmarks/results/20260321T000522Z`
   - driver: the short-title chorus helper was still over-allocating the line-1 setup gap, so tightening that narrow layout moved line 2 into the right window without disturbing the broad cached canary
-  - `Con Calma` improved from `0.3426s / 0.3825s` to `0.2886s / 0.3020s` in `benchmarks/results/20260320T232439Z`
+- `Con Calma` improved from `0.3426s / 0.3825s` to `0.2886s / 0.3020s` in `benchmarks/results/20260320T232439Z`
   - driver: mixed-density chorus clips now rebalance the late coda when the repeated response pair is followed by a denser four-line tail, which moved the seed later without hurting the broad cached canary
+- `Con Calma` improved again from `0.2886s / 0.3020s` to `0.2430s / 0.2662s` in `benchmarks/results/20260321T004151Z`
+  - driver: a narrow late-start reanchor now keeps lines when the first two lyric tokens are supported in-order by earlier Whisper words, instead of leaving those starts pinned to the later baseline timing
   - `Taste` improved from `0.3194s / 0.3125s` to `0.2240s / 0.2626s` in `benchmarks/results/20260320T234335Z`
   - driver: manual gold timing cleanup removed a misleading tail overhang, so `Taste` is no longer the top broad-return target
   - `Rap God` improved from `0.702s / 0.705s` to `0.233s / 0.213s` in `benchmarks/results/20260320T061849Z`
@@ -144,7 +146,7 @@ Use this file as a session handoff, not as a second backlog.
 - `Con Calma` is materially healthier after the mixed-density coda rebalance and is no longer the top broad-return target.
 - `Taste` is materially healthier after the recent gold refresh and is no longer the top broad-return target.
 - `Sweet Caroline` is materially healthier after the latest short-title chorus rebalance and is no longer the top broad-return target.
-- `Con Calma` is back to being the clearest remaining broad-return clip in the cached canary.
+- `Con Calma` is materially healthier again after the late-start Whisper reanchor and should be reranked with the next broad cached canary before choosing the next target.
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.
@@ -158,6 +160,8 @@ Use this file as a session handoff, not as a second backlog.
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Take On Me|Time After Time|Total Eclipse|Stayin' Alive" --offline`
 - For mixed-density chorus / phrase-boundary checks, use:
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Con Calma|Sweet Caroline" --offline`
+- For the current saved 4-song canary around the latest Whisper-start reanchor, use:
+  - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Con Calma|Houdini|Without Me|I Gotta Feeling" --offline`
 - For the refreshed `Taste` comparison, use:
   - `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Sweet Caroline|Taste|Con Calma" --offline`
 - For the refreshed short-title chorus comparison, use:
@@ -201,8 +205,8 @@ Only continue if there is a concrete reason:
 - a test seam still depends on hidden state or unstable internals
 
 Most likely next inspection targets:
-- likely remaining broad target: `Con Calma`
-- next broad-return fallback after `Con Calma`: `Without Me`
+- rerank the broad cached canary before picking the next target; `Con Calma` may no longer be first after `20260321T004151Z`
+- current fallback broad-return target if `Con Calma` drops out of first place: `Without Me`
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
