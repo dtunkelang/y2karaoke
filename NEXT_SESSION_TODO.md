@@ -158,6 +158,9 @@ Use this file as a session handoff, not as a second backlog.
 - `Sweet Caroline` is materially healthier after the latest short-title chorus rebalance and is no longer the top broad-return target.
 - `Con Calma` is materially healthier again after the late-start Whisper reanchor and is no longer the top broad-return target after the full rerank.
 - `Without Me` is now the clearest broad-return start-error target in the cached canary.
+- `Without Me` is the next target, but the failure shape is narrow:
+  - line 2 (`Back again`) is the one clear downstream regression
+  - line 4 (`Tell a friend`) is mostly still a weak-seed / weak-onset miss
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.
@@ -218,6 +221,10 @@ Only continue if there is a concrete reason:
 Most likely next inspection targets:
 - next broad-return target: `Without Me`
 - fallback broad-return targets after `Without Me`: `Houdini`, then `Con Calma`
+- current `Without Me` diagnostic from `benchmarks/results/20260321T004829Z/06_eminem-without-me-repeated-hook_timing_report.json`:
+  - line 2 `Back again` regressed from a decent pre-Whisper start `4.692` to final `4.400`, while gold is `4.950`
+  - line 4 `Tell a friend` stayed near its pre-Whisper timing (`8.131 -> 8.120`) while gold is later at `9.050`
+  - this suggests the first pass should inspect downstream compaction/rollback on line 2 before changing the repeated-hook seed again
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
