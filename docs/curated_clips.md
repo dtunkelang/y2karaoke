@@ -135,6 +135,11 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 
 ## Process Learnings
 
+- Use the narrow iteration loop when:
+  - one clip is clearly the top outlier
+  - a clip has split into separate line-level failure modes
+  - a plausible fix already improved the seed, and the remaining miss looks downstream
+  - a broad canary is clean enough that you can afford to localize the next read
 - The recent time-pressure loop was useful, and not only because of the deadline.
 - The parts worth keeping even when time pressure is lower are:
   - narrow the next step to one concrete code path plus one concrete artifact before editing
