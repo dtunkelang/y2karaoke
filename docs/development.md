@@ -89,6 +89,7 @@ When structural work lands, update:
 - `docs/README.md`
 
 Use `NEXT_SESSION_TODO.md` only as a lightweight handoff, not as a second backlog.
+Keep reusable process guidance in `development.md` or `docs/curated_clips.md`, and keep `NEXT_SESSION_TODO.md` focused on the current tactical target.
 
 When manual curated clip work lands, also update:
 - `docs/curated_clips.md`
