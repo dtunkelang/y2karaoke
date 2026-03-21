@@ -237,6 +237,7 @@ Most likely next inspection targets:
   - code-path note: the live `Without Me` run reports `whisper_force_dtw: false`, so the first active path to inspect is the direct alignment flow in `whisper_integration_align.py` and its baseline/audio correction passes, not the force-DTW finalize passes
   - direct-path narrowing: in the non-force-DTW flow, the first stage family worth instrumenting is `_apply_baseline_restore_corrections()` / `_apply_audio_alignment_corrections()`, especially `snap_first_word_to_whisper_onset()` and `reanchor_late_supported_lines_to_earlier_whisper()`, because those are the obvious early-start movers on short hook lines
   - failed direct-path probe: blocking `reanchor_late_supported_lines_to_earlier_whisper()` for 2-word lines produced no change at all on `Without Me|Con Calma|Houdini|I Gotta Feeling` (`20260321T010836Z`), so that helper is also unlikely to be the active `Without Me` culprit
+  - toy-path probe: `snap_first_word_to_whisper_onset()` also leaves the `Guess who's back` / `Back again` toy pair unchanged, so the stronger remaining suspects are now the baseline/restore passes rather than the obvious onset shifters
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
