@@ -235,6 +235,7 @@ Most likely next inspection targets:
   - important failed probe: the helper above can reproduce the `Guess who's back` / `Back again` collapse in isolation (see unit test added in commit `22c6b22`), but a narrow live guard there did not move the `Without Me|Houdini|I Gotta Feeling` canary, so `Without Me` is probably not hitting that helper on the active path
   - result-payload note: the live `Without Me` benchmark artifact only exposes `whisper_corrections: 1`, no lexical mismatch diagnostics, and no stage metrics, so the next pass will need direct code-path inspection rather than relying on the saved JSON to identify the active helper
   - code-path note: the live `Without Me` run reports `whisper_force_dtw: false`, so the first active path to inspect is the direct alignment flow in `whisper_integration_align.py` and its baseline/audio correction passes, not the force-DTW finalize passes
+  - direct-path narrowing: in the non-force-DTW flow, the first stage family worth instrumenting is `_apply_baseline_restore_corrections()` / `_apply_audio_alignment_corrections()`, especially `snap_first_word_to_whisper_onset()` and `reanchor_late_supported_lines_to_earlier_whisper()`, because those are the obvious early-start movers on short hook lines
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
