@@ -231,6 +231,7 @@ Most likely next inspection targets:
     - `whisper_alignment_pull_rules._merge_short_following_line_into_segment()`
     - `whisper_alignment_utils._clamp_repeated_line_duration()`
     - `whisper_alignment_pull_rules._pull_lines_near_segment_end()`
+  - follow-up code read note: `_pull_lines_near_segment_end()` is the most plausible first culprit for line 2, because it explicitly allows short lines to be pulled back toward a prior segment end with a wide `max_late_short` window; the merge/clamp helpers look less likely for this exact shape
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
