@@ -259,6 +259,7 @@ Most likely next inspection targets:
   - boundary note: for the merged `Guess who's back, back again` segment shape, the usable line-2 pull window would still be about `3.63-5.41`, so the previous-line clamp is the active start limiter and the next-line boundary is not the thing keeping the live result at `4.400`
   - window-usage note: the live line-2 result (`4.400-5.230`) only uses about `0.83s` of a roughly `1.78s` available merged-segment window, leaving `0.77s` unused before the line and only `0.18s` after it, so the current behavior is tail-biased inside the window rather than simply blocked by hard boundaries
   - placement note: line 2 also sits about `0.295s` late relative to the midpoint of that usable window, which reinforces that the active behavior is anchoring it closer to the segment end than the segment start
+  - duration note: line 2 is shorter than pre-Whisper (`0.83s` vs `1.089s`) but still longer than gold (`0.70s`), so the remaining miss looks more like late placement inside the window than a pure duration-collapse problem
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
