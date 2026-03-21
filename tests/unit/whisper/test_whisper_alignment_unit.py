@@ -261,6 +261,35 @@ def test_drop_duplicate_lines_by_timing():
     assert len(deduped) == 1
 
 
+def test_merge_short_following_line_into_segment_reflows_without_me_shape():
+    lines = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=2.75, end_time=3.03),
+                Word(text="who's", start_time=3.03, end_time=3.31),
+                Word(text="back", start_time=3.31, end_time=3.58),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Back", start_time=4.40, end_time=4.82),
+                Word(text="again", start_time=4.82, end_time=5.23),
+            ]
+        ),
+    ]
+    segments = [
+        TranscriptionSegment(start=1.77, end=3.55, text="Guess who's back", words=[])
+    ]
+
+    adjusted, count = wa._merge_short_following_line_into_segment(
+        lines, segments, max_late=6.0
+    )
+
+    assert count == 1
+    assert adjusted[1].start_time == pytest.approx(2.838, abs=0.01)
+    assert adjusted[1].start_time < lines[1].start_time - 1.0
+
+
 def test_pull_lines_forward_for_continuous_vocals():
     lines = [
         Line(words=[Word(text="one", start_time=10.0, end_time=11.0)]),
