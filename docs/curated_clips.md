@@ -140,6 +140,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - a clip has split into separate line-level failure modes
   - a plausible fix already improved the seed, and the remaining miss looks downstream
   - a broad canary is clean enough that you can afford to localize the next read
+- Do not use the narrow loop as the default when:
+  - the broad canary has not been reranked recently
+  - the current top clip may still be curation drift rather than pipeline behavior
+  - multiple clips are moving at once and you do not yet know the shared failure family
 - The recent time-pressure loop was useful, and not only because of the deadline.
 - The parts worth keeping even when time pressure is lower are:
   - narrow the next step to one concrete code path plus one concrete artifact before editing
