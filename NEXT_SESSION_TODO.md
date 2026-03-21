@@ -4,6 +4,10 @@ Last updated: 2026-03-20
 
 Use this file as a session handoff, not as a second backlog.
 
+For the reusable iteration pattern behind the current handoff style, see:
+- `docs/development.md`
+- `docs/curated_clips.md`
+
 ## Current Position
 
 - The major lyrics / Whisper / sync architecture cleanup is largely complete.
