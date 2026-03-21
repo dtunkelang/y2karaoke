@@ -101,6 +101,92 @@ def local_lexical_overlap_ratio(
     return overlap / max(len(line_tokens), len(nearby_tokens))
 
 
+def _match_prefix_tokens_near_word(
+    *,
+    prefix: list[str],
+    whisper_words: List[timing_models.TranscriptionWord],
+    normalized_whisper: list[str],
+    start_idx: int,
+    support_window: float,
+) -> int:
+    match_count = 1
+    cursor = start_idx + 1
+    last_end = whisper_words[start_idx].end
+    anchor_start = whisper_words[start_idx].start
+    for token in prefix[1:]:
+        while cursor < len(whisper_words):
+            candidate = whisper_words[cursor]
+            candidate_norm = normalized_whisper[cursor]
+            if candidate.start > anchor_start + support_window:
+                return match_count
+            cursor += 1
+            if candidate.text == "[VOCAL]" or not candidate_norm:
+                continue
+            if candidate.start + 1e-6 < last_end:
+                continue
+            if candidate_norm != token:
+                continue
+            match_count += 1
+            last_end = candidate.end
+            break
+        else:
+            return match_count
+    return match_count
+
+
+def _choose_earlier_whisper_target(
+    *,
+    line: models.Line,
+    prev_end: float | None,
+    prefix: list[str],
+    whisper_words: List[timing_models.TranscriptionWord],
+    normalized_whisper: list[str],
+    min_shift: float,
+    max_shift: float,
+    min_prefix_matches: int,
+    min_gap: float,
+    max_prev_overlap: float,
+    support_window: float,
+) -> float | None:
+    search_start = line.start_time - max_shift
+    search_end = line.start_time - min_shift
+    best_target: float | None = None
+    best_match_count = 0
+
+    for word_idx, word in enumerate(whisper_words):
+        if word.text == "[VOCAL]":
+            continue
+        if word.start < search_start or word.start > search_end:
+            continue
+        if normalized_whisper[word_idx] != prefix[0]:
+            continue
+        match_count = _match_prefix_tokens_near_word(
+            prefix=prefix,
+            whisper_words=whisper_words,
+            normalized_whisper=normalized_whisper,
+            start_idx=word_idx,
+            support_window=support_window,
+        )
+        if match_count < min_prefix_matches:
+            continue
+        target_start = word.start
+        if prev_end is not None:
+            target_start = max(target_start, prev_end + min_gap)
+            overlap = prev_end - word.start
+            if overlap > max_prev_overlap:
+                continue
+        if target_start > line.start_time - min_shift:
+            continue
+        if match_count > best_match_count or (
+            match_count == best_match_count
+            and (best_target is None or target_start < best_target)
+        ):
+            best_target = target_start
+            best_match_count = match_count
+
+    return best_target
+
+
 def reanchor_late_supported_lines_to_earlier_whisper(
     lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
@@ -127,58 +213,19 @@ def reanchor_late_supported_lines_to_earlier_whisper(
         prev_end = (
             adjusted[idx - 1].end_time if idx > 0 and adjusted[idx - 1].words else None
         )
-        search_start = line.start_time - max_shift
-        search_end = line.start_time - min_shift
-        best_target: float | None = None
-        best_match_count = 0
-
-        for word_idx, word in enumerate(whisper_words):
-            if word.text == "[VOCAL]":
-                continue
-            if word.start < search_start or word.start > search_end:
-                continue
-            if normalized_whisper[word_idx] != prefix[0]:
-                continue
-            match_count = 1
-            cursor = word_idx + 1
-            last_end = word.end
-            for token in prefix[1:]:
-                while cursor < len(whisper_words):
-                    candidate = whisper_words[cursor]
-                    candidate_norm = normalized_whisper[cursor]
-                    if candidate.start > word.start + support_window:
-                        cursor = len(whisper_words)
-                        break
-                    cursor += 1
-                    if candidate.text == "[VOCAL]" or not candidate_norm:
-                        continue
-                    if candidate.start + 1e-6 < last_end:
-                        continue
-                    if candidate_norm != token:
-                        continue
-                    match_count += 1
-                    last_end = candidate.end
-                    break
-                else:
-                    break
-
-            if match_count < min_prefix_matches:
-                continue
-            target_start = word.start
-            if prev_end is not None:
-                target_start = max(target_start, prev_end + min_gap)
-                overlap = prev_end - word.start
-                if overlap > max_prev_overlap:
-                    continue
-            if target_start > line.start_time - min_shift:
-                continue
-            if match_count > best_match_count or (
-                match_count == best_match_count
-                and (best_target is None or target_start < best_target)
-            ):
-                best_target = target_start
-                best_match_count = match_count
-
+        best_target = _choose_earlier_whisper_target(
+            line=line,
+            prev_end=prev_end,
+            prefix=prefix,
+            whisper_words=whisper_words,
+            normalized_whisper=normalized_whisper,
+            min_shift=min_shift,
+            max_shift=max_shift,
+            min_prefix_matches=min_prefix_matches,
+            min_gap=min_gap,
+            max_prev_overlap=max_prev_overlap,
+            support_window=support_window,
+        )
         if best_target is None:
             continue
         adjusted[idx] = rescale_line_to_new_start(line, best_target)
