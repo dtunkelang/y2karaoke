@@ -8,6 +8,9 @@ For the reusable iteration pattern behind the current handoff style, see:
 - `docs/development.md`
 - `docs/curated_clips.md`
 
+This handoff collected unusually frequent tiny updates because iteration budget was tight.
+In normal mode, batch note-only updates unless they would be expensive to rediscover.
+
 ## Current Position
 
 - The major lyrics / Whisper / sync architecture cleanup is largely complete.
