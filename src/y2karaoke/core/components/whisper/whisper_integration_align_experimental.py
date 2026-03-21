@@ -124,7 +124,9 @@ def reanchor_late_supported_lines_to_earlier_whisper(
         if len(prefix) < min_prefix_matches:
             continue
 
-        prev_end = adjusted[idx - 1].end_time if idx > 0 and adjusted[idx - 1].words else None
+        prev_end = (
+            adjusted[idx - 1].end_time if idx > 0 and adjusted[idx - 1].words else None
+        )
         search_start = line.start_time - max_shift
         search_end = line.start_time - min_shift
         best_target: float | None = None
@@ -170,12 +172,9 @@ def reanchor_late_supported_lines_to_earlier_whisper(
                     continue
             if target_start > line.start_time - min_shift:
                 continue
-            if (
-                match_count > best_match_count
-                or (
-                    match_count == best_match_count
-                    and (best_target is None or target_start < best_target)
-                )
+            if match_count > best_match_count or (
+                match_count == best_match_count
+                and (best_target is None or target_start < best_target)
             ):
                 best_target = target_start
                 best_match_count = match_count
