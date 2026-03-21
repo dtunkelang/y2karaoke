@@ -110,3 +110,7 @@ For quality work on curated clips:
   - keep the exact artifact, rerun command, and local checks next to the current hypothesis
   - define success and failure criteria before broadening a fix
   - commit/push after a real behavioral win or an expensive-to-rediscover diagnostic elimination, but batch tiny note-only updates in normal mode
+- avoid overusing the narrow loop:
+  - rerank the broader canary first when the top target may have changed
+  - pull manual curation verification back in when the remaining miss could still be gold drift
+  - widen back out when multiple clips are moving and the shared failure family is still unclear
