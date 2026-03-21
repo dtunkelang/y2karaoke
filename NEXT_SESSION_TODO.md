@@ -261,6 +261,7 @@ Most likely next inspection targets:
   - placement note: line 2 also sits about `0.295s` late relative to the midpoint of that usable window, which reinforces that the active behavior is anchoring it closer to the segment end than the segment start
   - duration note: line 2 is shorter than pre-Whisper (`0.83s` vs `1.089s`) but still longer than gold (`0.70s`), so the remaining miss looks more like late placement inside the window than a pure duration-collapse problem
   - line-split note: line 2 and line 4 should stay separated in future probes; line 2 shows a real negative Whisper start delta (`-0.79`) against merged-segment context, while line 4 has no Whisper start delta at all and stays near pre-Whisper timing, so they are not the same repeated-hook failure mode
+  - next-step order for `Without Me`: inspect line 2 first in the direct late-pull placement path inside `whisper_mapping_post_segment_pull.py`; only after that is understood should line 4 reopen the weaker seed/onset path
 - latest mixed-density result:
   - `Con Calma` improved again after enabling a guarded mixed-density coda rebalance for the repeated-response-plus-tail shape
   - representative broad canary run: `benchmarks/results/20260320T232439Z`
