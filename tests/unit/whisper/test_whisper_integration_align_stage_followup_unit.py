@@ -8,6 +8,9 @@ from y2karaoke.core.components.alignment.timing_models import (
 )
 from y2karaoke.core.components.whisper import whisper_integration as wi
 from y2karaoke.core.components.whisper import whisper_integration_align as wialign
+from y2karaoke.core.components.whisper.whisper_runtime_config import (
+    WhisperRuntimeConfig,
+)
 from y2karaoke.core.models import Line, Word
 
 
@@ -94,6 +97,7 @@ def test_align_pipeline_reanchors_unsupported_interjection_line_to_onsets():
         restore_implausibly_short_lines_fn=lambda _bl, al: (al, 0),
         clone_lines_for_fallback_fn=lambda in_lines: in_lines,
         min_segment_overlap_coverage=0.4,
+        runtime_config=WhisperRuntimeConfig(restored_run_onset_shift=False),
         logger=wi.logger,
     )
 
@@ -646,16 +650,16 @@ def test_align_pipeline_extends_misaligned_line_before_i_said():
         ),
     ]
     whisper_words = [
-        TranscriptionWord(text="tell", start=111.81, end=112.01, probability=0.99),
-        TranscriptionWord(text="me", start=112.01, end=112.17, probability=0.99),
-        TranscriptionWord(text="I'm", start=112.17, end=112.17, probability=0.99),
-        TranscriptionWord(text="wrong,", start=112.17, end=112.17, probability=0.99),
-        TranscriptionWord(text="but", start=112.17, end=112.17, probability=0.8),
-        TranscriptionWord(text="don't", start=112.17, end=112.17, probability=0.99),
-        TranscriptionWord(text="want", start=112.17, end=112.17, probability=0.99),
-        TranscriptionWord(text="to", start=112.17, end=112.17, probability=0.99),
-        TranscriptionWord(text="bless", start=112.17, end=112.17, probability=0.99),
-        TranscriptionWord(text="me,", start=112.17, end=112.17, probability=0.99),
+        TranscriptionWord(text="maybe", start=111.81, end=112.01, probability=0.99),
+        TranscriptionWord(text="now", start=112.01, end=112.17, probability=0.99),
+        TranscriptionWord(text="hold", start=112.17, end=112.17, probability=0.99),
+        TranscriptionWord(text="on", start=112.17, end=112.17, probability=0.99),
+        TranscriptionWord(text="tight", start=112.17, end=112.17, probability=0.8),
+        TranscriptionWord(text="for", start=112.17, end=112.17, probability=0.99),
+        TranscriptionWord(text="one", start=112.17, end=112.17, probability=0.99),
+        TranscriptionWord(text="more", start=112.17, end=112.17, probability=0.99),
+        TranscriptionWord(text="turn", start=112.17, end=112.17, probability=0.99),
+        TranscriptionWord(text="before", start=112.17, end=112.17, probability=0.99),
         TranscriptionWord(text="I", start=112.17, end=112.17, probability=0.99),
         TranscriptionWord(text="guess", start=112.17, end=112.17, probability=0.99),
     ]
@@ -725,6 +729,7 @@ def test_align_pipeline_extends_misaligned_line_before_i_said():
         restore_implausibly_short_lines_fn=lambda _bl, al: (al, 0),
         clone_lines_for_fallback_fn=lambda in_lines: in_lines,
         min_segment_overlap_coverage=0.4,
+        runtime_config=WhisperRuntimeConfig(restored_run_onset_shift=False),
         logger=wi.logger,
     )
 

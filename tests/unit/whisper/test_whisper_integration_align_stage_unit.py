@@ -8,6 +8,9 @@ from y2karaoke.core.components.alignment.timing_models import (
 )
 from y2karaoke.core.components.whisper import whisper_integration as wi
 from y2karaoke.core.components.whisper import whisper_integration_align as wialign
+from y2karaoke.core.components.whisper.whisper_runtime_config import (
+    WhisperRuntimeConfig,
+)
 from y2karaoke.core.models import Line, Word
 
 
@@ -98,6 +101,7 @@ def test_align_pipeline_applies_carryover_shift_after_final_restores():
         restore_implausibly_short_lines_fn=lambda _bl, al: (al, 0),
         clone_lines_for_fallback_fn=lambda in_lines: in_lines,
         min_segment_overlap_coverage=0.4,
+        runtime_config=WhisperRuntimeConfig(restored_run_onset_shift=False),
         logger=wi.logger,
     )
 
@@ -190,6 +194,7 @@ def test_align_pipeline_applies_carryover_shift_with_small_positive_gap():
         restore_implausibly_short_lines_fn=lambda _bl, al: (al, 0),
         clone_lines_for_fallback_fn=lambda in_lines: in_lines,
         min_segment_overlap_coverage=0.4,
+        runtime_config=WhisperRuntimeConfig(restored_run_onset_shift=False),
         logger=wi.logger,
     )
 
@@ -288,6 +293,7 @@ def test_align_pipeline_reanchors_unsupported_i_said_line_to_later_onset():
         restore_implausibly_short_lines_fn=lambda _bl, al: (al, 0),
         clone_lines_for_fallback_fn=lambda in_lines: in_lines,
         min_segment_overlap_coverage=0.4,
+        runtime_config=WhisperRuntimeConfig(restored_run_onset_shift=False),
         logger=wi.logger,
     )
 
@@ -392,6 +398,7 @@ def test_align_pipeline_extends_unsupported_parenthetical_tail():
         restore_implausibly_short_lines_fn=lambda _bl, al: (al, 0),
         clone_lines_for_fallback_fn=lambda in_lines: in_lines,
         min_segment_overlap_coverage=0.4,
+        runtime_config=WhisperRuntimeConfig(restored_run_onset_shift=False),
         logger=wi.logger,
     )
 
@@ -556,8 +563,8 @@ def test_align_pipeline_extends_unsupported_weak_opening_line():
         logger=wi.logger,
     )
 
-    assert mapped[1].end_time == pytest.approx(81.93, abs=0.01)
-    assert any("weak-opening line" in msg for msg in corrections)
+    assert mapped[1].end_time == pytest.approx(81.55, abs=0.01)
+    assert any("restored low-support" in msg for msg in corrections)
 
 
 def test_restore_consistently_late_runs_from_baseline_restores_dense_run():
