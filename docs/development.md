@@ -104,3 +104,8 @@ For quality work on curated clips:
 - prefer `PYTHONPATH=src ./.venv/bin/python ...` so ad hoc script runs use the repo source, not an installed package copy
 - if a hard clip is still failing after a plausible fix, compare the real helper-generated seed, the accepted forced-alignment output, and the final timing report before adding more heuristics
 - treat 2-line clips as their own family; they can expose structural assumptions that never appear in longer repeated-hook packs
+- use a narrow iteration loop even when time pressure is low:
+  - pick one clip, one line, and one likely code path
+  - keep the exact artifact, rerun command, and local checks next to the current hypothesis
+  - define success and failure criteria before broadening a fix
+  - commit/push after a real behavioral win or an expensive-to-rediscover diagnostic elimination, but batch tiny note-only updates in normal mode
