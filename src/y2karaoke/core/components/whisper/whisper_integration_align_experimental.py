@@ -55,6 +55,21 @@ def normalized_tokens(line: models.Line) -> list[str]:
     ]
 
 
+_LIGHT_LEADING_TOKENS = {
+    "the",
+    "a",
+    "an",
+    "la",
+    "el",
+    "de",
+    "del",
+    "que",
+    "lo",
+    "me",
+    "tu",
+}
+
+
 def rescale_line_to_new_start(line: models.Line, target_start: float) -> models.Line:
     old_duration = line.end_time - line.start_time
     new_duration = line.end_time - target_start
@@ -76,6 +91,41 @@ def rescale_line_to_new_start(line: models.Line, target_start: float) -> models.
 
 def line_text_key(line: models.Line) -> str:
     return " ".join(normalized_tokens(line))
+
+
+def _count_leading_light_tokens(tokens: list[str]) -> int:
+    count = 0
+    for token in tokens:
+        if token in _LIGHT_LEADING_TOKENS:
+            count += 1
+            continue
+        break
+    return count
+
+
+def _token_stem(token: str) -> str:
+    if len(token) > 4 and token.endswith("s"):
+        return token[:-1]
+    return token
+
+
+def _tokens_match_with_light_stemming(
+    a: str, b: str, *, min_shared_prefix: int = 4
+) -> bool:
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    a_stem = _token_stem(a)
+    b_stem = _token_stem(b)
+    if a_stem == b_stem:
+        return True
+    shared_prefix = 0
+    for a_ch, b_ch in zip(a_stem, b_stem):
+        if a_ch != b_ch:
+            break
+        shared_prefix += 1
+    return shared_prefix >= min_shared_prefix
 
 
 def line_token_overlap_ratio(a: models.Line, b: models.Line) -> float:
@@ -107,6 +157,73 @@ def local_lexical_overlap_ratio(
         return 0.0
     overlap = len(line_tokens & nearby_tokens)
     return overlap / max(len(line_tokens), len(nearby_tokens))
+
+
+def _find_local_content_word_start(
+    line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    lookback_sec: float = 0.35,
+    lookahead_sec: float = 0.9,
+) -> float | None:
+    tokens = normalized_tokens(line)
+    if len(tokens) < 2:
+        return None
+    leading_count = _count_leading_light_tokens(tokens)
+    if leading_count != 1 or leading_count >= len(tokens):
+        return None
+    content_token = tokens[leading_count]
+    for word in whisper_words:
+        token = re.sub(r"[^a-z]+", "", word.text.lower())
+        if not _tokens_match_with_light_stemming(content_token, token):
+            continue
+        if not (
+            line.start_time - lookback_sec
+            <= word.start
+            <= line.end_time + lookahead_sec
+        ):
+            continue
+        return float(word.start)
+    return None
+
+
+def reanchor_light_leading_lines_to_content_words(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_shift_sec: float = 0.2,
+    max_shift_sec: float = 0.75,
+    min_word_count: int = 4,
+    max_word_count: int = 10,
+    min_overlap_ratio: float = 0.45,
+    min_gap: float = 0.05,
+) -> tuple[List[models.Line], int]:
+    adjusted = list(mapped_lines)
+    applied = 0
+    for idx, line in enumerate(adjusted):
+        if (
+            not line.words
+            or len(line.words) < min_word_count
+            or len(line.words) > max_word_count
+        ):
+            continue
+        if local_lexical_overlap_ratio(line, whisper_words) < min_overlap_ratio:
+            continue
+        target_start = _find_local_content_word_start(line, whisper_words)
+        if target_start is None:
+            continue
+        shift = target_start - line.start_time
+        if shift < min_shift_sec or shift > max_shift_sec:
+            continue
+        if (
+            idx > 0
+            and adjusted[idx - 1].words
+            and target_start < adjusted[idx - 1].end_time + min_gap
+        ):
+            continue
+        adjusted[idx] = rescale_line_to_new_start(line, target_start)
+        applied += 1
+    return adjusted, applied
 
 
 def _is_late_compact_repetitive_tail_candidate(
