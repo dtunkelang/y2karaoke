@@ -22,9 +22,9 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 
 1. Start from the newest broad cached canary, not the older `Con Calma` ordering:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
-2. If broad-return work continues, `Taste` and `Houdini` are now the cleaner next code-side targets. `Time After Time` has been manually verified, and `Rap God`'s first new handoff repair probe had zero live effect.
+2. `Taste` is healthier again after the accepted-forced-alignment prefix repair. The cleaner next code-side targets are now `Rap God`, `Houdini`, and possibly `Time After Time`.
 3. `Without Me` is no longer the best next driver after the latest forced-alignment repair. Keep it as a protected control unless a new failure family appears.
-4. If continuing the best-understood narrow failure instead, start with `Rap God` or `Time After Time` before reopening `Without Me`.
+4. If continuing the best-understood narrow failure instead, start with `Rap God` before reopening `Taste` or `Without Me`.
 5. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure. No new clips are needed right now.
 6. The newest companion clips are now:
    - `Please Please Please` (`chorus-setup-tail`)
@@ -78,6 +78,16 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
   - kept broad win: the 12-song cached canary improved from `0.2193s` in `20260325T201408Z` to `0.2170s` in `20260325T205644Z`
   - positive learning: the real `Houdini` blocker was an early scan cutoff in the onset-shift repair stage, not the repeated-line postpass itself
   - negative learning: two intermediate branches were false leads
+- `Taste` improved from `0.2240s / 0.2626s` to `0.2080s / 0.2730s` in `benchmarks/results/20260325T230140Z`
+  - driver: after accepted WhisperX forced alignment, a new medium-line exact-prefix repair now reanchors starts earlier when the first 3 tokens have an earlier exact Whisper match that immediately follows the previous line boundary
+  - kept Sabrina companion win: `Taste|Please Please Please|Espresso` improved from `0.108s` in `20260325T225720Z` to `0.101s` weighted start mean in `20260325T230140Z`
+  - kept mixed guardrail win: `Taste|Please Please Please|Espresso|Royals|Without Me` improved to `0.135s` in `20260325T231425Z`, with `Royals` back at `0.1882 / 0.1555`
+  - kept broad win: the 12-song cached canary improved from `0.2100s` in `20260325T210830Z` to `0.2050s` in `20260325T231558Z`
+  - positive learning: the Sabrina companion clips were the right guardrails for this family; they isolated the accepted-forced-alignment late-start miss without dragging `Sweet Caroline` into the probe
+  - negative learning: two earlier gates were too broad
+  - an uncapped exact-prefix snap overshot the intended start and regressed `Royals` to `0.4357 / 0.3362` in `20260325T230407Z`
+  - boundary carry-over by itself was still too broad and moved `Royals` line 3 to the earlier Whisper onset in `20260325T231141Z`
+  - the kept gate also requires a tight prior-line boundary gap, which removed the `Royals` leak while preserving the `Taste` win
     baseline-preservation around `_constrain_line_starts_to_baseline()` worsened the 4-song canary to `0.252s` in `20260325T203921Z`
     family-aware split-short-refrain restore had zero live effect on `Houdini`, even though the isolated helper test passed
 - `Con Calma` improved from `0.2430s / 0.2662s` to `0.2148s / 0.2399s` in `benchmarks/results/20260325T210830Z`
