@@ -22,10 +22,11 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 
 1. Start from the newest broad cached canary, not the older `Con Calma` ordering:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
-2. If broad-return work continues, `Rap God` is now back in first place, with `Time After Time`, `Taste`, and `Houdini` just behind it.
+2. If broad-return work continues, `Time After Time`, `Taste`, and `Houdini` are now the cleaner next targets. `Rap God` still ranks high numerically, but the first new handoff repair probe had zero live effect.
 3. `Without Me` is no longer the best next driver after the latest forced-alignment repair. Keep it as a protected control unless a new failure family appears.
 4. If continuing the best-understood narrow failure instead, start with `Rap God` or `Time After Time` before reopening `Without Me`.
 5. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure. No new clips are needed right now.
+6. Most useful verification candidate right now: `Time After Time` line 4 (`Time after time`) and possibly line 3's tail, because both seed timing and raw Whisper support are much earlier than the current gold.
 
 ## Current Quality Position
 
@@ -87,6 +88,22 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
   - kept broad win: the 12-song cached canary improved from `0.2100s` in `20260325T210830Z` to `0.2090s` in `20260325T211941Z`
   - positive learning: the remaining `Back again` miss was still inside the forced-alignment post-normalization layer, not the mapped-line pull path
   - negative learning: the raw Whisper word windows for `Back again` still start earlier than gold, so this family was only safe to fix by restoring from the stronger pre-forced baseline rather than chasing later Whisper suffix support
+- `Rap God` exploratory branch did not land live after the `Without Me` fix:
+  - failed focused canary: `Rap God|Royals` stayed flat at `0.213s` in `benchmarks/results/20260325T213017Z`
+  - negative learning: a new dense-line exact-prefix handoff repair looked correct in a local unit repro but had zero live effect, even after moving it later in forced finalize
+  - implication: the current `Rap God` miss is not exposed by the simple line-1/line-2 compressed-handoff toy and needs a different read before another risky code branch
+- `Time After Time` manual gold check partially reduced ambiguity:
+  - manual gold edit moved line 3 (`If you fall, I will catch you, I'll be waiting`) `0.15s` earlier
+  - focused sparse/falsetto pack rerun: `benchmarks/results/20260325T214458Z`
+  - result: `Time After Time` moved from `0.2261 / 0.2892` to `0.2289 / 0.2833`
+  - positive learning: line-3 timing was not the main driver; end error improved slightly
+  - negative learning: start error did not improve, so line 4 (`Time after time`) remains the primary verification question before reopening code work there
+- `Taste` exploratory branch also failed to keep:
+  - direct trace confirmed the live clip uses accepted WhisperX forced alignment, not the mapped-line postpass path
+  - raw Whisper gives exact earlier 3-token prefixes for lines 2-4 (`You'll just have`, `If you want`, `Just know you'll`)
+  - failed focused canary: `Taste|Sweet Caroline|Con Calma` regressed to `0.236s` in `benchmarks/results/20260325T215438Z`
+  - negative learning: an exact-prefix forced reanchor that looked defensible on `Taste` overfired on `Sweet Caroline`, so this repair family is too broad in its current form
+  - implication: `Taste` line 3 still looks like a real code-side miss, but the next probe must be narrower than generic forced exact-prefix reanchoring
 
 ## Current Cached Canary Baseline
 
@@ -320,6 +337,11 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
   - the compact 2-word source restore improved `Without Me` without moving the other 11-song cached controls
 - `Con Calma` is materially healthier after the light-leading content-word reanchor and is no longer the broad canary leader
 - `Rap God` is back in the top broad-return slot, with `Time After Time`, `Taste`, and `Houdini` next
+- `Rap God` is still numerically high, but the first new live probe there was a false lead and did not move the 2-song canary at all.
+- `Time After Time` is now the strongest verification candidate:
+  - line 4 (`Time after time`) is about `0.98s` early against gold in `20260325T211941Z`
+  - line 3 ends about `0.98s` early too, but both the pre-Whisper seed and the raw Whisper support are already much earlier than the current gold
+  - that makes gold drift a live possibility, not just a pipeline bug
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.
