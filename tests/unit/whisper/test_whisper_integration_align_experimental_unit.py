@@ -297,3 +297,61 @@ def test_shift_restored_low_support_runs_to_onset_moves_dense_run_together():
     assert adjusted[1].start_time == pytest.approx(54.08, abs=0.01)
     assert adjusted[2].start_time == pytest.approx(56.84, abs=0.01)
     assert adjusted[3].start_time == pytest.approx(60.78, abs=0.01)
+
+
+def test_shift_restored_low_support_runs_to_onset_allows_late_compact_repetitive_tail_run():
+    baseline = [
+        Line(words=[Word(text="lead", start_time=0.0, end_time=1.0)]),
+        Line(words=[Word(text="bridge", start_time=1.2, end_time=2.2)]),
+        Line(words=[Word(text="prep", start_time=2.4, end_time=3.4)]),
+        Line(
+            words=[
+                Word(text="Guess", start_time=8.46, end_time=8.71),
+                Word(text="who's", start_time=8.71, end_time=8.95),
+                Word(text="back?", start_time=8.95, end_time=9.2),
+                Word(text="Guess", start_time=9.2, end_time=9.45),
+                Word(text="who's", start_time=9.45, end_time=9.69),
+                Word(text="back?", start_time=9.69, end_time=9.94),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=11.436, end_time=11.686),
+                Word(text="who's", start_time=11.686, end_time=11.936),
+                Word(text="back?", start_time=11.936, end_time=12.186),
+                Word(text="Guess", start_time=12.186, end_time=12.436),
+                Word(text="who's", start_time=12.436, end_time=12.686),
+                Word(text="back?", start_time=12.686, end_time=12.936),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=13.387, end_time=13.554),
+                Word(text="who's", start_time=13.554, end_time=13.72),
+                Word(text="back?", start_time=13.72, end_time=13.887),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="[VOCAL]", start=11.0, end=11.1, probability=0.9),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([12.04, 12.3], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=20.0,
+        duration=20.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    adjusted, applied = wiaexp.shift_restored_low_support_runs_to_onset(
+        baseline,
+        baseline,
+        whisper_words,
+        audio_features,
+    )
+
+    assert applied == 2
+    assert adjusted[4].start_time == pytest.approx(12.04, abs=0.01)
+    assert adjusted[5].start_time == pytest.approx(13.991, abs=0.01)

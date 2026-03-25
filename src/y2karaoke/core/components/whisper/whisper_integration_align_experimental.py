@@ -78,6 +78,14 @@ def line_text_key(line: models.Line) -> str:
     return " ".join(normalized_tokens(line))
 
 
+def line_token_overlap_ratio(a: models.Line, b: models.Line) -> float:
+    a_tokens = set(normalized_tokens(a))
+    b_tokens = set(normalized_tokens(b))
+    if not a_tokens or not b_tokens:
+        return 0.0
+    return len(a_tokens & b_tokens) / max(len(a_tokens), len(b_tokens))
+
+
 def local_lexical_overlap_ratio(
     line: models.Line,
     whisper_words: List[timing_models.TranscriptionWord],
@@ -99,6 +107,37 @@ def local_lexical_overlap_ratio(
         return 0.0
     overlap = len(line_tokens & nearby_tokens)
     return overlap / max(len(line_tokens), len(nearby_tokens))
+
+
+def _is_late_compact_repetitive_tail_candidate(
+    lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    idx: int,
+    *,
+    baseline_anchor_tolerance: float,
+    min_overlap_ratio: float = 0.66,
+    min_words: int = 3,
+    max_words: int = 6,
+) -> bool:
+    if idx <= 0 or idx >= len(lines) or idx >= len(baseline_lines):
+        return False
+    line = lines[idx]
+    baseline = baseline_lines[idx]
+    prev = lines[idx - 1]
+    if (
+        not line.words
+        or not baseline.words
+        or not prev.words
+        or len(line.words) < min_words
+        or len(line.words) > max_words
+        or abs(line.start_time - baseline.start_time) > baseline_anchor_tolerance
+    ):
+        return False
+    if line_token_overlap_ratio(prev, line) < min_overlap_ratio:
+        return False
+    if idx + 1 >= len(lines) or not lines[idx + 1].words:
+        return False
+    return line_token_overlap_ratio(line, lines[idx + 1]) >= min_overlap_ratio
 
 
 def _match_prefix_tokens_near_word(
@@ -422,7 +461,14 @@ def shift_restored_low_support_runs_to_onset(  # noqa: C901
     idx = 0
     limit = min(len(adjusted), len(baseline_lines))
     while idx < limit:
-        if idx / max(limit, 1) > max_relative_index_ratio:
+        if idx / max(limit, 1) > max_relative_index_ratio and not (
+            _is_late_compact_repetitive_tail_candidate(
+                adjusted,
+                baseline_lines,
+                idx,
+                baseline_anchor_tolerance=baseline_anchor_tolerance,
+            )
+        ):
             break
         line = adjusted[idx]
         base = baseline_lines[idx]
@@ -458,7 +504,12 @@ def shift_restored_low_support_runs_to_onset(  # noqa: C901
             if (
                 not cur.words
                 or not cur_base.words
-                or len(cur.words) < 4
+                or (
+                    len(cur.words) < 4
+                    and (
+                        len(cur.words) < 3 or line_token_overlap_ratio(cur, line) < 0.66
+                    )
+                )
                 or abs(cur.start_time - cur_base.start_time) > baseline_anchor_tolerance
                 or cur.start_time - prev.end_time > 0.9
                 or local_lexical_overlap_ratio(
