@@ -159,6 +159,66 @@ def test_attempt_whisperx_forced_alignment_reanchors_leading_article_to_content_
     assert abs(forced_lines[0].words[1].start_time - 22.38) < 0.05
 
 
+def test_retime_three_word_lines_from_suffix_matches_rebuilds_late_suffix_window():
+    forced_lines = [
+        _dur_multi_line(7.01, 7.86, ["Shady's", "back"]),
+        Line(
+            words=[
+                Word(text="Tell", start_time=8.122, end_time=9.487),
+                Word(text="a", start_time=9.547, end_time=9.668),
+                Word(text="friend", start_time=9.708, end_time=9.989),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="he's", start=7.33, end=7.51, probability=0.995),
+        TranscriptionWord(text="back", start=7.51, end=7.79, probability=0.998),
+        TranscriptionWord(text="still", start=7.87, end=9.11, probability=0.415),
+        TranscriptionWord(text="a", start=9.11, end=9.49, probability=0.778),
+        TranscriptionWord(text="friend", start=9.49, end=9.79, probability=0.921),
+    ]
+
+    repaired_lines, restored_count = (
+        _forced._retime_three_word_lines_from_suffix_matches(
+            forced_lines,
+            whisper_words,
+        )
+    )
+
+    assert restored_count == 1
+    assert repaired_lines[1].start_time == pytest.approx(8.77, abs=0.03)
+    assert repaired_lines[1].words[1].start_time == pytest.approx(9.11, abs=0.01)
+    assert repaired_lines[1].words[2].start_time >= 9.70
+    assert repaired_lines[1].words[2].end_time == pytest.approx(9.989, abs=0.01)
+
+
+def test_retime_three_word_lines_from_suffix_matches_skips_balanced_refrain_lines():
+    forced_lines = [
+        Line(
+            words=[
+                Word(text="Time", start_time=5.831, end_time=6.296),
+                Word(text="after", start_time=6.348, end_time=6.813),
+                Word(text="time", start_time=6.864, end_time=7.381),
+            ]
+        )
+    ]
+    whisper_words = [
+        TranscriptionWord(text="Time", start=5.72, end=6.08, probability=0.8),
+        TranscriptionWord(text="after", start=6.12, end=6.89, probability=0.8),
+        TranscriptionWord(text="time", start=7.059, end=7.52, probability=0.8),
+    ]
+
+    repaired_lines, restored_count = (
+        _forced._retime_three_word_lines_from_suffix_matches(
+            forced_lines,
+            whisper_words,
+        )
+    )
+
+    assert restored_count == 0
+    assert repaired_lines[0].start_time == pytest.approx(5.831)
+
+
 def test_attempt_whisperx_forced_alignment_restores_sustained_line_compression():
     baseline_lines = [
         _dur_line(1.0, 5.3, "Take on me"),

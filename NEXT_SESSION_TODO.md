@@ -1,6 +1,6 @@
 # Next Session TODO
 
-Last updated: 2026-03-20
+Last updated: 2026-03-25
 
 Use this file as a session handoff, not as a second backlog.
 
@@ -20,10 +20,11 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 
 ## Next Week Plan
 
-1. Rerank the broad cached canary before choosing the next target:
+1. Start from the new broad ordering, not the older `Without Me` assumption:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
-2. If `Con Calma` still leads after the rerank, inspect whether lines 9-12 can be improved with the same correction-pass evidence model without reopening seed helpers.
-3. If `Con Calma` drops out of first place, pivot to the new top broad-return clip rather than extending the `Con Calma` heuristics.
+2. If broad-return work continues, `Houdini` is back in first place and should be the default next target.
+3. If continuing the best-understood narrow failure instead, inspect the remaining `Without Me` merged repeated-pair miss on line 2 (`Back again`) and keep the new line-4 forced-alignment win protected:
+   `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Without Me|Houdini|Con Calma|I Gotta Feeling" --offline`
 4. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure.
 
 ## Current Quality Position
@@ -60,6 +61,12 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
   - driver: manual gold timing cleanup removed a misleading tail overhang, so `Taste` is no longer the top broad-return target
   - `Rap God` improved from `0.702s / 0.705s` to `0.233s / 0.213s` in `benchmarks/results/20260320T061849Z`
   - driver: dense short non-repeated rap verses need their own seed layout, distinct from both repeated-hook clips and the generic dense spread
+- `Without Me` improved from `0.2792s / 0.2243s` to `0.2387s / 0.2764s` in `benchmarks/results/20260325T200610Z`
+  - driver: after accepted WhisperX forced alignment, a new compact 3-word suffix-match repair now rebuilds lines like `Tell a friend` later from exact raw-Whisper suffix timing instead of letting a weak unmatched prefix consume most of the line
+  - kept focused win: the 4-song canary (`Without Me|Houdini|Con Calma|I Gotta Feeling`) improved from `0.2395s` in `20260321T011749Z` to `0.2369s` weighted start mean in `20260325T200610Z`
+  - positive learning: the dominant `Without Me` miss was not the mapped-line pull helper anymore; it was the forced-alignment repair layer
+  - negative learning: the first version of the suffix repair over-tightened the line tail and worsened end timing; preserving the later forced tail recovered most of that regression
+  - kept broad win after tightening the gate away from balanced sustained 3-word lines: the 12-song cached canary improved from `0.2205s` in `20260325T195522Z` to `0.2193s` in `20260325T201408Z`
 
 ## Current Cached Canary Baseline
 
@@ -141,6 +148,50 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
     - `Take On Me`: `0.1513 / 0.3345`
     - `Stayin' Alive`: `0.1374 / 0.6253`
   - next broad-return target is now `Without Me`, not `Con Calma`
+- Latest broad cached canary rerank on the current code:
+  - `benchmarks/results/20260325T195522Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.2205s`
+  - updated ordering:
+    - `Without Me`: `0.2792 / 0.2243`
+    - `Houdini`: `0.2463 / 0.2562`
+    - `Con Calma`: `0.2430 / 0.2662`
+    - `Rap God`: `0.2329 / 0.2128`
+    - `Time After Time`: `0.2261 / 0.2892`
+    - `Taste`: `0.2240 / 0.2626`
+    - `Sweet Caroline`: `0.2154 / 0.2513`
+    - `I Gotta Feeling`: `0.2034 / 0.1510`
+    - `Total Eclipse of the Heart`: `0.1961 / 0.2979`
+    - `Royals`: `0.1882 / 0.1555`
+    - `Take On Me`: `0.1513 / 0.3345`
+    - `Stayin' Alive`: `0.1374 / 0.6253`
+  - only material movement from `20260321T004829Z` was baseline stability; `Without Me` remained the top broad-return start target before the new forced-alignment repair landed
+- Latest focused 4-song canary after the compact forced-alignment suffix repair:
+  - `benchmarks/results/20260325T200610Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.2369s`
+  - key results:
+    - `Without Me`: `0.2387 / 0.2764`
+    - `Houdini`: `0.2463 / 0.2562`
+    - `Con Calma`: `0.2430 / 0.2662`
+    - `I Gotta Feeling`: `0.2034 / 0.1510`
+  - kept focused win: `Without Me` improved while the 3 controls stayed flat
+- Latest broad cached canary rerank after tightening the suffix-repair gate:
+  - `benchmarks/results/20260325T201408Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.2193s`
+  - updated ordering:
+    - `Houdini`: `0.2463 / 0.2562`
+    - `Con Calma`: `0.2430 / 0.2662`
+    - `Without Me`: `0.2387 / 0.2764`
+    - `Rap God`: `0.2329 / 0.2128`
+    - `Time After Time`: `0.2261 / 0.2892`
+    - `Taste`: `0.2240 / 0.2626`
+    - `Sweet Caroline`: `0.2154 / 0.2513`
+    - `I Gotta Feeling`: `0.2034 / 0.1510`
+    - `Total Eclipse of the Heart`: `0.1961 / 0.2979`
+    - `Royals`: `0.1882 / 0.1555`
+    - `Take On Me`: `0.1513 / 0.3345`
+    - `Stayin' Alive`: `0.1374 / 0.6253`
+  - only material movement from `20260325T195522Z` was the `Without Me` improvement
+  - broad target after the fix is now `Houdini`, with `Without Me` close behind
 
 ## New Curated Clips Added This Session
 
@@ -164,14 +215,22 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - `Taste` is materially healthier after the recent gold refresh and is no longer the top broad-return target.
 - `Sweet Caroline` is materially healthier after the latest short-title chorus rebalance and is no longer the top broad-return target.
 - `Con Calma` is materially healthier again after the late-start Whisper reanchor and is no longer the top broad-return target after the full rerank.
-- `Without Me` is now the clearest broad-return start-error target in the cached canary.
-- `Without Me` is the next target, but the failure shape is narrow:
-  - line 2 (`Back again`) is the one clear downstream regression
-  - line 4 (`Tell a friend`) is mostly still a weak-seed / weak-onset miss
+- `Without Me` was the clearest broad-return start-error target before the latest forced-alignment repair.
+- `Without Me` is still a valid next target, but the failure shape got narrower again:
+  - the new suffix repair materially improved line 4 (`Tell a friend`)
+  - line 2 (`Back again`) is now the main unresolved miss
 - `Without Me` line 2 now has a direct mapped-line postpass repro:
   - `_pull_late_lines_to_matching_segments()` can pull a `Guess who's back` / `Back again` toy pair from `4.692s` to about `3.63s`
   - a characterization test for that shape now lives in `tests/unit/whisper/test_whisper_mapping_post.py`
   - live-path ordering note: in `whisper_integration_stages.py`, `_pull_late_lines_to_matching_segments()` runs twice in the mapped-line postpasses (`postpass_pull_late_segments`, then `postpass_pull_late_segments_second`) before the onset snap stages
+- Important latest finding:
+  - the live `Without Me` path is usually using accepted WhisperX forced alignment, so mapped-line toy wins do not directly explain the remaining production miss
+  - the saved forced-alignment debug shape was: line 2 too early (`4.404s` vs gold `4.95s`) and line 4 much too early (`8.122s` vs gold `9.05s`)
+  - the new repair fixed the line-4 family but did not move line 2, which is useful evidence that those two misses come from different causes
+- Broad canary status after the fix:
+  - the tightened helper no longer regresses `Time After Time`
+  - `Without Me` is healthier enough that it is no longer the broad canary leader
+  - `Houdini` is back in first place by a small margin, so the next target should be chosen deliberately rather than assuming `Without Me` is still first
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.

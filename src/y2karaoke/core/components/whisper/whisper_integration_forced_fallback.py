@@ -926,6 +926,131 @@ def _reanchor_forced_lines_to_local_content_words(
     return adjusted, shifted
 
 
+def _find_exact_whisper_sequence_match(
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    tokens: List[str],
+    search_start: float,
+    search_end: float,
+) -> tuple[float, float] | None:
+    if not whisper_words or not tokens:
+        return None
+    normalized_words = [
+        (_normalize_token(word.text), float(word.start), float(word.end))
+        for word in whisper_words
+    ]
+    best_match: tuple[float, float] | None = None
+    best_start: float | None = None
+    for idx in range(0, len(normalized_words) - len(tokens) + 1):
+        candidate = normalized_words[idx : idx + len(tokens)]
+        if [token for token, _start, _end in candidate] != tokens:
+            continue
+        match_start = candidate[0][1]
+        match_end = candidate[-1][2]
+        if match_end < search_start or match_start > search_end:
+            continue
+        if best_start is None or match_start < best_start:
+            best_match = (match_start, match_end)
+            best_start = match_start
+    return best_match
+
+
+def _retime_three_word_lines_from_suffix_matches(
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    *,
+    min_gap: float = 0.05,
+    search_lookback_sec: float = 0.3,
+    search_lookahead_sec: float = 1.4,
+    min_start_gain_sec: float = 0.35,
+    min_suffix_span_sec: float = 0.35,
+    max_prefix_slot_sec: float = 0.4,
+    min_prefix_share: float = 0.55,
+) -> tuple[List[models.Line], int]:
+    if not whisper_words:
+        return forced_lines, 0
+
+    adjusted = list(forced_lines)
+    restored = 0
+    for idx, line in enumerate(adjusted):
+        if len(line.words) != 3:
+            continue
+        line_duration = line.end_time - line.start_time
+        if line_duration <= 0.0:
+            continue
+        prefix_duration = line.words[0].end_time - line.words[0].start_time
+        if prefix_duration / line_duration < min_prefix_share:
+            continue
+        normalized = [_normalize_token(word.text) for word in line.words]
+        if any(not token for token in normalized):
+            continue
+        suffix_match = _find_exact_whisper_sequence_match(
+            whisper_words,
+            tokens=normalized[1:],
+            search_start=line.start_time - search_lookback_sec,
+            search_end=line.end_time + search_lookahead_sec,
+        )
+        if suffix_match is None:
+            continue
+
+        suffix_start, suffix_end = suffix_match
+        suffix_span = suffix_end - suffix_start
+        if suffix_span < min_suffix_span_sec:
+            continue
+        prefix_slot = min(max_prefix_slot_sec, suffix_span / 2.0)
+        target_start = suffix_start - prefix_slot
+
+        prev_end, next_start = _neighbor_line_bounds(adjusted, idx)
+        if prev_end is not None:
+            target_start = max(target_start, prev_end + min_gap)
+        if target_start - line.start_time < min_start_gain_sec:
+            continue
+        if next_start is not None and suffix_end >= next_start - min_gap:
+            continue
+
+        prefix_end = min(suffix_start - 0.02, target_start + prefix_slot * 0.9)
+        if prefix_end <= target_start:
+            continue
+        final_end = max(suffix_end, line.words[2].end_time)
+        if next_start is not None:
+            final_end = min(final_end, next_start - min_gap)
+        if final_end <= suffix_start + 0.08:
+            continue
+        suffix_break = min(final_end - 0.02, suffix_start + suffix_span * 0.55)
+        third_word_start = max(
+            suffix_break,
+            final_end - max(line.words[2].end_time - line.words[2].start_time, 0.18),
+        )
+        if third_word_start >= final_end:
+            continue
+
+        adjusted[idx] = models.Line(
+            words=[
+                models.Word(
+                    text=line.words[0].text,
+                    start_time=target_start,
+                    end_time=prefix_end,
+                    singer=line.words[0].singer,
+                ),
+                models.Word(
+                    text=line.words[1].text,
+                    start_time=suffix_start,
+                    end_time=suffix_break,
+                    singer=line.words[1].singer,
+                ),
+                models.Word(
+                    text=line.words[2].text,
+                    start_time=third_word_start,
+                    end_time=final_end,
+                    singer=line.words[2].singer,
+                ),
+            ],
+            singer=line.singer,
+        )
+        restored += 1
+    return adjusted, restored
+
+
 def _forced_coverage_ok(
     *,
     logger: Any,
@@ -1244,6 +1369,15 @@ def _finalize_forced_line_timing(
         logger.info(
             "Reanchored %d forced-aligned line(s) to local content-word Whisper anchors",
             reanchored_count,
+        )
+    forced_lines, suffix_retimed_count = _retime_three_word_lines_from_suffix_matches(
+        forced_lines,
+        whisper_words,
+    )
+    if suffix_retimed_count:
+        logger.info(
+            "Retimed %d compact forced-aligned line(s) from exact Whisper suffix matches",
+            suffix_retimed_count,
         )
 
     forced_lines = _post_normalize_sparse_support_repairs(
