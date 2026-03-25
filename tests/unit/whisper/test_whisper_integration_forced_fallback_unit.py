@@ -220,7 +220,18 @@ def test_reanchor_medium_lines_to_earlier_exact_prefixes_requires_boundary_carry
         _dur_multi_line(
             5.778,
             10.755,
-            ["I", "cut", "my", "teeth", "on", "wedding", "rings", "in", "the", "movies"],
+            [
+                "I",
+                "cut",
+                "my",
+                "teeth",
+                "on",
+                "wedding",
+                "rings",
+                "in",
+                "the",
+                "movies",
+            ],
         ),
         _dur_multi_line(
             11.489,
@@ -251,7 +262,18 @@ def test_reanchor_medium_lines_to_earlier_exact_prefixes_requires_tight_boundary
         _dur_multi_line(
             5.778,
             10.755,
-            ["I", "cut", "my", "teeth", "on", "wedding", "rings", "in", "the", "movies"],
+            [
+                "I",
+                "cut",
+                "my",
+                "teeth",
+                "on",
+                "wedding",
+                "rings",
+                "in",
+                "the",
+                "movies",
+            ],
         ),
         _dur_multi_line(
             11.489,
