@@ -1,0 +1,184 @@
+{
+  "schema_version": "1.0",
+  "title": "Please Please Please",
+  "artist": "Sabrina Carpenter",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/zAgVtzhjfCA/trimmed_from_53.00s_for_19.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Please, please, please",
+      "start": 1.011,
+      "end": 3.656,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Please,",
+          "start": 1.011,
+          "end": 2.013
+        },
+        {
+          "word_index": 2,
+          "text": "please,",
+          "start": 2.133,
+          "end": 3.155
+        },
+        {
+          "word_index": 3,
+          "text": "please",
+          "start": 3.235,
+          "end": 3.656
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Don't prove I'm right",
+      "start": 4.392,
+      "end": 6.442,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Don't",
+          "start": 4.392,
+          "end": 4.834
+        },
+        {
+          "word_index": 2,
+          "text": "prove",
+          "start": 4.874,
+          "end": 5.035
+        },
+        {
+          "word_index": 3,
+          "text": "I'm",
+          "start": 5.055,
+          "end": 5.176
+        },
+        {
+          "word_index": 4,
+          "text": "right",
+          "start": 5.256,
+          "end": 6.442
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "And please, please, please",
+      "start": 9.782,
+      "end": 12.736,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "And",
+          "start": 9.782,
+          "end": 9.902
+        },
+        {
+          "word_index": 2,
+          "text": "please,",
+          "start": 9.942,
+          "end": 11.048
+        },
+        {
+          "word_index": 3,
+          "text": "please,",
+          "start": 11.108,
+          "end": 12.193
+        },
+        {
+          "word_index": 4,
+          "text": "please",
+          "start": 12.314,
+          "end": 12.736
+        }
+      ]
+    },
+    {
+      "line_index": 4,
+      "text": "Don't bring me to tears when I just did my makeup so nice",
+      "start": 13.059,
+      "end": 18.479,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Don't",
+          "start": 13.059,
+          "end": 13.32
+        },
+        {
+          "word_index": 2,
+          "text": "bring",
+          "start": 13.38,
+          "end": 13.722
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 13.782,
+          "end": 14.143
+        },
+        {
+          "word_index": 4,
+          "text": "to",
+          "start": 14.284,
+          "end": 14.384
+        },
+        {
+          "word_index": 5,
+          "text": "tears",
+          "start": 14.464,
+          "end": 14.866
+        },
+        {
+          "word_index": 6,
+          "text": "when",
+          "start": 14.926,
+          "end": 15.348
+        },
+        {
+          "word_index": 7,
+          "text": "I",
+          "start": 15.448,
+          "end": 15.548
+        },
+        {
+          "word_index": 8,
+          "text": "just",
+          "start": 15.609,
+          "end": 15.97
+        },
+        {
+          "word_index": 9,
+          "text": "did",
+          "start": 16.01,
+          "end": 16.251
+        },
+        {
+          "word_index": 10,
+          "text": "my",
+          "start": 16.472,
+          "end": 16.712
+        },
+        {
+          "word_index": 11,
+          "text": "makeup",
+          "start": 16.753,
+          "end": 17.415
+        },
+        {
+          "word_index": 12,
+          "text": "so",
+          "start": 17.475,
+          "end": 17.857
+        },
+        {
+          "word_index": 13,
+          "text": "nice",
+          "start": 17.917,
+          "end": 18.479
+        }
+      ]
+    }
+  ]
+}

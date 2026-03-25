@@ -78,3 +78,29 @@ def test_ensure_editor_server_raises_for_wrong_service_on_port(
 
     with pytest.raises(RuntimeError, match="already in use"):
         _MODULE._ensure_editor_server()
+
+
+def test_gold_path_bootstraps_from_default_gold_root(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    clip_root = tmp_path / "clip_gold"
+    default_root = tmp_path / "default_gold"
+    monkeypatch.setattr(_MODULE, "CLIP_GOLD_ROOT", clip_root)
+    monkeypatch.setattr(_MODULE, "DEFAULT_GOLD_ROOT", default_root)
+
+    song = {
+        "artist": "Sabrina Carpenter",
+        "title": "Please Please Please",
+        "youtube_id": "zAgVtzhjfCA",
+        "clip_id": "chorus-setup-tail",
+    }
+    slug = _MODULE._song_slug(song)
+    source = default_root / f"45_{slug}.gold.json"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text('{"title": "seed"}\n', encoding="utf-8")
+
+    resolved = _MODULE._gold_path(45, song)
+
+    assert resolved == clip_root / f"45_{slug}.gold.json"
+    assert resolved.exists()
+    assert resolved.read_text(encoding="utf-8") == '{"title": "seed"}\n'

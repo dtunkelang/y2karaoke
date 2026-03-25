@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import socket
 import subprocess
 import sys
@@ -22,6 +23,7 @@ MANIFEST_PATH = REPO_ROOT / "benchmarks" / "curated_clip_songs.yaml"
 CLIP_GOLD_ROOT = (
     REPO_ROOT / "benchmarks" / "clip_gold_candidate" / "20260312T_curated_clips"
 )
+DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set_candidate" / "20260305T231015Z"
 EDITOR_BASE_URL = "http://127.0.0.1:8765/"
 EDITOR_READY_TIMEOUT_SEC = 5.0
 EDITOR_READY_POLL_SEC = 0.1
@@ -96,7 +98,27 @@ def _gold_path(index: int, song: dict[str, object]) -> Path:
     fallback = CLIP_GOLD_ROOT / f"{slug}.gold.json"
     if fallback.exists():
         return fallback
+    bootstrapped = _bootstrap_missing_gold(index=index, slug=slug)
+    if bootstrapped is not None:
+        return bootstrapped
     raise FileNotFoundError(f"No gold file found for curated clip {slug}")
+
+
+def _bootstrap_missing_gold(index: int, slug: str) -> Path | None:
+    indexed = DEFAULT_GOLD_ROOT / f"{index:02d}_{slug}.gold.json"
+    if indexed.exists():
+        return _copy_bootstrapped_gold(index=index, slug=slug, source=indexed)
+    matches = sorted(DEFAULT_GOLD_ROOT.glob(f"*_{slug}.gold.json"))
+    if matches:
+        return _copy_bootstrapped_gold(index=index, slug=slug, source=matches[0])
+    return None
+
+
+def _copy_bootstrapped_gold(*, index: int, slug: str, source: Path) -> Path:
+    target = CLIP_GOLD_ROOT / f"{index:02d}_{slug}.gold.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+    return target
 
 
 def _cache_dir(song: dict[str, object]) -> Path:

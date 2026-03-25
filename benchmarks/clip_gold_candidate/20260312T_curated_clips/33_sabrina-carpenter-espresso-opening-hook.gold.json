@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "title": "Espresso",
+  "artist": "Sabrina Carpenter",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/51zjlMhdSTE/trimmed_from_14.00s_for_5.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "Say you can't sleep, baby, I know",
+      "start": 0.678,
+      "end": 2.668,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Say",
+          "start": 0.678,
+          "end": 0.799
+        },
+        {
+          "word_index": 2,
+          "text": "you",
+          "start": 0.859,
+          "end": 1.02
+        },
+        {
+          "word_index": 3,
+          "text": "can't",
+          "start": 1.06,
+          "end": 1.301
+        },
+        {
+          "word_index": 4,
+          "text": "sleep,",
+          "start": 1.321,
+          "end": 1.824
+        },
+        {
+          "word_index": 5,
+          "text": "baby,",
+          "start": 1.884,
+          "end": 2.226
+        },
+        {
+          "word_index": 6,
+          "text": "I",
+          "start": 2.266,
+          "end": 2.447
+        },
+        {
+          "word_index": 7,
+          "text": "know",
+          "start": 2.467,
+          "end": 2.668
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "That's that me espresso",
+      "start": 2.778,
+      "end": 4.753,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "That's",
+          "start": 2.778,
+          "end": 3.242
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 3.302,
+          "end": 3.584
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 3.645,
+          "end": 3.927
+        },
+        {
+          "word_index": 4,
+          "text": "espresso",
+          "start": 4.007,
+          "end": 4.753
+        }
+      ]
+    }
+  ]
+}

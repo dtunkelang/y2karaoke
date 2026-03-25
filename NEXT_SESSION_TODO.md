@@ -22,11 +22,15 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 
 1. Start from the newest broad cached canary, not the older `Con Calma` ordering:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
-2. If broad-return work continues, `Time After Time`, `Taste`, and `Houdini` are now the cleaner next targets. `Rap God` still ranks high numerically, but the first new handoff repair probe had zero live effect.
+2. If broad-return work continues, `Taste` and `Houdini` are now the cleaner next code-side targets. `Time After Time` has been manually verified, and `Rap God`'s first new handoff repair probe had zero live effect.
 3. `Without Me` is no longer the best next driver after the latest forced-alignment repair. Keep it as a protected control unless a new failure family appears.
 4. If continuing the best-understood narrow failure instead, start with `Rap God` or `Time After Time` before reopening `Without Me`.
 5. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure. No new clips are needed right now.
-6. Most useful verification candidate right now: `Time After Time` line 4 (`Time after time`) and possibly line 3's tail, because both seed timing and raw Whisper support are much earlier than the current gold.
+6. The newest companion clips are now:
+   - `Please Please Please` (`chorus-setup-tail`)
+   - `Espresso` (`opening-hook`)
+   Rerun with:
+   `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Please Please Please|Espresso" --offline`
 
 ## Current Quality Position
 
@@ -104,6 +108,17 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
   - failed focused canary: `Taste|Sweet Caroline|Con Calma` regressed to `0.236s` in `benchmarks/results/20260325T215438Z`
   - negative learning: an exact-prefix forced reanchor that looked defensible on `Taste` overfired on `Sweet Caroline`, so this repair family is too broad in its current form
   - implication: `Taste` line 3 still looks like a real code-side miss, but the next probe must be narrower than generic forced exact-prefix reanchoring
+- New curation/workflow fixes landed around fresh Sabrina companion clips:
+  - `yt-dlp` is now installed globally via Homebrew, so URL-based clip vetting no longer depends on the repo venv
+  - `tools/curated_clip_helper.py` now bootstraps missing curated gold files from the default rebaseline root into the canonical curated clip root
+  - `tools/run_benchmark_suite.py` now automatically switches to the curated clip gold root when `benchmarks/curated_clip_songs.yaml` is used, so new clip reruns score against the curated files instead of the default full-song gold root
+  - new curated companions added:
+    - `32_sabrina-carpenter-please-please-please-chorus-setup-tail.gold.json`
+    - `33_sabrina-carpenter-espresso-opening-hook.gold.json`
+  - locked-lyrics rule for these clips:
+    - changing audio boundaries must not change lyric text unless explicitly requested
+  - corrected apples-to-apples rerun on the curated gold root: `benchmarks/results/20260325T225138Z`
+  - result: `gold_start_abs_mean_weighted=0.000s` for the two-clip pack after aligning the saved gold timings to the actual locked lyric windows
 
 ## Current Cached Canary Baseline
 

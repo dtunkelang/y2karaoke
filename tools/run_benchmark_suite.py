@@ -28,6 +28,7 @@ from y2karaoke.core.components.whisper.whisper_alignment_line_helpers import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = REPO_ROOT / "benchmarks" / "benchmark_songs.yaml"
+DEFAULT_CURATED_CLIP_MANIFEST = REPO_ROOT / "benchmarks" / "curated_clip_songs.yaml"
 DEFAULT_RESULTS_ROOT = REPO_ROOT / "benchmarks" / "results"
 DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set_candidate" / "20260305T231015Z"
 DEFAULT_CLIP_GOLD_ROOT = (
@@ -7019,7 +7020,13 @@ def _parse_args() -> argparse.Namespace:
             "Use --match/--max-songs to constrain scope."
         ),
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if (
+        args.gold_root == DEFAULT_GOLD_ROOT
+        and args.manifest.resolve() == DEFAULT_CURATED_CLIP_MANIFEST.resolve()
+    ):
+        args.gold_root = DEFAULT_CLIP_GOLD_ROOT
+    return args
 
 
 def _tail_text(data: str | bytes | None, line_count: int = 30) -> str:

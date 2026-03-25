@@ -460,6 +460,42 @@ songs:
   lrc_duration_tolerance_sec: 20
   notes: First main chorus clip from 0:23 to 0:43 around I heard you're back together...
     / You'll just have to taste me....
+- artist: Sabrina Carpenter
+  title: Please Please Please
+  clip_id: chorus-setup-tail
+  clip_tags:
+  - stress
+  - chorus
+  - modern-pop
+  - repeated-hook
+  - comparability
+  audio_start_sec: 53.0
+  clip_duration_sec: 19.0
+  youtube_id: zAgVtzhjfCA
+  youtube_url: https://www.youtube.com/watch?v=zAgVtzhjfCA
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Chorus companion clip from 0:53 to 1:12 around Please, please, please
+    / Don't prove I'm right / And please, please, please / Don't bring me to tears....
+- artist: Sabrina Carpenter
+  title: Espresso
+  clip_id: opening-hook
+  clip_tags:
+  - stress
+  - chorus
+  - modern-pop
+  - compact-lines
+  - comparability
+  audio_start_sec: 14.0
+  clip_duration_sec: 5.0
+  youtube_id: 51zjlMhdSTE
+  youtube_url: https://www.youtube.com/watch?v=51zjlMhdSTE
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Opening hook companion clip from 0:14 to 0:19 around Say you can't sleep,
+    baby, I know / That's that me espresso.
 - artist: Eminem
   title: Without Me
   clip_id: repeated-hook
