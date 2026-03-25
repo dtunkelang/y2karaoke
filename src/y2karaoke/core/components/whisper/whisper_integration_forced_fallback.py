@@ -955,6 +955,107 @@ def _find_exact_whisper_sequence_match(
     return best_match
 
 
+def _three_word_suffix_retime_tokens(
+    line: models.Line,
+    *,
+    min_prefix_share: float,
+) -> list[str] | None:
+    if len(line.words) != 3:
+        return None
+    line_duration = line.end_time - line.start_time
+    if line_duration <= 0.0:
+        return None
+    prefix_duration = line.words[0].end_time - line.words[0].start_time
+    if prefix_duration / line_duration < min_prefix_share:
+        return None
+    normalized = [_normalize_token(word.text) for word in line.words]
+    if any(not token for token in normalized):
+        return None
+    return normalized
+
+
+def _three_word_suffix_retime_window(
+    *,
+    line: models.Line,
+    suffix_match: tuple[float, float],
+    prev_end: float | None,
+    next_start: float | None,
+    min_gap: float,
+    min_start_gain_sec: float,
+    min_suffix_span_sec: float,
+    max_prefix_slot_sec: float,
+) -> tuple[float, float, float, float, float] | None:
+    suffix_start, suffix_end = suffix_match
+    suffix_span = suffix_end - suffix_start
+    if suffix_span < min_suffix_span_sec:
+        return None
+
+    prefix_slot = min(max_prefix_slot_sec, suffix_span / 2.0)
+    target_start = suffix_start - prefix_slot
+    if prev_end is not None:
+        target_start = max(target_start, prev_end + min_gap)
+    if target_start - line.start_time < min_start_gain_sec:
+        return None
+    if next_start is not None and suffix_end >= next_start - min_gap:
+        return None
+
+    prefix_end = min(suffix_start - 0.02, target_start + prefix_slot * 0.9)
+    if prefix_end <= target_start:
+        return None
+
+    final_end = max(suffix_end, line.words[2].end_time)
+    if next_start is not None:
+        final_end = min(final_end, next_start - min_gap)
+    if final_end <= suffix_start + 0.08:
+        return None
+
+    suffix_break = min(final_end - 0.02, suffix_start + suffix_span * 0.55)
+    third_word_start = max(
+        suffix_break,
+        final_end - max(line.words[2].end_time - line.words[2].start_time, 0.18),
+    )
+    if third_word_start >= final_end:
+        return None
+    return target_start, prefix_end, suffix_start, suffix_break, final_end
+
+
+def _rebuild_three_word_suffix_retimed_line(
+    line: models.Line,
+    *,
+    target_start: float,
+    prefix_end: float,
+    suffix_start: float,
+    suffix_break: float,
+    final_end: float,
+) -> models.Line:
+    return models.Line(
+        words=[
+            models.Word(
+                text=line.words[0].text,
+                start_time=target_start,
+                end_time=prefix_end,
+                singer=line.words[0].singer,
+            ),
+            models.Word(
+                text=line.words[1].text,
+                start_time=suffix_start,
+                end_time=suffix_break,
+                singer=line.words[1].singer,
+            ),
+            models.Word(
+                text=line.words[2].text,
+                start_time=max(
+                    suffix_break,
+                    final_end - max(line.words[2].end_time - line.words[2].start_time, 0.18),
+                ),
+                end_time=final_end,
+                singer=line.words[2].singer,
+            ),
+        ],
+        singer=line.singer,
+    )
+
+
 def _retime_three_word_lines_from_suffix_matches(
     forced_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord] | None,
@@ -973,16 +1074,11 @@ def _retime_three_word_lines_from_suffix_matches(
     adjusted = list(forced_lines)
     restored = 0
     for idx, line in enumerate(adjusted):
-        if len(line.words) != 3:
-            continue
-        line_duration = line.end_time - line.start_time
-        if line_duration <= 0.0:
-            continue
-        prefix_duration = line.words[0].end_time - line.words[0].start_time
-        if prefix_duration / line_duration < min_prefix_share:
-            continue
-        normalized = [_normalize_token(word.text) for word in line.words]
-        if any(not token for token in normalized):
+        normalized = _three_word_suffix_retime_tokens(
+            line,
+            min_prefix_share=min_prefix_share,
+        )
+        if normalized is None:
             continue
         suffix_match = _find_exact_whisper_sequence_match(
             whisper_words,
@@ -993,59 +1089,27 @@ def _retime_three_word_lines_from_suffix_matches(
         if suffix_match is None:
             continue
 
-        suffix_start, suffix_end = suffix_match
-        suffix_span = suffix_end - suffix_start
-        if suffix_span < min_suffix_span_sec:
-            continue
-        prefix_slot = min(max_prefix_slot_sec, suffix_span / 2.0)
-        target_start = suffix_start - prefix_slot
-
         prev_end, next_start = _neighbor_line_bounds(adjusted, idx)
-        if prev_end is not None:
-            target_start = max(target_start, prev_end + min_gap)
-        if target_start - line.start_time < min_start_gain_sec:
-            continue
-        if next_start is not None and suffix_end >= next_start - min_gap:
-            continue
-
-        prefix_end = min(suffix_start - 0.02, target_start + prefix_slot * 0.9)
-        if prefix_end <= target_start:
-            continue
-        final_end = max(suffix_end, line.words[2].end_time)
-        if next_start is not None:
-            final_end = min(final_end, next_start - min_gap)
-        if final_end <= suffix_start + 0.08:
-            continue
-        suffix_break = min(final_end - 0.02, suffix_start + suffix_span * 0.55)
-        third_word_start = max(
-            suffix_break,
-            final_end - max(line.words[2].end_time - line.words[2].start_time, 0.18),
+        target_window = _three_word_suffix_retime_window(
+            line=line,
+            suffix_match=suffix_match,
+            prev_end=prev_end,
+            next_start=next_start,
+            min_gap=min_gap,
+            min_start_gain_sec=min_start_gain_sec,
+            min_suffix_span_sec=min_suffix_span_sec,
+            max_prefix_slot_sec=max_prefix_slot_sec,
         )
-        if third_word_start >= final_end:
+        if target_window is None:
             continue
 
-        adjusted[idx] = models.Line(
-            words=[
-                models.Word(
-                    text=line.words[0].text,
-                    start_time=target_start,
-                    end_time=prefix_end,
-                    singer=line.words[0].singer,
-                ),
-                models.Word(
-                    text=line.words[1].text,
-                    start_time=suffix_start,
-                    end_time=suffix_break,
-                    singer=line.words[1].singer,
-                ),
-                models.Word(
-                    text=line.words[2].text,
-                    start_time=third_word_start,
-                    end_time=final_end,
-                    singer=line.words[2].singer,
-                ),
-            ],
-            singer=line.singer,
+        adjusted[idx] = _rebuild_three_word_suffix_retimed_line(
+            line,
+            target_start=target_window[0],
+            prefix_end=target_window[1],
+            suffix_start=target_window[2],
+            suffix_break=target_window[3],
+            final_end=target_window[4],
         )
         restored += 1
     return adjusted, restored
