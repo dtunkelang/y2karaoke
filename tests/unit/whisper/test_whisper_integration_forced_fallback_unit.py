@@ -549,6 +549,34 @@ def test_attempt_whisperx_forced_alignment_rejects_post_normalize_compact_collap
     assert result is None
 
 
+def test_post_normalize_sparse_support_repairs_restore_compact_two_word_lines_from_source():
+    baseline_lines = [
+        _dur_multi_line(2.4, 3.92, ["Guess", "who's", "back"]),
+        _dur_multi_line(4.69, 5.78, ["Back", "again"]),
+        _dur_multi_line(6.41, 7.5, ["Shady's", "back"]),
+        _dur_multi_line(8.13, 9.79, ["Tell", "a", "friend"]),
+    ]
+    forced_lines = [
+        _dur_multi_line(2.75, 3.58, ["Guess", "who's", "back"]),
+        _dur_multi_line(4.4, 5.23, ["Back", "again"]),
+        _dur_multi_line(7.01, 7.86, ["Shady's", "back"]),
+        _dur_multi_line(8.77, 9.99, ["Tell", "a", "friend"]),
+    ]
+
+    repaired = _forced._post_normalize_sparse_support_repairs(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        whisper_words=[],
+        audio_features=None,
+        logger=_Logger(),
+        normalize_line_word_timings_fn=lambda lines: lines,
+    )
+
+    assert repaired[1].start_time == pytest.approx(4.69)
+    assert repaired[1].end_time == pytest.approx(5.78)
+    assert repaired[3].start_time == pytest.approx(8.77)
+
+
 def test_attempt_whisperx_forced_alignment_restores_sparse_support_durations_post_normalize():
     baseline_lines = [
         _dur_line(0.99, 4.21, "Take on me"),

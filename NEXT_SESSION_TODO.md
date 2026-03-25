@@ -22,10 +22,10 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 
 1. Start from the newest broad cached canary, not the older `Con Calma` ordering:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
-2. If broad-return work continues, `Without Me` is back in first place, with `Rap God` and `Time After Time` clustered just behind it.
-3. If continuing the best-understood narrow failure instead, inspect the remaining `Without Me` merged repeated-pair miss on line 2 (`Back again`) and keep the new line-4 forced-alignment win protected:
-   `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Without Me|Houdini|Con Calma|I Gotta Feeling" --offline`
-4. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure. No new clips are needed right now.
+2. If broad-return work continues, `Rap God` is now back in first place, with `Time After Time`, `Taste`, and `Houdini` just behind it.
+3. `Without Me` is no longer the best next driver after the latest forced-alignment repair. Keep it as a protected control unless a new failure family appears.
+4. If continuing the best-understood narrow failure instead, start with `Rap God` or `Time After Time` before reopening `Without Me`.
+5. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure. No new clips are needed right now.
 
 ## Current Quality Position
 
@@ -81,9 +81,32 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
   - kept broad win: the 12-song cached canary improved from `0.2170s` in `20260325T205644Z` to `0.2100s` in `20260325T210830Z`
   - positive learning: `Con Calma`'s tail issue was a mapped-line weak-opening/content-anchor miss, not a later correction-stage regression
   - negative learning: this helper only moved line 10 live; lines 11-12 still need a different repair family
+- `Without Me` improved again from `0.2387s / 0.2764s` to `0.1972s / 0.1969s` in `benchmarks/results/20260325T211941Z`
+  - driver: after post-normalization forced-alignment repair, compact 2-word lines now restore from the pre-forced source timing when forced alignment starts them materially earlier and compresses their duration
+  - kept focused win: the 4-song canary improved from `0.2160s` in `20260325T210658Z` to `0.2130s` in `20260325T211734Z`
+  - kept broad win: the 12-song cached canary improved from `0.2100s` in `20260325T210830Z` to `0.2090s` in `20260325T211941Z`
+  - positive learning: the remaining `Back again` miss was still inside the forced-alignment post-normalization layer, not the mapped-line pull path
+  - negative learning: the raw Whisper word windows for `Back again` still start earlier than gold, so this family was only safe to fix by restoring from the stronger pre-forced baseline rather than chasing later Whisper suffix support
 
 ## Current Cached Canary Baseline
 
+- Latest broad cached canary subset after the compact 2-word forced-alignment restore:
+  - `benchmarks/results/20260325T211941Z/benchmark_report.json`
+  - curated canary weighted start mean: `0.2090s`
+  - key ordering:
+    - `Rap God`: `0.2329 / 0.2128`
+    - `Time After Time`: `0.2261 / 0.2892`
+    - `Taste`: `0.2240 / 0.2626`
+    - `Houdini`: `0.2209 / 0.2394`
+    - `Sweet Caroline`: `0.2154 / 0.2513`
+    - `Con Calma`: `0.2148 / 0.2399`
+    - `I Gotta Feeling`: `0.2034 / 0.1510`
+    - `Without Me`: `0.1972 / 0.1969`
+    - `Total Eclipse of the Heart`: `0.1961 / 0.2979`
+    - `Royals`: `0.1882 / 0.1555`
+    - `Take On Me`: `0.1513 / 0.3345`
+    - `Stayin' Alive`: `0.1374 / 0.6253`
+  - only material movement from `20260325T210830Z` was the `Without Me` improvement
 - Latest broad cached canary subset after enabling default restored-run onset shifts and the `Con Calma` coda rebalance:
   - `benchmarks/results/20260320T232439Z/benchmark_report.json`
   - curated canary weighted start mean: `0.2478s`
@@ -281,10 +304,8 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - `Taste` is materially healthier after the recent gold refresh and is no longer the top broad-return target.
 - `Sweet Caroline` is materially healthier after the latest short-title chorus rebalance and is no longer the top broad-return target.
 - `Con Calma` is materially healthier again after the late-start Whisper reanchor and is no longer the top broad-return target after the full rerank.
-- `Without Me` was the clearest broad-return start-error target before the latest forced-alignment repair.
-- `Without Me` is still a valid next target, but the failure shape got narrower again:
-  - the new suffix repair materially improved line 4 (`Tell a friend`)
-  - line 2 (`Back again`) is now the main unresolved miss
+- `Without Me` was the clearest broad-return start-error target before the latest forced-alignment repair stack.
+- `Without Me` is materially healthier again after the compact 2-word source restore and is no longer the broad canary leader.
 - `Without Me` line 2 now has a direct mapped-line postpass repro:
   - `_pull_late_lines_to_matching_segments()` can pull a `Guess who's back` / `Back again` toy pair from `4.692s` to about `3.63s`
   - a characterization test for that shape now lives in `tests/unit/whisper/test_whisper_mapping_post.py`
@@ -296,8 +317,9 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - Broad canary status after the latest fixes:
   - the tightened forced-alignment suffix helper no longer regresses `Time After Time`
   - the late-tail onset-run fix improved `Houdini` without moving the other 11-song cached controls
+  - the compact 2-word source restore improved `Without Me` without moving the other 11-song cached controls
 - `Con Calma` is materially healthier after the light-leading content-word reanchor and is no longer the broad canary leader
-- `Without Me` is back to the top broad-return slot, with the remaining line-2 repeated-pair miss still the clearest narrow failure
+- `Rap God` is back in the top broad-return slot, with `Time After Time`, `Taste`, and `Houdini` next
 - `Royals` is healthy and does not currently expose a new failure family.
 - `Johnny Cash - Hurt` remains a real hard canary, but companion attempts (`Creep`, `Everybody Hurts`, `Mad World`, `NIN Hurt`) did not reproduce its exact line-end overextension shape.
 - Treat `Johnny Cash - Hurt` as a guardrail, not the current main optimization driver.

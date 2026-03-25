@@ -462,6 +462,47 @@ def _restore_sparse_support_line_starts_from_source(
     return repaired, restored
 
 
+def _restore_compact_two_word_lines_from_source(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    *,
+    min_baseline_duration_sec: float = 0.9,
+    max_duration_ratio: float = 0.8,
+    min_early_shift_sec: float = 0.15,
+) -> tuple[List[models.Line], int]:
+    repaired = list(forced_lines)
+    restored = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        if len(baseline_line.words) != 2 or len(forced_line.words) != 2:
+            continue
+        baseline_duration = baseline_line.end_time - baseline_line.start_time
+        forced_duration = forced_line.end_time - forced_line.start_time
+        if baseline_duration < min_baseline_duration_sec or forced_duration <= 0.0:
+            continue
+        if forced_line.start_time >= baseline_line.start_time - min_early_shift_sec:
+            continue
+        if forced_duration >= baseline_duration * max_duration_ratio:
+            continue
+        repaired[idx] = models.Line(
+            words=[
+                models.Word(
+                    text=word.text,
+                    start_time=word.start_time,
+                    end_time=word.end_time,
+                    singer=word.singer,
+                )
+                for word in baseline_line.words
+            ],
+            singer=baseline_line.singer,
+        )
+        restored += 1
+    return repaired, restored
+
+
 def _redistribute_sparse_support_sustained_words(
     baseline_lines: List[models.Line],
     forced_lines: List[models.Line],
@@ -1029,6 +1070,17 @@ def _post_normalize_sparse_support_repairs(
         logger.info(
             "Restored %d sparse-support line start(s) from source after normalization",
             sparse_start_restore_count,
+        )
+    forced_lines, restored_two_word_compact_count = (
+        _restore_compact_two_word_lines_from_source(
+            baseline_lines,
+            forced_lines,
+        )
+    )
+    if restored_two_word_compact_count:
+        logger.info(
+            "Restored %d compact two-word line(s) from source after normalization",
+            restored_two_word_compact_count,
         )
     forced_lines, sustained_word_redistributed_count = (
         _redistribute_sparse_support_sustained_words(
