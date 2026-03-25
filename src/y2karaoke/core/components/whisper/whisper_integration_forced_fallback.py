@@ -1046,7 +1046,8 @@ def _rebuild_three_word_suffix_retimed_line(
                 text=line.words[2].text,
                 start_time=max(
                     suffix_break,
-                    final_end - max(line.words[2].end_time - line.words[2].start_time, 0.18),
+                    final_end
+                    - max(line.words[2].end_time - line.words[2].start_time, 0.18),
                 ),
                 end_time=final_end,
                 singer=line.words[2].singer,
