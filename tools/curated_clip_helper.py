@@ -5,11 +5,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import socket
 import subprocess
 import sys
+import time
+import urllib.request
 import webbrowser
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import yaml  # type: ignore[import-untyped]
 
@@ -19,6 +23,8 @@ CLIP_GOLD_ROOT = (
     REPO_ROOT / "benchmarks" / "clip_gold_candidate" / "20260312T_curated_clips"
 )
 EDITOR_BASE_URL = "http://127.0.0.1:8765/"
+EDITOR_READY_TIMEOUT_SEC = 5.0
+EDITOR_READY_POLL_SEC = 0.1
 
 
 def _slugify(text: str) -> str:
@@ -216,6 +222,72 @@ def _editor_url(gold_path: Path, audio_path: Path) -> str:
     return f"{EDITOR_BASE_URL}?{query}"
 
 
+def _editor_host_port() -> tuple[str, int]:
+    parsed = urlparse(EDITOR_BASE_URL)
+    return parsed.hostname or "127.0.0.1", parsed.port or 80
+
+
+def _is_editor_reachable(host: str, port: int, timeout_sec: float = 0.2) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout_sec):
+            return True
+    except OSError:
+        return False
+
+
+def _is_editor_healthy(timeout_sec: float = 0.5) -> bool:
+    try:
+        with urllib.request.urlopen(EDITOR_BASE_URL, timeout=timeout_sec) as response:
+            body = response.read().decode("utf-8", errors="ignore")
+            return response.status == 200 and "Gold Timing Editor" in body
+    except Exception:
+        return False
+
+
+def _start_editor_server() -> subprocess.Popen[bytes]:
+    host, port = _editor_host_port()
+    return subprocess.Popen(
+        [
+            sys.executable,
+            str(REPO_ROOT / "tools" / "gold_timing_editor.py"),
+            "--host",
+            host,
+            "--port",
+            str(port),
+        ],
+        cwd=str(REPO_ROOT),
+        env=os.environ.copy(),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+
+
+def _ensure_editor_server() -> None:
+    host, port = _editor_host_port()
+    if _is_editor_healthy():
+        return
+
+    if _is_editor_reachable(host, port) and not _is_editor_healthy():
+        raise RuntimeError(
+            f"Port {host}:{port} is already in use, but it is not serving the gold timing editor"
+        )
+
+    proc = _start_editor_server()
+    deadline = time.monotonic() + EDITOR_READY_TIMEOUT_SEC
+    while time.monotonic() < deadline:
+        if _is_editor_healthy():
+            return
+        if proc.poll() is not None:
+            raise RuntimeError(
+                f"Gold timing editor exited before becoming ready on {host}:{port}"
+            )
+        time.sleep(EDITOR_READY_POLL_SEC)
+
+    raise RuntimeError(f"Gold timing editor did not become ready on {host}:{port}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -246,6 +318,7 @@ def main() -> int:
         )
     )
     if args.open_editor:
+        _ensure_editor_server()
         webbrowser.open(url)
     return 0
 

@@ -350,6 +350,14 @@ For benchmark ground-truth curation, use the local gold timing editor:
 
 Then open `http://127.0.0.1:8765`.
 
+For curated clip work, prefer the helper instead:
+
+```bash
+PYTHONPATH=src ./.venv/bin/python tools/curated_clip_helper.py --match "Song Or Clip Id" --open-editor
+```
+
+It now boots the local editor server automatically if it is not already running, then opens the resolved gold clip and cached clip audio in the browser.
+
 - Canonical format: `*.gold.json` (human-readable JSON with word-level `start`/`end` timings).
 - Input: existing timing report JSON or existing `*.gold.json`.
 - Editing: drag intervals/handles, fine/coarse nudges (`0.05s` / `0.2s`), and audio-anchor snap/jump shortcuts.

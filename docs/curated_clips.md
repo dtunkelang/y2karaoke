@@ -53,6 +53,7 @@ Use a small set of stable tags rather than inventing one-off labels.
    `make curated-open MATCH="Song Or Clip Id"`
    Direct helper form:
    `PYTHONPATH=src ./.venv/bin/python tools/curated_clip_helper.py --match "Song Or Clip Id" --open-editor`
+   The helper now starts the local gold editor server automatically when needed before opening the browser.
 5. If the song is cold, use a quick first probe:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --clip-tag stress --fast-clip-probe --max-songs 1`
 6. For apples-to-apples measurement, rerun on the normal path and let the runner reuse full-song results where possible:
