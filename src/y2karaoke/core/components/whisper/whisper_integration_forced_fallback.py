@@ -1073,14 +1073,11 @@ def _post_normalize_sparse_support_repairs(
     return forced_lines
 
 
-def _apply_forced_refrain_repairs(
+def _apply_pre_finalize_forced_refrain_repairs(
     *,
     forced_lines: List[models.Line],
-    aligned_segments: Any,
-    forced_segments: List[timing_models.TranscriptionSegment],
-    transcription: List[timing_models.TranscriptionSegment] | None,
     logger: Any,
-) -> tuple[List[models.Line], int, int, int]:
+) -> tuple[List[models.Line], int]:
     forced_lines, shifted_refrain_gaps = _enforce_repeated_short_refrain_followup_gap(
         forced_lines
     )
@@ -1089,6 +1086,17 @@ def _apply_forced_refrain_repairs(
             "Shifted %d repeated short refrain line(s) later after long preceding lines",
             shifted_refrain_gaps,
         )
+    return forced_lines, shifted_refrain_gaps
+
+
+def _apply_post_finalize_forced_refrain_repairs(
+    *,
+    forced_lines: List[models.Line],
+    aligned_segments: Any,
+    forced_segments: List[timing_models.TranscriptionSegment],
+    transcription: List[timing_models.TranscriptionSegment] | None,
+    logger: Any,
+) -> tuple[List[models.Line], int, int]:
     forced_lines, restored_word_sequence_refrains = (
         _restore_short_refrains_from_aligned_segment_words(
             forced_lines,
@@ -1111,12 +1119,7 @@ def _apply_forced_refrain_repairs(
             "Restored %d split short refrain line(s) after WhisperX forced alignment",
             restored_split_refrains,
         )
-    return (
-        forced_lines,
-        shifted_refrain_gaps,
-        restored_word_sequence_refrains,
-        restored_split_refrains,
-    )
+    return forced_lines, restored_word_sequence_refrains, restored_split_refrains
 
 
 def _build_forced_payload(
@@ -1307,6 +1310,10 @@ def attempt_whisperx_forced_alignment(
     ):
         return None
 
+    forced_lines, shifted_refrain_gaps = _apply_pre_finalize_forced_refrain_repairs(
+        forced_lines=forced_lines,
+        logger=logger,
+    )
     forced_lines = _finalize_forced_line_timing(
         forced_lines=forced_lines,
         baseline_lines=baseline_lines,
@@ -1319,10 +1326,9 @@ def attempt_whisperx_forced_alignment(
     )
     (
         forced_lines,
-        shifted_refrain_gaps,
         restored_word_sequence_refrains,
         restored_split_refrains,
-    ) = _apply_forced_refrain_repairs(
+    ) = _apply_post_finalize_forced_refrain_repairs(
         forced_lines=forced_lines,
         aligned_segments=aligned_segments,
         forced_segments=forced_segments,

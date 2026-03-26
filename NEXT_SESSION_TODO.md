@@ -518,3 +518,31 @@ Most likely next inspection targets:
 - Prefer typed config/state boundaries over new env reads.
 - Preserve compatibility seams unless tests move in the same pass.
 - Protect curated manual work before further experimentation.
+
+## 2026-03-26 Time After Time paired-refrain keep
+
+- kept change:
+  - moved `_enforce_repeated_short_refrain_followup_gap()` earlier on the accepted forced-alignment path in [whisper_integration_forced_fallback.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_forced_fallback.py), so repeated short refrain lines shift later before generic non-overlap compresses the preceding line tails
+  - retained the word-sequence and split-refrain restores as post-finalize repairs
+- why it worked:
+  - on `Time After Time`, raw forced alignment already had the right coupled shape for lines 3-4
+  - the old order let generic non-overlap compress line 3 early because line 4 still started too early
+  - shifting the refrain follow-up gap before finalization preserves the later line-3 tail and yields the right later line-4 start without a special-case tail restore
+- positive results:
+  - focused sparse/falsetto pack improved in `benchmarks/results/20260326T150957Z`
+  - `Time After Time`: `0.2289 / 0.2833 -> 0.1706 / 0.1457`
+  - broad cached canary improved in `benchmarks/results/20260326T151137Z`
+  - broad aggregate `avg_abs_word_start_delta_sec_word_weighted_mean`: `0.2007 -> 0.1924`
+  - broad aggregate `gold_end_mean_abs_sec_mean`: `0.2693 -> 0.2565`
+  - broad aggregate `gold_start_p95_abs_sec_mean`: `0.5086 -> 0.4481`
+  - `Rap God` also improved on the same broad rerun: `0.2329 / 0.2128 -> 0.1994 / 0.1894`
+- negative learnings:
+  - the earlier “restore line-3 suffix after refrain gap shift” branch was a false lead
+  - it moved `Time After Time` line 3 later exactly as expected, but left line 4 behind and regressed the focused pack in `benchmarks/results/20260326T050355Z`
+  - the right fix axis was stage ordering on accepted forced alignment, not another local suffix helper
+- accepted tradeoff:
+  - `Total Eclipse of the Heart` regressed slightly on the broad rerun: `0.1961 / 0.2979 -> 0.2016 / 0.3054`
+  - that regression is small relative to the `Time After Time` and `Rap God` gains, and the broad aggregate still improved materially
+- next broad-return target:
+  - `Con Calma`, then `Taste`
+  - `Rap God` is improved enough that it is no longer the cleanest next target

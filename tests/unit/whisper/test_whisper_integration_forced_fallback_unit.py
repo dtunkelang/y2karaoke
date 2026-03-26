@@ -9,6 +9,7 @@ from y2karaoke.core.components.whisper.whisper_integration_forced_fallback impor
     attempt_whisperx_forced_alignment,
 )
 from y2karaoke.core.components.whisper import (
+    whisper_alignment as _wa,
     whisper_integration_forced_fallback as _forced,
 )
 from y2karaoke.core.models import Line, Word
@@ -414,6 +415,81 @@ def test_attempt_whisperx_forced_alignment_shifts_repeated_short_refrains_after_
     assert payload["shifted_refrain_followup_gaps"] == pytest.approx(2.0)
     assert repaired_lines[1].start_time > 6.0
     assert repaired_lines[3].start_time > 12.0
+
+
+def test_attempt_whisperx_forced_alignment_shifts_refrains_before_non_overlap():
+    baseline_lines = [
+        Line(
+            words=[
+                Word(text="If", start_time=1.092, end_time=1.253),
+                Word(text="you're", start_time=1.273, end_time=1.635),
+                Word(text="lost,", start_time=1.655, end_time=2.137),
+                Word(text="you", start_time=2.177, end_time=2.378),
+                Word(text="can", start_time=2.399, end_time=2.66),
+                Word(text="look", start_time=2.7, end_time=3.001),
+                Word(text="and", start_time=3.182, end_time=3.303),
+                Word(text="you", start_time=3.343, end_time=3.564),
+                Word(text="will", start_time=3.604, end_time=3.885),
+                Word(text="find", start_time=4.026, end_time=4.488),
+                Word(text="me", start_time=4.528, end_time=4.749),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Time", start_time=4.501, end_time=4.882),
+                Word(text="after", start_time=4.902, end_time=5.103),
+                Word(text="time", start_time=6.086, end_time=6.547),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="If", start_time=8.732, end_time=8.812),
+                Word(text="you", start_time=8.852, end_time=9.073),
+                Word(text="fall,", start_time=9.113, end_time=9.574),
+                Word(text="I", start_time=9.654, end_time=9.734),
+                Word(text="will", start_time=9.774, end_time=9.995),
+                Word(text="catch", start_time=10.035, end_time=10.416),
+                Word(text="you,", start_time=10.456, end_time=10.677),
+                Word(text="I'll", start_time=10.797, end_time=10.957),
+                Word(text="be", start_time=10.997, end_time=11.318),
+                Word(text="waiting", start_time=11.398, end_time=11.799),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Time", start_time=10.989, end_time=11.31),
+                Word(text="after", start_time=11.651, end_time=12.514),
+                Word(text="time", start_time=13.456, end_time=13.897),
+            ]
+        ),
+    ]
+
+    result = attempt_whisperx_forced_alignment(
+        lines=baseline_lines,
+        baseline_lines=baseline_lines,
+        vocals_path="vocals.wav",
+        language="en",
+        detected_lang="en",
+        logger=_Logger(),
+        used_model="base",
+        reason="test",
+        align_lines_with_whisperx_fn=lambda *_a, **_k: (
+            baseline_lines,
+            {"forced_word_coverage": 1.0, "forced_line_coverage": 1.0},
+        ),
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: (baseline_lines, 0),
+        normalize_line_word_timings_fn=_wa._normalize_line_word_timings,
+        enforce_monotonic_line_starts_fn=_wa._enforce_monotonic_line_starts,
+        enforce_non_overlapping_lines_fn=_wa._enforce_non_overlapping_lines,
+    )
+
+    assert result is not None
+    repaired_lines, _corrections, payload = result
+    assert payload["shifted_refrain_followup_gaps"] == pytest.approx(2.0)
+    assert repaired_lines[1].start_time == pytest.approx(6.099, abs=0.01)
+    assert repaired_lines[2].end_time == pytest.approx(11.799, abs=0.01)
+    assert repaired_lines[3].start_time == pytest.approx(13.149, abs=0.01)
 
 
 def test_attempt_whisperx_forced_alignment_rejects_compact_line_duration_collapse():
