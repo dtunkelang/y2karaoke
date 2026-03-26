@@ -646,6 +646,76 @@ def test_rebalance_short_followup_boundaries_from_whisper_skips_without_prior_ca
     assert adjusted[1].start_time == pytest.approx(lines[1].start_time, abs=0.01)
 
 
+def test_rebalance_short_followup_boundaries_from_whisper_shifts_compact_i_followup():
+    lines = [
+        Line(
+            words=[
+                Word(text="Tiene", start_time=17.019, end_time=17.312),
+                Word(text="adrenalina,", start_time=17.312, end_time=17.605),
+                Word(text="en", start_time=17.605, end_time=17.898),
+                Word(text="medio", start_time=17.898, end_time=18.191),
+                Word(text="'e", start_time=18.191, end_time=18.484),
+                Word(text="la", start_time=18.484, end_time=18.777),
+                Word(text="pista,", start_time=18.777, end_time=19.07),
+                Word(text="vente,", start_time=19.07, end_time=19.363),
+                Word(text="hazme", start_time=19.363, end_time=19.656),
+                Word(text="lo", start_time=19.656, end_time=19.949),
+                Word(text="que", start_time=19.949, end_time=20.242),
+                Word(text="sea", start_time=20.242, end_time=20.536),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I", start_time=20.644, end_time=20.886),
+                Word(text="like", start_time=20.886, end_time=21.128),
+                Word(text="your", start_time=21.128, end_time=21.37),
+                Word(text="poom-poom,", start_time=21.37, end_time=21.612),
+                Word(text="girl", start_time=21.612, end_time=21.854),
+                Word(text="(¡Hey!)", start_time=21.854, end_time=22.093),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Ya", start_time=22.458, end_time=22.944),
+                Word(text="vi", start_time=22.944, end_time=23.43),
+                Word(text="que", start_time=23.43, end_time=23.916),
+                Word(text="estás", start_time=23.916, end_time=24.403),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="tiene", start=16.16, end=16.54, probability=0.58),
+        TranscriptionWord(text="adrenalina", start=16.54, end=17.24, probability=0.86),
+        TranscriptionWord(text="en", start=17.24, end=17.32, probability=0.41),
+        TranscriptionWord(text="medio", start=17.32, end=17.44, probability=0.96),
+        TranscriptionWord(text="de", start=17.44, end=17.54, probability=0.99),
+        TranscriptionWord(text="la", start=17.54, end=17.6, probability=1.0),
+        TranscriptionWord(text="pista,", start=17.6, end=17.88, probability=1.0),
+        TranscriptionWord(text="pinteame", start=18.0, end=18.44, probability=0.58),
+        TranscriptionWord(text="lo", start=18.44, end=18.64, probability=1.0),
+        TranscriptionWord(text="que", start=18.64, end=18.86, probability=1.0),
+        TranscriptionWord(text="sea,", start=18.86, end=19.1, probability=0.99),
+        TranscriptionWord(text="I", start=19.44, end=19.82, probability=1.0),
+        TranscriptionWord(text="like", start=19.82, end=20.02, probability=1.0),
+        TranscriptionWord(text="you", start=20.02, end=20.16, probability=1.0),
+        TranscriptionWord(text="pum", start=20.16, end=20.34, probability=1.0),
+        TranscriptionWord(text="pum", start=20.34, end=20.5, probability=1.0),
+        TranscriptionWord(text="girl.", start=20.5, end=20.82, probability=1.0),
+        TranscriptionWord(text="Hey,", start=20.82, end=21.36, probability=1.0),
+        TranscriptionWord(text="ya", start=21.5, end=22.08, probability=1.0),
+        TranscriptionWord(text="vi", start=22.08, end=22.22, probability=1.0),
+    ]
+
+    adjusted, applied = wiaexp.rebalance_short_followup_boundaries_from_whisper(
+        lines, whisper_words
+    )
+
+    assert applied == 1
+    assert adjusted[0].end_time == pytest.approx(19.39, abs=0.01)
+    assert adjusted[1].start_time == pytest.approx(19.44, abs=0.01)
+    assert adjusted[1].end_time == pytest.approx(21.36, abs=0.01)
+
+
 def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_con_calma_tail():
     lines = [
         Line(

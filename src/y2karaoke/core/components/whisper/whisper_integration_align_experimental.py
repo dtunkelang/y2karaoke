@@ -346,6 +346,32 @@ def _find_stemmed_prefix_anchor_start(
     return None
 
 
+def _is_single_letter_followup(tokens: list[str]) -> bool:
+    return bool(tokens) and len(tokens[0]) == 1 and len(tokens) >= 4
+
+
+def _short_followup_prefix_settings(
+    line: models.Line,
+    *,
+    default_max_shift_sec: float,
+    default_min_prefix_matches: int,
+    default_support_window: float,
+) -> tuple[bool, float, int, float]:
+    tokens = normalized_tokens(line)
+    leading_light_count = _count_leading_light_tokens(tokens)
+    single_letter_followup = leading_light_count == 0 and _is_single_letter_followup(
+        tokens
+    )
+    if single_letter_followup:
+        return True, 1.3, max(default_min_prefix_matches, 2), 1.35
+    return (
+        leading_light_count == 1,
+        default_max_shift_sec,
+        default_min_prefix_matches,
+        default_support_window,
+    )
+
+
 def _latest_supported_whisper_end(
     line: models.Line,
     whisper_words: List[timing_models.TranscriptionWord],
@@ -388,7 +414,7 @@ def rebalance_short_followup_boundaries_from_whisper(
     min_prefix_matches: int = 2,
     support_window: float = 1.1,
     min_gap: float = 0.05,
-    max_word_count: int = 5,
+    max_word_count: int = 6,
     min_prev_word_count: int = 8,
 ) -> tuple[List[models.Line], int]:
     updated = list(mapped_lines)
@@ -403,15 +429,26 @@ def rebalance_short_followup_boundaries_from_whisper(
             or len(prev_line.words) < min_prev_word_count
         ):
             continue
-        if _count_leading_light_tokens(normalized_tokens(line)) != 1:
+        (
+            allow_followup_shape,
+            line_max_shift_sec,
+            line_min_prefix_matches,
+            line_support_window,
+        ) = _short_followup_prefix_settings(
+            line,
+            default_max_shift_sec=max_shift_sec,
+            default_min_prefix_matches=min_prefix_matches,
+            default_support_window=support_window,
+        )
+        if not allow_followup_shape:
             continue
         target_start = _find_stemmed_prefix_anchor_start(
             line,
             whisper_words,
             min_shift_sec=min_shift_sec,
-            max_shift_sec=max_shift_sec,
-            min_prefix_matches=min_prefix_matches,
-            support_window=support_window,
+            max_shift_sec=line_max_shift_sec,
+            min_prefix_matches=line_min_prefix_matches,
+            support_window=line_support_window,
         )
         if target_start is None or target_start >= prev_line.end_time - 0.25:
             continue
@@ -425,7 +462,7 @@ def rebalance_short_followup_boundaries_from_whisper(
             line,
             whisper_words,
             search_start=target_start,
-            search_end=line.end_time + support_window,
+            search_end=line.end_time + line_support_window,
         )
         if (
             prev_support_end is None
