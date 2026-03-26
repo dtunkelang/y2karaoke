@@ -650,3 +650,36 @@ Most likely next inspection targets:
 - next best target:
   - `Taste` if we want the cleaner lower-risk path
   - `Con Calma` only if there is a very specific line-12 end/tail idea, because the remaining miss is getting small and brittle
+
+## 2026-03-26 Sweet Caroline low-score forced tail keep
+
+- curation outcome first:
+  - line 4 in [32_neil-diamond-sweet-caroline-first-chorus.gold.json](/Users/dtunkelang/y2karaoke/benchmarks/clip_gold_candidate/20260312T_curated_clips/32_neil-diamond-sweet-caroline-first-chorus.gold.json) was rechecked and should remain `To believe they never would`
+  - that confirmed the remaining miss is a real accepted-forced-alignment issue, not a gold mismatch
+- what the forced trace showed:
+  - the live clip is on accepted WhisperX forced alignment, not the DTW mapping path
+  - `/tmp/sweet_caroline_forced.json` showed line 4 already aligned as the correct text `To believe they never would`, but with a compressed tail:
+    - forced line 4: `16.656-19.183`
+    - source/pre-Whisper line 4: `15.382-19.826`
+  - the final word `would` had the lowest score in that forced line (`0.515`)
+- kept code change:
+  - added `_extend_low_score_forced_line_tails_from_source()` in [whisper_integration_forced_fallback.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_forced_fallback.py)
+  - wired it into the accepted forced-alignment path right after forced-line finalization
+  - the helper is intentionally narrow:
+    - only medium lines (`4-6` words)
+    - only when source end is later by `0.35-0.95s`
+    - only when the final aligned word has low score (`<= 0.55`)
+    - only extends the last word end, capped to a plausible max held duration and next-line gap
+- kept results:
+  - isolated `Sweet Caroline` rerun improved in `benchmarks/results/20260326T190830Z`
+  - `Sweet Caroline`: `0.2154 / 0.2513 -> 0.2154 / 0.2230`
+  - guardrail pack `Sweet Caroline|Taste|Without Me|Rap God` improved only on `Sweet Caroline` in `benchmarks/results/20260326T190854Z`
+  - broad cached canary improved in `benchmarks/results/20260326T191027Z`
+  - broad aggregate `gold_end_mean_abs_sec_mean`: `0.2693 -> 0.2670`
+  - only material movement was `Sweet Caroline`: `0.2154 / 0.2513 -> 0.2154 / 0.2234`
+- negative learning:
+  - the broader stage and segment-assignment trace hooks were a false path for this clip because the live run never used the DTW mapper family
+  - the useful evidence came only after forcing the accepted WhisperX trace path and seeing the low-score final word on line 4
+- next best target:
+  - `Con Calma` remains the biggest miss, but gains there are getting brittle
+  - if continuing code-side quality, the next clean investigation should start from accepted-forced-alignment diagnostics again rather than DTW traces

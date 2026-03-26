@@ -302,6 +302,107 @@ def test_restore_sustained_line_durations_from_source_shifts_compact_recovered_l
     assert repaired_lines[3].start_time == pytest.approx(forced_lines[3].start_time)
 
 
+def test_extend_low_score_forced_line_tails_from_source_extends_sweet_caroline_tail():
+    baseline_lines = [
+        _dur_multi_line(11.95, 14.6, ["I've", "been", "inclined"]),
+        Line(
+            words=[
+                Word(text="To", start_time=15.382, end_time=15.826),
+                Word(text="believe", start_time=15.826, end_time=16.715),
+                Word(text="they", start_time=16.715, end_time=17.604),
+                Word(text="never", start_time=17.604, end_time=18.715),
+                Word(text="would", start_time=18.715, end_time=19.826),
+            ]
+        ),
+        _dur_multi_line(
+            20.42, 25.52, ["But", "now", "I", "look", "at", "the", "night"]
+        ),
+    ]
+    forced_lines = [
+        _dur_multi_line(12.741, 14.125, ["I've", "been", "inclined"]),
+        Line(
+            words=[
+                Word(text="To", start_time=16.656, end_time=16.957),
+                Word(text="believe", start_time=16.997, end_time=18.06),
+                Word(text="they", start_time=18.12, end_time=18.541),
+                Word(text="never", start_time=18.581, end_time=18.962),
+                Word(text="would", start_time=18.982, end_time=19.183),
+            ]
+        ),
+        _dur_multi_line(
+            20.42, 25.52, ["But", "now", "I", "look", "at", "the", "night"]
+        ),
+    ]
+    aligned_segments = [
+        {},
+        {
+            "words": [
+                {"word": "To", "score": 0.633},
+                {"word": "believe", "score": 0.782},
+                {"word": "they", "score": 0.722},
+                {"word": "never", "score": 0.8},
+                {"word": "would", "score": 0.515},
+            ]
+        },
+        {},
+    ]
+
+    repaired_lines, extended = _forced._extend_low_score_forced_line_tails_from_source(
+        baseline_lines,
+        forced_lines,
+        aligned_segments,
+    )
+
+    assert extended == 1
+    assert repaired_lines[1].start_time == pytest.approx(forced_lines[1].start_time)
+    assert repaired_lines[1].end_time == pytest.approx(19.826, abs=0.01)
+
+
+def test_extend_low_score_forced_line_tails_from_source_skips_high_score_tails():
+    baseline_lines = [
+        Line(
+            words=[
+                Word(text="To", start_time=15.382, end_time=15.826),
+                Word(text="believe", start_time=15.826, end_time=16.715),
+                Word(text="they", start_time=16.715, end_time=17.604),
+                Word(text="never", start_time=17.604, end_time=18.715),
+                Word(text="would", start_time=18.715, end_time=19.826),
+            ]
+        ),
+    ]
+    forced_lines = [
+        Line(
+            words=[
+                Word(text="To", start_time=16.656, end_time=16.957),
+                Word(text="believe", start_time=16.997, end_time=18.06),
+                Word(text="they", start_time=18.12, end_time=18.541),
+                Word(text="never", start_time=18.581, end_time=18.962),
+                Word(text="would", start_time=18.982, end_time=19.183),
+            ]
+        ),
+    ]
+    aligned_segments = [
+        {
+            "words": [
+                {"word": "To", "score": 0.633},
+                {"word": "believe", "score": 0.782},
+                {"word": "they", "score": 0.722},
+                {"word": "never", "score": 0.8},
+                {"word": "would", "score": 0.8},
+            ]
+        },
+    ]
+
+    repaired_lines, extended = _forced._extend_low_score_forced_line_tails_from_source(
+        baseline_lines,
+        forced_lines,
+        aligned_segments,
+    )
+
+    assert extended == 0
+    assert repaired_lines[0].end_time == pytest.approx(forced_lines[0].end_time)
+
+
 def test_attempt_whisperx_forced_alignment_rejects_compact_line_drift():
     baseline_lines = [
         _dur_line(0.0, 1.98, "Guess who's back, back again?"),
