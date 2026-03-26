@@ -547,6 +547,41 @@ def _best_truncated_followup_target(
     return best_target
 
 
+def _leading_light_token_slot_sec(line: models.Line) -> float:
+    if len(line.words) < 2:
+        return 0.0
+    return max(line.words[1].start_time - line.start_time, 0.0)
+
+
+def _truncated_followup_boundary_targets(
+    *,
+    prev_line: models.Line | None,
+    line: models.Line,
+    content_anchor_start: float,
+    min_gap: float,
+    max_leading_slot_sec: float,
+    max_prev_overlap_sec: float,
+    min_prev_duration_sec: float,
+    min_current_duration_sec: float,
+) -> tuple[float | None, float]:
+    if prev_line is None or not prev_line.words:
+        return None, content_anchor_start
+    if prev_line.end_time < content_anchor_start - max_prev_overlap_sec:
+        return None, content_anchor_start
+
+    leading_slot = min(_leading_light_token_slot_sec(line), max_leading_slot_sec)
+    if leading_slot <= 0.0:
+        return None, content_anchor_start
+
+    target_start = content_anchor_start - leading_slot
+    target_prev_end = target_start - min_gap
+    if target_prev_end <= prev_line.start_time + min_prev_duration_sec:
+        return None, content_anchor_start
+    if line.end_time <= target_start + min_current_duration_sec:
+        return None, content_anchor_start
+    return target_prev_end, target_start
+
+
 def reanchor_truncated_followup_lines_from_phonetic_variants(
     mapped_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
@@ -556,13 +591,16 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
     min_content_similarity: float = 0.55,
     min_tail_similarity: float = 0.6,
     min_gap: float = 0.05,
+    max_leading_slot_sec: float = 0.24,
+    max_prev_overlap_sec: float = 0.12,
+    min_prev_duration_sec: float = 0.8,
+    min_current_duration_sec: float = 0.9,
 ) -> tuple[List[models.Line], int]:
     updated = list(mapped_lines)
     applied = 0
     for idx, line in enumerate(updated):
-        prev_end = (
-            updated[idx - 1].end_time if idx > 0 and updated[idx - 1].words else None
-        )
+        prev_line = updated[idx - 1] if idx > 0 and updated[idx - 1].words else None
+        prev_end = prev_line.end_time if prev_line is not None else None
         best_target = _best_truncated_followup_target(
             line=line,
             whisper_words=whisper_words,
@@ -575,7 +613,19 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
         )
         if best_target is None:
             continue
-        updated[idx] = rescale_line_to_new_start(line, best_target)
+        target_prev_end, target_start = _truncated_followup_boundary_targets(
+            prev_line=prev_line,
+            line=line,
+            content_anchor_start=best_target,
+            min_gap=min_gap,
+            max_leading_slot_sec=max_leading_slot_sec,
+            max_prev_overlap_sec=max_prev_overlap_sec,
+            min_prev_duration_sec=min_prev_duration_sec,
+            min_current_duration_sec=min_current_duration_sec,
+        )
+        if target_prev_end is not None and prev_line is not None:
+            updated[idx - 1] = _rescale_line_to_new_end(prev_line, target_prev_end)
+        updated[idx] = rescale_line_to_new_start(line, target_start)
         applied += 1
     return updated, applied
 

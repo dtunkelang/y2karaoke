@@ -620,3 +620,33 @@ Most likely next inspection targets:
 - next best target:
   - `Rap God` or `Taste`
   - `Con Calma` still has residual miss on line 12 end, but the remaining gain looks smaller and riskier now
+
+## 2026-03-26 Con Calma leading-token boundary keep
+
+- kept follow-on change:
+  - extended `reanchor_truncated_followup_lines_from_phonetic_variants()` in [whisper_integration_align_experimental.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_align_experimental.py)
+  - when the truncated followup is reanchored from a phonetic content match, the helper can now reserve a small capped slot for the one leading light token and pull the previous line end back with it
+  - this is intentionally narrow:
+    - previous line must still end almost on top of the content-anchor start
+    - the leading light-token slot is capped at `0.24s`
+    - both adjusted lines must still keep plausible minimum durations
+- why it worked:
+  - after the earlier phonetic reanchor, corrected `Con Calma` still split the pair at `28.56 -> 28.64`
+  - that was still too late for the verified gold handoff even though the phonetic anchor itself was right
+  - the useful fix was not another better phonetic match; it was giving `De` a small amount of real time and moving the line-11/line-12 boundary with it
+- kept results:
+  - focused `Con Calma|Taste` rerun improved again in `benchmarks/results/20260326T184109Z`
+  - `Con Calma`: `0.3978 / 0.3940 -> 0.3911 / 0.3898`
+  - `Taste` stayed flat at `0.2080 / 0.2730`
+  - broad cached canary improved in `benchmarks/results/20260326T184212Z`
+  - broad aggregate `avg_abs_word_start_delta_sec_word_weighted_mean`: `0.2352 -> 0.2340`
+  - all 11 controls stayed flat
+  - live pair shape after the keep:
+    - line 11 end moved to `28.35`
+    - line 12 start moved to `28.40`
+- negative learning:
+  - the earlier `Con Calma` helpers solved the carryover and phonetic-content anchor, but they still left a too-late internal pair boundary
+  - the remaining gain came from boundary placement, not from broader lexical remapping
+- next best target:
+  - `Taste` if we want the cleaner lower-risk path
+  - `Con Calma` only if there is a very specific line-12 end/tail idea, because the remaining miss is getting small and brittle

@@ -648,7 +648,14 @@ def test_rebalance_short_followup_boundaries_from_whisper_skips_without_prior_ca
 
 def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_con_calma_tail():
     lines = [
-        Line(words=[Word(text="prev", start_time=26.62, end_time=28.56)]),
+        Line(
+            words=[
+                Word(text="Que", start_time=26.62, end_time=27.068),
+                Word(text="ganas", start_time=27.117, end_time=27.565),
+                Word(text="me", start_time=27.615, end_time=28.063),
+                Word(text="dan-dan-dan", start_time=28.112, end_time=28.56),
+            ]
+        ),
         Line(
             words=[
                 Word(text="De", start_time=28.889, end_time=29.216),
@@ -668,7 +675,8 @@ def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_con_calm
     )
 
     assert applied == 1
-    assert adjusted[1].start_time == pytest.approx(28.64, abs=0.01)
+    assert adjusted[0].end_time == pytest.approx(28.35, abs=0.01)
+    assert adjusted[1].start_time == pytest.approx(28.40, abs=0.01)
 
 
 def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_non_truncated_lines():
