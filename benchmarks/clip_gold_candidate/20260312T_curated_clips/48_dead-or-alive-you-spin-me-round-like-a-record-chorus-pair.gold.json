@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0",
+  "title": "You Spin Me Round (Like a Record)",
+  "artist": "Dead or Alive",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/xyQC_PXL1G4/trimmed_from_62.00s_for_8.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "You spin me right round, baby, right round",
+      "start": 0.8,
+      "end": 4.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 0.8,
+          "end": 1.15
+        },
+        {
+          "word_index": 2,
+          "text": "spin",
+          "start": 1.15,
+          "end": 1.65
+        },
+        {
+          "word_index": 3,
+          "text": "me",
+          "start": 1.65,
+          "end": 2.15
+        },
+        {
+          "word_index": 4,
+          "text": "right",
+          "start": 2.15,
+          "end": 2.65
+        },
+        {
+          "word_index": 5,
+          "text": "round,",
+          "start": 2.65,
+          "end": 3.15
+        },
+        {
+          "word_index": 6,
+          "text": "baby,",
+          "start": 3.15,
+          "end": 3.7
+        },
+        {
+          "word_index": 7,
+          "text": "right",
+          "start": 3.7,
+          "end": 4.15
+        },
+        {
+          "word_index": 8,
+          "text": "round",
+          "start": 4.15,
+          "end": 4.6
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "Like a record, baby, right round, round, round",
+      "start": 4.7,
+      "end": 8.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Like",
+          "start": 4.7,
+          "end": 4.95
+        },
+        {
+          "word_index": 2,
+          "text": "a",
+          "start": 4.95,
+          "end": 5.2
+        },
+        {
+          "word_index": 3,
+          "text": "record,",
+          "start": 5.2,
+          "end": 5.65
+        },
+        {
+          "word_index": 4,
+          "text": "baby,",
+          "start": 5.65,
+          "end": 6.05
+        },
+        {
+          "word_index": 5,
+          "text": "right",
+          "start": 6.05,
+          "end": 6.6
+        },
+        {
+          "word_index": 6,
+          "text": "round,",
+          "start": 6.6,
+          "end": 7.1
+        },
+        {
+          "word_index": 7,
+          "text": "round,",
+          "start": 7.1,
+          "end": 7.6
+        },
+        {
+          "word_index": 8,
+          "text": "round",
+          "start": 7.6,
+          "end": 8.05
+        }
+      ]
+    }
+  ]
+}

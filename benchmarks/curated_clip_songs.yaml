@@ -719,3 +719,24 @@ songs:
     Shout, shout
     Let it all out
     These are the things I can do without
+
+- title: You Spin Me Round (Like a Record)
+  artist: Dead or Alive
+  clip_id: chorus-pair
+  clip_tags:
+  - stress
+  - sparse-support
+  - backing-echo
+  - chorus
+  youtube_url: https://www.youtube.com/watch?v=xyQC_PXL1G4
+  youtube_id: xyQC_PXL1G4
+  audio_start_sec: 62
+  clip_duration_sec: 8
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Echo-heavy chorus pair for zero-local-support followup timing stress.
+  slug: dead-or-alive-you-spin-me-round-like-a-record-chorus-pair
+  lyrics: |
+    You spin me right round, baby, right round
+    Like a record, baby, right round, round, round
