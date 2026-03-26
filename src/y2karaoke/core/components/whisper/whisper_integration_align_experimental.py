@@ -354,28 +354,28 @@ def _latest_supported_whisper_end(
     search_end: float,
 ) -> float | None:
     token_variants: set[str] = set()
-    for word in line.words:
-        normalized = re.sub(r"[^a-z]+", "", word.text.lower())
+    for line_word in line.words:
+        normalized = re.sub(r"[^a-z]+", "", line_word.text.lower())
         if normalized:
             token_variants.add(normalized)
-        for fragment in re.split(r"[^a-z]+", word.text.lower()):
+        for fragment in re.split(r"[^a-z]+", line_word.text.lower()):
             if fragment:
                 token_variants.add(fragment)
     if not token_variants:
         return None
     latest_end: float | None = None
-    for word in whisper_words:
-        token = re.sub(r"[^a-z]+", "", word.text.lower())
-        if word.text == "[VOCAL]" or not token:
+    for whisper_word in whisper_words:
+        token = re.sub(r"[^a-z]+", "", whisper_word.text.lower())
+        if whisper_word.text == "[VOCAL]" or not token:
             continue
-        if word.start < search_start or word.end > search_end:
+        if whisper_word.start < search_start or whisper_word.end > search_end:
             continue
         if not any(
             _tokens_match_with_short_fragment_stemming(line_token, token)
             for line_token in token_variants
         ):
             continue
-        latest_end = float(word.end)
+        latest_end = float(whisper_word.end)
     return latest_end
 
 
