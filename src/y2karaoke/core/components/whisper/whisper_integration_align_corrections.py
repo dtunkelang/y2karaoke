@@ -7,6 +7,7 @@ from typing import Any, Callable, List, Optional
 from ... import models
 from ..alignment import timing_models
 from .whisper_integration_align_experimental import (
+    reanchor_late_compact_repetitive_tail_lines_to_later_onsets as _reanchor_late_compact_tail,
     reanchor_late_supported_lines_to_earlier_whisper as _reanchor_late_supported_lines_to_earlier_whisper,
     reanchor_light_leading_lines_to_content_words as _reanchor_light_leading_lines_to_content_words,
     reanchor_low_support_lines_to_later_onset as _reanchor_low_support_lines_to_later_onset,
@@ -347,6 +348,26 @@ def _apply_audio_reanchor_corrections(
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
         stage="after_shift_restored_low_support_runs_to_onset",
+    )
+
+    mapped_lines, late_compact_tail_reanchors = (
+        _reanchor_late_compact_tail(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+            audio_features,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        late_compact_tail_reanchors,
+        "Reanchored {count} late compact repetitive tail line(s) to later audio onsets",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_reanchor_late_compact_repetitive_tail_lines_to_later_onsets",
     )
 
     mapped_lines, earlier_whisper_reanchors = (

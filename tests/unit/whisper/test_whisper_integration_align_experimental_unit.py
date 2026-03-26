@@ -357,6 +357,138 @@ def test_shift_restored_low_support_runs_to_onset_allows_late_compact_repetitive
     assert adjusted[5].start_time == pytest.approx(13.991, abs=0.01)
 
 
+def test_reanchor_late_compact_repetitive_tail_lines_to_later_onsets_hits_houdini_suffix():
+    baseline = [
+        Line(words=[Word(text="lead", start_time=8.46, end_time=9.94)]),
+        Line(
+            words=[
+                Word(text="Guess", start_time=9.948, end_time=10.194),
+                Word(text="who's", start_time=10.194, end_time=10.441),
+                Word(text="back?", start_time=10.441, end_time=10.687),
+                Word(text="Guess", start_time=10.687, end_time=10.934),
+                Word(text="who's", start_time=10.934, end_time=11.18),
+                Word(text="back?", start_time=11.18, end_time=11.426),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=11.436, end_time=11.686),
+                Word(text="who's", start_time=11.686, end_time=11.936),
+                Word(text="back?", start_time=11.936, end_time=12.186),
+                Word(text="Guess", start_time=12.186, end_time=12.436),
+                Word(text="who's", start_time=12.436, end_time=12.686),
+                Word(text="back?", start_time=12.686, end_time=12.936),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=13.387, end_time=13.858),
+                Word(text="who's", start_time=13.858, end_time=14.329),
+                Word(text="back?", start_time=14.329, end_time=14.801),
+            ]
+        ),
+    ]
+    shifted = [
+        baseline[0],
+        Line(
+            words=[
+                Word(text="Guess", start_time=10.356, end_time=10.708),
+                Word(text="who's", start_time=10.708, end_time=11.06),
+                Word(text="back?", start_time=11.06, end_time=11.412),
+                Word(text="Guess", start_time=11.412, end_time=11.763),
+                Word(text="who's", start_time=11.763, end_time=11.789),
+                Word(text="back?", start_time=11.789, end_time=11.834),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=11.844, end_time=12.298),
+                Word(text="who's", start_time=12.298, end_time=12.753),
+                Word(text="back?", start_time=12.753, end_time=13.207),
+                Word(text="Guess", start_time=13.207, end_time=13.253),
+                Word(text="who's", start_time=13.253, end_time=13.284),
+                Word(text="back?", start_time=13.284, end_time=13.344),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Guess", start_time=13.795, end_time=14.234),
+                Word(text="who's", start_time=14.283, end_time=14.722),
+                Word(text="back?", start_time=14.77, end_time=15.209),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="[VOCAL]", start=11.0, end=11.1, probability=0.9)
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array(
+            [11.749, 11.842, 11.958, 12.399, 12.794, 13.723, 14.257, 14.35, 14.768],
+            dtype=float,
+        ),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=20.0,
+        duration=20.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    adjusted, applied = (
+        wiaexp.reanchor_late_compact_repetitive_tail_lines_to_later_onsets(
+            shifted,
+            baseline,
+            whisper_words,
+            audio_features,
+        )
+    )
+
+    assert applied == 2
+    assert adjusted[1].start_time == pytest.approx(10.356, abs=0.01)
+    assert adjusted[2].start_time == pytest.approx(12.399, abs=0.01)
+    assert adjusted[3].start_time == pytest.approx(14.257, abs=0.01)
+
+
+def test_reanchor_late_compact_repetitive_tail_lines_to_later_onsets_skips_non_tail_gap():
+    baseline = [
+        Line(words=[Word(text="lead", start_time=8.46, end_time=9.94)]),
+        Line(words=[Word(text="Guess", start_time=11.436, end_time=12.936)]),
+        Line(words=[Word(text="Guess", start_time=13.387, end_time=14.801)]),
+        Line(words=[Word(text="next", start_time=15.1, end_time=15.6)]),
+    ]
+    shifted = [
+        baseline[0],
+        Line(words=[Word(text="Guess", start_time=11.844, end_time=13.344)]),
+        Line(words=[Word(text="Guess", start_time=13.795, end_time=15.209)]),
+        baseline[3],
+    ]
+    whisper_words = [
+        TranscriptionWord(text="[VOCAL]", start=11.0, end=11.1, probability=0.9)
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([12.399, 14.257], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=20.0,
+        duration=20.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    adjusted, applied = (
+        wiaexp.reanchor_late_compact_repetitive_tail_lines_to_later_onsets(
+            shifted,
+            baseline,
+            whisper_words,
+            audio_features,
+        )
+    )
+
+    assert applied == 0
+    assert adjusted[1].start_time == pytest.approx(11.844, abs=0.01)
+    assert adjusted[2].start_time == pytest.approx(13.795, abs=0.01)
+
+
 def test_reanchor_light_leading_lines_to_content_words_moves_supported_content_later():
     lines = [
         Line(words=[Word(text="prev", start_time=21.63, end_time=23.82)]),

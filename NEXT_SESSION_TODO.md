@@ -17,6 +17,17 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - The main reference doc is `docs/tech_debt_backlog.md`.
 - The main structure doc is `ARCHITECTURE.md`.
 - The active work is quality iteration on curated short clips, not further broad architecture cleanup.
+- Latest kept quality win:
+  - `Houdini` improved from `0.2209s / 0.2394s` to `0.1683s / 0.2164s` in `benchmarks/results/20260326T042945Z`
+  - focused 4-song canary improved from `0.2160s` in `20260325T210658Z` to `0.1970s` in `20260326T043025Z`
+  - broad cached canary improved from `0.2050s` in `20260325T231558Z` to `0.2010s` in `20260326T043136Z`
+  - driver: after `shift_restored_low_support_runs_to_onset()` moves the repeated `Houdini` tail as a block, a new narrow suffix-tail onset reanchor can move only the late compact repeated tail lines further right while preserving their ends
+- Latest negative learning:
+  - preserving the mapped repeated tail through `_constrain_line_starts_to_baseline()` was a false lead and regressed `Houdini` badly to `0.442s` in `benchmarks/results/20260326T042027Z`
+  - implication: the baseline snap itself is not the right intervention target; the usable signal is downstream in the low-support onset repair layer
+- Current blocker after the kept `Houdini` win:
+  - `Rap God` is still the highest remaining broad-return target, but stage tracing currently yields no useful snapshots on the live path and repeated handoff-style probes still show zero live effect
+  - next session should start with instrumentation that proves which live stage family owns the line-1/line-2 boundary miss before any new repair is attempted
 
 ## Next Week Plan
 
