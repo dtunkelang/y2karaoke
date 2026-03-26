@@ -21,6 +21,9 @@ from .whisper_forced_prefix_repairs import (
 from .whisper_forced_tail_repairs import (
     extend_low_score_forced_line_tails_from_source as _extend_low_score_forced_line_tails_from_source,
 )
+from .whisper_forced_sparse_followup_repairs import (
+    restore_sparse_forced_followup_lines_from_source as _restore_sparse_forced_followup_lines_from_source,
+)
 from .whisper_forced_word_redistribution import (
     redistribute_line_with_word_weights as _redistribute_line_with_word_weights,
     sustained_word_layout_weights as _sustained_word_layout_weights,
@@ -1327,6 +1330,18 @@ def attempt_whisperx_forced_alignment(
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
         enforce_non_overlapping_lines_fn=enforce_non_overlapping_lines_fn,
     )
+    forced_lines, restored_sparse_followups = (
+        _restore_sparse_forced_followup_lines_from_source(
+            baseline_lines,
+            forced_lines,
+            aligned_segments,
+        )
+    )
+    if restored_sparse_followups:
+        logger.info(
+            "Restored %d sparse forced followup line(s) from source timing",
+            restored_sparse_followups,
+        )
     forced_lines, extended_low_score_tails = (
         _extend_low_score_forced_line_tails_from_source(
             baseline_lines,

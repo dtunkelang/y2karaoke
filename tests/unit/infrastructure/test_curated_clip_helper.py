@@ -104,3 +104,88 @@ def test_gold_path_bootstraps_from_default_gold_root(
     assert resolved == clip_root / f"45_{slug}.gold.json"
     assert resolved.exists()
     assert resolved.read_text(encoding="utf-8") == '{"title": "seed"}\n'
+
+
+def test_ensure_clip_audio_transcodes_non_wav_sources(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cache_dir = tmp_path / "cache"
+    source = cache_dir / "clip.webm"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_bytes(b"fake")
+    clip_path = cache_dir / "trimmed_from_79.00s_for_12.00s.wav"
+
+    monkeypatch.setattr(
+        _MODULE, "_canonical_trimmed_clip_path", lambda _song: clip_path
+    )
+    monkeypatch.setattr(_MODULE, "_source_audio_candidates", lambda _song: [source])
+
+    captured: dict[str, object] = {}
+
+    def _run(cmd: list[str], **kwargs: object) -> None:
+        captured["cmd"] = cmd
+        clip_path.with_suffix(".tmp.wav").write_bytes(b"x" * 128)
+
+    monkeypatch.setattr(_MODULE.subprocess, "run", _run)
+
+    song = {"audio_start_sec": 79, "clip_duration_sec": 12}
+    resolved = _MODULE._ensure_clip_audio(song)
+
+    assert resolved == clip_path
+    assert captured["cmd"] == [
+        "ffmpeg",
+        "-y",
+        "-ss",
+        "79",
+        "-t",
+        "12",
+        "-i",
+        str(source),
+        "-vn",
+        "-acodec",
+        "pcm_s16le",
+        "-f",
+        "wav",
+        str(clip_path.with_suffix(".tmp.wav")),
+    ]
+
+
+def test_ensure_clip_audio_copies_wav_sources(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cache_dir = tmp_path / "cache"
+    source = cache_dir / "clip.wav"
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_bytes(b"fake")
+    clip_path = cache_dir / "trimmed_from_79.00s_for_12.00s.wav"
+
+    monkeypatch.setattr(
+        _MODULE, "_canonical_trimmed_clip_path", lambda _song: clip_path
+    )
+    monkeypatch.setattr(_MODULE, "_source_audio_candidates", lambda _song: [source])
+
+    captured: dict[str, object] = {}
+
+    def _run(cmd: list[str], **kwargs: object) -> None:
+        captured["cmd"] = cmd
+        clip_path.with_suffix(".tmp.wav").write_bytes(b"x" * 128)
+
+    monkeypatch.setattr(_MODULE.subprocess, "run", _run)
+
+    song = {"audio_start_sec": 79, "clip_duration_sec": 12}
+    resolved = _MODULE._ensure_clip_audio(song)
+
+    assert resolved == clip_path
+    assert captured["cmd"] == [
+        "ffmpeg",
+        "-y",
+        "-ss",
+        "79",
+        "-t",
+        "12",
+        "-i",
+        str(source),
+        "-c",
+        "copy",
+        str(clip_path.with_suffix(".tmp.wav")),
+    ]

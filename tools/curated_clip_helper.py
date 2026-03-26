@@ -156,7 +156,7 @@ def _source_audio_candidates(song: dict[str, object]) -> list[Path]:
 
 def _ensure_clip_audio(song: dict[str, object]) -> Path:
     clip_path = _canonical_trimmed_clip_path(song)
-    if clip_path.exists():
+    if clip_path.exists() and clip_path.stat().st_size > 44:
         return clip_path
 
     source = next(
@@ -171,24 +171,33 @@ def _ensure_clip_audio(song: dict[str, object]) -> Path:
     start = float(song.get("audio_start_sec") or 0.0)
     duration = float(song.get("clip_duration_sec") or 0.0)
     clip_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_clip_path = clip_path.with_suffix(".tmp.wav")
+    if tmp_clip_path.exists():
+        tmp_clip_path.unlink()
+    ffmpeg_cmd = [
+        "ffmpeg",
+        "-y",
+        "-ss",
+        f"{start:g}",
+        "-t",
+        f"{duration:g}",
+        "-i",
+        str(source),
+    ]
+    if source.suffix.lower() == ".wav":
+        ffmpeg_cmd.extend(["-c", "copy"])
+    else:
+        ffmpeg_cmd.extend(["-vn", "-acodec", "pcm_s16le", "-f", "wav"])
+    ffmpeg_cmd.append(str(tmp_clip_path))
     subprocess.run(
-        [
-            "ffmpeg",
-            "-y",
-            "-ss",
-            f"{start:g}",
-            "-t",
-            f"{duration:g}",
-            "-i",
-            str(source),
-            "-c",
-            "copy",
-            str(clip_path),
-        ],
+        ffmpeg_cmd,
         check=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
+    if not tmp_clip_path.exists() or tmp_clip_path.stat().st_size <= 44:
+        raise RuntimeError(f"Failed to generate valid clip audio at {tmp_clip_path}")
+    tmp_clip_path.replace(clip_path)
     return clip_path
 
 
@@ -212,7 +221,11 @@ def _update_gold_audio_path(gold_path: Path, audio_path: Path) -> None:
                     rebuilt_words = []
                     for word_index, token in enumerate(tokens, start=1):
                         word_start = start + (word_index - 1) * step
-                        word_end = end if word_index == len(tokens) else start + word_index * step
+                        word_end = (
+                            end
+                            if word_index == len(tokens)
+                            else start + word_index * step
+                        )
                         rebuilt_words.append(
                             {
                                 "word_index": word_index,

@@ -677,3 +677,19 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Low-energy conversational opening verse clip for subtle onset and phrasing timing.
+
+- title: Everybody Wants to Rule the World
+  artist: Tears for Fears
+  clip_id: freedom-pleasure
+  clip_tags:
+  - stress
+  - sparse-support
+  - backing-echo
+  youtube_url: https://www.youtube.com/watch?v=awoFZaSuko4
+  youtube_id: awoFZaSuko4
+  audio_start_sec: 79
+  clip_duration_sec: 12
+  slug: tears-for-fears-everybody-wants-to-rule-the-world-freedom-pleasure
+  lyrics: |
+    Help me make the most of freedom and of pleasure
+    Nothing ever lasts forever

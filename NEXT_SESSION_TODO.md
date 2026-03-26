@@ -1,6 +1,6 @@
 # Next Session TODO
 
-Last updated: 2026-03-25
+Last updated: 2026-03-26
 
 Use this file as a session handoff, not as a second backlog.
 
@@ -18,9 +18,20 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - The main structure doc is `ARCHITECTURE.md`.
 - The active work is quality iteration on curated short clips, not further broad architecture cleanup.
 - Latest kept quality win:
+  - new sparse companion clip added: `Everybody Wants to Rule the World` (`freedom-pleasure`)
+  - focused pack `Take On Me|Total Eclipse|Everybody Wants to Rule the World` in `benchmarks/results/20260326T202403Z`
+  - result: `Everybody Wants to Rule the World` improved from `0.5471s / 0.7564s` in `20260326T201642Z` to effectively exact gold timing after a narrow sparse-followup forced-alignment restore
+  - driver: accepted WhisperX can collapse a weakly supported followup line onto the tail of a long supported previous line; a new post-finalize forced repair now restores only those collapsed low-score followup lines from source timing when the previous line is long and well-supported
+- Latest workflow quality fix:
+  - `tools/curated_clip_helper.py` now transcodes non-WAV cached downloads to valid PCM WAV clips instead of trying to `-c copy` `.webm` audio into a `.wav` container
+  - this fixed Chrome editor playback for newly curated clips like `Everybody Wants to Rule the World`
+- Latest kept quality win:
   - `Rap God|Royals` improved from `0.213s` in `benchmarks/results/20260326T044631Z` to `0.195s` in `benchmarks/results/20260326T045058Z`
   - driver: timing reports were being written after `_apply_splash_offset()`, which added a presentation-only global delay to benchmarked starts; reports now use the pre-splash line set while rendered karaoke keeps the splash offset
   - concrete `Rap God` effect: line 1 now reports `0.40-2.95` instead of `0.50-3.05`, and line 2 now reports `2.99-4.09` instead of `3.09-4.18`
+- Latest negative learning:
+  - `Take On Me` did not respond to minor gold tightening, and the new Tears companion shows the deeper family more clearly
+  - implication: the remaining sparse-support issue is not just slightly loose gold boundaries; it is lead/echo ambiguity plus collapsed accepted forced followup timing
 - Latest kept quality win:
   - `Houdini` improved from `0.2209s / 0.2394s` to `0.1683s / 0.2164s` in `benchmarks/results/20260326T042945Z`
   - focused 4-song canary improved from `0.2160s` in `20260325T210658Z` to `0.1970s` in `20260326T043025Z`
