@@ -587,3 +587,36 @@ Most likely next inspection targets:
 - next best target:
   - `Con Calma` line 12 if a clean lexical variant strategy can be proven
   - otherwise pivot back to the next broad-return clip with real support, likely `Taste` or `Rap God`
+
+## 2026-03-26 Con Calma truncated-tail phonetic keep
+
+- kept follow-on change:
+  - added `reanchor_truncated_followup_lines_from_phonetic_variants()` in [whisper_integration_align_experimental.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_align_experimental.py)
+  - wired it into [whisper_integration_align_corrections.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_align_corrections.py) immediately after the short-followup boundary rebalance
+  - this helper is intentionally narrow:
+    - line has at most 3 words
+    - exactly one light leading token
+    - final token is truncated with `...`
+    - content token must have phonetic similarity to an earlier Whisper word
+    - truncated tail token must also phonetically match the following Whisper word
+- why it worked:
+  - on corrected `Con Calma`, line 12 is `De guayarte, ma...`
+  - Whisper still hears `degollarte mami`
+  - phonetic similarity is strong enough to justify a narrow reanchor:
+    - `guayarte` vs `degollarte` about `0.56`
+    - `ma` vs `mami` about `0.67`
+  - the helper pulls line 12 from the baseline-ish late start `28.889` back to the supported variant start `28.64`
+- kept results:
+  - focused `Con Calma|Taste` rerun improved again in `benchmarks/results/20260326T174540Z`
+  - `Con Calma`: `0.4019 / 0.3951 -> 0.3978 / 0.3940`
+  - line 12 start improved from `+0.49s` late to `+0.24s`
+  - `Taste` stayed flat at `0.2080 / 0.2730`
+  - broad cached canary improved again in `benchmarks/results/20260326T174631Z`
+  - broad aggregate `avg_abs_word_start_delta_sec_word_weighted_mean`: `0.2362 -> 0.2352`
+  - broad aggregate `gold_end_mean_abs_sec_mean`: `0.2694 -> 0.2693`
+  - all 11 controls stayed flat
+- negative learning:
+  - a generic lexical-overlap helper would not have reached this case safely; the useful signal here was the combination of truncation plus phonetic variant support, not ordinary token overlap
+- next best target:
+  - `Rap God` or `Taste`
+  - `Con Calma` still has residual miss on line 12 end, but the remaining gain looks smaller and riskier now

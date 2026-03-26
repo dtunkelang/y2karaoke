@@ -644,3 +644,52 @@ def test_rebalance_short_followup_boundaries_from_whisper_skips_without_prior_ca
     assert applied == 0
     assert adjusted[0].end_time == pytest.approx(lines[0].end_time, abs=0.01)
     assert adjusted[1].start_time == pytest.approx(lines[1].start_time, abs=0.01)
+
+
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_con_calma_tail():
+    lines = [
+        Line(words=[Word(text="prev", start_time=26.62, end_time=28.56)]),
+        Line(
+            words=[
+                Word(text="De", start_time=28.889, end_time=29.216),
+                Word(text="guayarte,", start_time=29.252, end_time=29.58),
+                Word(text="ma...", start_time=29.616, end_time=29.944),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="dam,", start=28.22, end=28.56, probability=0.9),
+        TranscriptionWord(text="degollarte", start=28.64, end=29.3, probability=0.9),
+        TranscriptionWord(text="mami.", start=29.3, end=29.98, probability=0.9),
+    ]
+
+    adjusted, applied = wiaexp.reanchor_truncated_followup_lines_from_phonetic_variants(
+        lines, whisper_words
+    )
+
+    assert applied == 1
+    assert adjusted[1].start_time == pytest.approx(28.64, abs=0.01)
+
+
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_non_truncated_lines():
+    lines = [
+        Line(words=[Word(text="prev", start_time=26.62, end_time=28.56)]),
+        Line(
+            words=[
+                Word(text="De", start_time=28.889, end_time=29.216),
+                Word(text="guayarte,", start_time=29.252, end_time=29.58),
+                Word(text="mami,", start_time=29.616, end_time=29.944),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="degollarte", start=28.64, end=29.3, probability=0.9),
+        TranscriptionWord(text="mami.", start=29.3, end=29.98, probability=0.9),
+    ]
+
+    adjusted, applied = wiaexp.reanchor_truncated_followup_lines_from_phonetic_variants(
+        lines, whisper_words
+    )
+
+    assert applied == 0
+    assert adjusted[1].start_time == pytest.approx(lines[1].start_time, abs=0.01)
