@@ -754,6 +754,86 @@ def reanchor_low_support_lines_to_later_onset(
     return updated, applied
 
 
+def _late_compact_tail_line_is_eligible(
+    *,
+    idx: int,
+    limit: int,
+    line: models.Line,
+    baseline: models.Line,
+    prev_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    min_shift_from_baseline_sec: float,
+    max_shift_from_baseline_sec: float,
+    max_lexical_overlap_ratio: float,
+    max_gap_from_prev_sec: float,
+) -> bool:
+    if not line.words or not baseline.words or not prev_line.words:
+        return False
+    if len(line.words) < 3 or len(line.words) > 6:
+        return False
+    shift_from_baseline = line.start_time - baseline.start_time
+    if (
+        shift_from_baseline < min_shift_from_baseline_sec
+        or shift_from_baseline > max_shift_from_baseline_sec
+    ):
+        return False
+    if line_token_overlap_ratio(prev_line, line) < 0.66:
+        return False
+    if (
+        idx != limit - 1
+        and line.start_time - prev_line.end_time > max_gap_from_prev_sec
+    ):
+        return False
+    if (
+        local_lexical_overlap_ratio(line, whisper_words, pad_before=0.7, pad_after=0.7)
+        > max_lexical_overlap_ratio
+    ):
+        return False
+    if count_non_vocal_words_near_time(whisper_words, line.start_time, window_sec=0.9):
+        return False
+    return True
+
+
+def _late_compact_tail_target_start(
+    *,
+    line: models.Line,
+    onset_times: Any,
+    min_shift_sec: float,
+    max_shift_sec: float,
+) -> float | None:
+    max_target_start = min(line.start_time + max_shift_sec, line.end_time - 0.35)
+    candidates = onset_times[
+        (onset_times >= line.start_time + min_shift_sec)
+        & (onset_times <= max_target_start)
+    ]
+    if len(candidates) == 0:
+        return None
+    return float(candidates[0])
+
+
+def _late_compact_tail_target_is_safe(
+    *,
+    line: models.Line,
+    prev_line: models.Line,
+    next_line: models.Line | None,
+    target_start: float,
+    min_gap: float,
+    min_duration_sec: float,
+    min_duration_per_word_sec: float,
+) -> bool:
+    if target_start < prev_line.end_time + min_gap:
+        return False
+    if (
+        next_line is not None
+        and next_line.words
+        and target_start >= next_line.start_time
+    ):
+        return False
+    new_duration = line.end_time - target_start
+    min_duration = max(min_duration_sec, min_duration_per_word_sec * len(line.words))
+    return new_duration >= min_duration
+
+
 def reanchor_late_compact_repetitive_tail_lines_to_later_onsets(
     mapped_lines: List[models.Line],
     baseline_lines: List[models.Line],
@@ -784,57 +864,36 @@ def reanchor_late_compact_repetitive_tail_lines_to_later_onsets(
         baseline = baseline_lines[idx]
         prev_line = updated[idx - 1]
         next_line = updated[idx + 1] if idx + 1 < len(updated) else None
-        if not line.words or not baseline.words or not prev_line.words:
-            continue
-        if len(line.words) < 3 or len(line.words) > 6:
-            continue
-        shift_from_baseline = line.start_time - baseline.start_time
-        if (
-            shift_from_baseline < min_shift_from_baseline_sec
-            or shift_from_baseline > max_shift_from_baseline_sec
+        if not _late_compact_tail_line_is_eligible(
+            idx=idx,
+            limit=limit,
+            line=line,
+            baseline=baseline,
+            prev_line=prev_line,
+            whisper_words=whisper_words,
+            min_shift_from_baseline_sec=min_shift_from_baseline_sec,
+            max_shift_from_baseline_sec=max_shift_from_baseline_sec,
+            max_lexical_overlap_ratio=max_lexical_overlap_ratio,
+            max_gap_from_prev_sec=max_gap_from_prev_sec,
         ):
             continue
-        if line_token_overlap_ratio(prev_line, line) < 0.66:
-            continue
-        if (
-            idx != limit - 1
-            and line.start_time - prev_line.end_time > max_gap_from_prev_sec
-        ):
-            continue
-        if (
-            local_lexical_overlap_ratio(
-                line, whisper_words, pad_before=0.7, pad_after=0.7
-            )
-            > max_lexical_overlap_ratio
-        ):
-            continue
-        if count_non_vocal_words_near_time(
-            whisper_words,
-            line.start_time,
-            window_sec=0.9,
-        ):
-            continue
-        max_target_start = min(line.start_time + max_shift_sec, line.end_time - 0.35)
-        candidates = onset_times[
-            (onset_times >= line.start_time + min_shift_sec)
-            & (onset_times <= max_target_start)
-        ]
-        if len(candidates) == 0:
-            continue
-        target_start = float(candidates[0])
-        if target_start < prev_line.end_time + min_gap:
-            continue
-        if (
-            next_line is not None
-            and next_line.words
-            and target_start >= next_line.start_time
-        ):
-            continue
-        new_duration = line.end_time - target_start
-        min_duration = max(
-            min_duration_sec, min_duration_per_word_sec * len(line.words)
+        target_start = _late_compact_tail_target_start(
+            line=line,
+            onset_times=onset_times,
+            min_shift_sec=min_shift_sec,
+            max_shift_sec=max_shift_sec,
         )
-        if new_duration < min_duration:
+        if target_start is None:
+            continue
+        if not _late_compact_tail_target_is_safe(
+            line=line,
+            prev_line=prev_line,
+            next_line=next_line,
+            target_start=target_start,
+            min_gap=min_gap,
+            min_duration_sec=min_duration_sec,
+            min_duration_per_word_sec=min_duration_per_word_sec,
+        ):
             continue
         updated[idx] = rescale_line_to_new_start(line, target_start)
         applied += 1
