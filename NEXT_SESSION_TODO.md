@@ -18,6 +18,10 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - The main structure doc is `ARCHITECTURE.md`.
 - The active work is quality iteration on curated short clips, not further broad architecture cleanup.
 - Latest kept quality win:
+  - `Rap God|Royals` improved from `0.213s` in `benchmarks/results/20260326T044631Z` to `0.195s` in `benchmarks/results/20260326T045058Z`
+  - driver: timing reports were being written after `_apply_splash_offset()`, which added a presentation-only global delay to benchmarked starts; reports now use the pre-splash line set while rendered karaoke keeps the splash offset
+  - concrete `Rap God` effect: line 1 now reports `0.40-2.95` instead of `0.50-3.05`, and line 2 now reports `2.99-4.09` instead of `3.09-4.18`
+- Latest kept quality win:
   - `Houdini` improved from `0.2209s / 0.2394s` to `0.1683s / 0.2164s` in `benchmarks/results/20260326T042945Z`
   - focused 4-song canary improved from `0.2160s` in `20260325T210658Z` to `0.1970s` in `20260326T043025Z`
   - broad cached canary improved from `0.2050s` in `20260325T231558Z` to `0.2010s` in `20260326T043136Z`
@@ -26,8 +30,8 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
   - preserving the mapped repeated tail through `_constrain_line_starts_to_baseline()` was a false lead and regressed `Houdini` badly to `0.442s` in `benchmarks/results/20260326T042027Z`
   - implication: the baseline snap itself is not the right intervention target; the usable signal is downstream in the low-support onset repair layer
 - Current blocker after the kept `Houdini` win:
-  - `Rap God` is still the highest remaining broad-return target, but stage tracing currently yields no useful snapshots on the live path and repeated handoff-style probes still show zero live effect
-  - next session should start with instrumentation that proves which live stage family owns the line-1/line-2 boundary miss before any new repair is attempted
+  - the old `Rap God` boundary mystery was partly diagnostic, not alignment: the clean forced-alignment boundary was being shifted later by splash offset before report serialization
+  - next session should rerank the broad cached canary from the new report baseline before taking another narrow alignment branch
 
 ## Next Week Plan
 

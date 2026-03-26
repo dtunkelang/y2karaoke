@@ -141,16 +141,18 @@ def generate_karaoke(
         lyrics_result["lines"], tempo_multiplier
     )
     scaled_lines = generator._apply_break_edits(scaled_lines, break_edits)
+    report_lines = fix_line_order(scaled_lines)
+    validate_line_order(report_lines)
     splash_min_start = 0.5 if whisper_map_lrc_dtw else 3.5
     scaled_lines = generator._apply_splash_offset(
-        scaled_lines, min_start=splash_min_start
+        report_lines, min_start=splash_min_start
     )
     scaled_lines = fix_line_order(scaled_lines)
     validate_line_order(scaled_lines)
 
     if timing_report_path:
         generator._write_timing_report(
-            scaled_lines,
+            report_lines,
             timing_report_path,
             final_title,
             final_artist,

@@ -350,13 +350,11 @@ def _apply_audio_reanchor_corrections(
         stage="after_shift_restored_low_support_runs_to_onset",
     )
 
-    mapped_lines, late_compact_tail_reanchors = (
-        _reanchor_late_compact_tail(
-            mapped_lines,
-            baseline_lines,
-            all_words,
-            audio_features,
-        )
+    mapped_lines, late_compact_tail_reanchors = _reanchor_late_compact_tail(
+        mapped_lines,
+        baseline_lines,
+        all_words,
+        audio_features,
     )
     _append_correction_if_any(
         corrections,

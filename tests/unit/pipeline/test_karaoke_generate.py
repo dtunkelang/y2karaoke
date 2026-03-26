@@ -174,3 +174,58 @@ def test_generate_instrumental_backgrounds_and_breaks(monkeypatch, tmp_path):
     assert captured["render"]["output_path"].name == "safe_karaoke.mp4"
     assert captured["render"]["lines"][0].start_time == pytest.approx(5.0)
     assert result["quality_level"] == "low"
+
+
+def test_generate_writes_timing_report_before_splash_offset(monkeypatch, tmp_path):
+    generator = KaraokeGenerator(cache_dir=tmp_path)
+    monkeypatch.setattr(generator.cache_manager, "auto_cleanup", lambda: None)
+
+    monkeypatch.setattr(
+        "y2karaoke.core.karaoke.trim_audio_if_needed", lambda *a, **k: "trimmed.wav"
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.karaoke.separate_vocals",
+        lambda *a, **k: {
+            "vocals_path": "vocals.wav",
+            "instrumental_path": "inst.wav",
+        },
+    )
+
+    lyrics_line = _line("hi", 0.4, 0.9)
+    captured = {}
+
+    def fake_write_timing_report(lines, *_args, **_kwargs):
+        captured["report_start"] = lines[0].start_time
+
+    def fake_render_video(**kwargs):
+        captured["render_start"] = kwargs["lines"][0].start_time
+
+    monkeypatch.setattr(generator, "_write_timing_report", fake_write_timing_report)
+
+    with generator.use_test_hooks(
+        download_audio_fn=lambda *a, **k: {
+            "audio_path": "audio.wav",
+            "title": "Title",
+            "artist": "Artist",
+        },
+        get_lyrics_fn=lambda *a, **k: {
+            "lines": [lyrics_line],
+            "metadata": {},
+            "quality": {
+                "overall_score": 85.0,
+                "issues": [],
+                "source": "src",
+                "alignment_method": "method",
+            },
+        },
+        render_video_fn=fake_render_video,
+    ):
+        generator.generate(
+            url="https://youtube.com/watch?v=test",
+            output_path=tmp_path / "out.mp4",
+            whisper_map_lrc_dtw=True,
+            timing_report_path=str(tmp_path / "report.json"),
+        )
+
+    assert captured["report_start"] == pytest.approx(0.4)
+    assert captured["render_start"] == pytest.approx(0.5)
