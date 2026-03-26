@@ -546,3 +546,44 @@ Most likely next inspection targets:
 - next broad-return target:
   - `Con Calma`, then `Taste`
   - `Rap God` is improved enough that it is no longer the cleanest next target
+
+## 2026-03-26 Con Calma corrected-tail keep
+
+- corrected gold first:
+  - [27_daddy-yankee-snow-con-calma-first-chorus-bilingual.gold.json](/Users/dtunkelang/y2karaoke/benchmarks/clip_gold_candidate/20260312T_curated_clips/27_daddy-yankee-snow-con-calma-first-chorus-bilingual.gold.json) line 12 now matches the actual clip cutoff as `De guayarte, ma...` ending at `30.05`
+  - this exposed the real tail miss instead of the old flattering overlong gold
+- what the corrected gold revealed:
+  - with the accurate `Con Calma` tail, the current pipeline was much worse than it looked
+  - focused rerun before new code: `0.4394 / 0.4301` in `benchmarks/results/20260326T165226Z`
+  - live tail shape after the gold fix:
+    - line 10 ended late at `27.245` vs gold `26.85`
+    - line 11 started late at `27.379` vs gold `26.85`
+    - line 12 started late at `28.889` vs gold `28.40`
+  - trace note: the mapped tail first jumped to absurd late interpolation (`37-41s`) and then `restore_weak_evidence_large_start_shifts()` snapped it back to the baseline-ish late shape; nothing later corrected the line-10/line-11 carryover
+- kept code change:
+  - added `rebalance_short_followup_boundaries_from_whisper()` in [whisper_integration_align_experimental.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_align_experimental.py)
+  - wired it into [whisper_integration_align_corrections.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_align_corrections.py) right after the light-leading reanchor pass
+  - the helper trims a long previous line back to its last locally supported Whisper end and pulls a short light-leading followup earlier from stemmed Whisper prefix support
+  - the repeated-fragment followup (`dan-dan-dan` vs Whisper `dam dam dam`) needed an extra short-fragment token matcher; the first version only improved line 11 start and was too weak on the tail
+- kept results:
+  - focused `Con Calma|Taste` rerun improved in `benchmarks/results/20260326T171739Z`
+  - `Con Calma`: `0.4394 / 0.4301 -> 0.4019 / 0.3951`
+  - `Taste` stayed flat at `0.2080 / 0.2730`
+  - broad cached canary with corrected gold finished in `benchmarks/results/20260326T171826Z`
+  - broad controls stayed flat:
+    - `Houdini` `0.1683 / 0.2164`
+    - `Sweet Caroline` `0.2154 / 0.2513`
+    - `Take On Me` `0.1513 / 0.3345`
+    - `Without Me` `0.1972 / 0.1969`
+    - `I Gotta Feeling` `0.1700 / 0.1446`
+    - `Time After Time` `0.1706 / 0.1457`
+    - `Total Eclipse of the Heart` `0.2016 / 0.3054`
+    - `Stayin' Alive` `0.1374 / 0.6253`
+    - `Rap God` `0.1994 / 0.1894`
+    - `Royals` `0.1882 / 0.1555`
+- still unresolved on `Con Calma`:
+  - line 12 is still late at about `+0.49s` on start
+  - local Whisper still hears the tail more like `degollarte mami` than the saved text, so the helper only safely fixed the line-10/line-11 carryover and left the line-12 lexical mismatch alone
+- next best target:
+  - `Con Calma` line 12 if a clean lexical variant strategy can be proven
+  - otherwise pivot back to the next broad-return clip with real support, likely `Taste` or `Rap God`

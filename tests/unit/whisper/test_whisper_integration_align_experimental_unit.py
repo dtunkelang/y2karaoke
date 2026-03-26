@@ -543,3 +543,104 @@ def test_reanchor_light_leading_lines_to_content_words_allows_light_stem_match()
 
     assert applied == 1
     assert adjusted[1].start_time == pytest.approx(27.12, abs=0.01)
+
+
+def test_rebalance_short_followup_boundaries_from_whisper_shifts_con_calma_tail():
+    lines = [
+        Line(words=[Word(text="prev", start_time=22.458, end_time=24.403)]),
+        Line(
+            words=[
+                Word(text="La", start_time=24.68, end_time=24.913),
+                Word(text="noche", start_time=24.939, end_time=25.172),
+                Word(text="es", start_time=25.198, end_time=25.431),
+                Word(text="de", start_time=25.457, end_time=25.69),
+                Word(text="nosotros,", start_time=25.716, end_time=25.95),
+                Word(text="tú", start_time=25.975, end_time=26.209),
+                Word(text="lo", start_time=26.235, end_time=26.468),
+                Word(text="sabe'", start_time=26.494, end_time=26.727),
+                Word(text="(You", start_time=26.753, end_time=26.986),
+                Word(text="know)", start_time=27.012, end_time=27.245),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Que", start_time=27.379, end_time=27.701),
+                Word(text="ganas", start_time=27.737, end_time=28.059),
+                Word(text="me", start_time=28.095, end_time=28.417),
+                Word(text="dan-dan-dan", start_time=28.453, end_time=28.775),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="De", start_time=28.889, end_time=29.216),
+                Word(text="guayarte,", start_time=29.252, end_time=29.58),
+                Word(text="ma...", start_time=29.616, end_time=29.944),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="la", start=24.1, end=24.6, probability=0.9),
+        TranscriptionWord(text="noche", start=24.6, end=24.86, probability=0.9),
+        TranscriptionWord(text="de", start=24.86, end=25.04, probability=0.9),
+        TranscriptionWord(text="nosotros", start=25.04, end=25.34, probability=0.9),
+        TranscriptionWord(text="tú", start=25.34, end=25.72, probability=0.9),
+        TranscriptionWord(text="lo", start=25.72, end=25.86, probability=0.9),
+        TranscriptionWord(text="sabes,", start=25.86, end=26.52, probability=0.9),
+        TranscriptionWord(text="que", start=26.62, end=27.12, probability=0.9),
+        TranscriptionWord(text="gana", start=27.12, end=27.48, probability=0.9),
+        TranscriptionWord(text="me", start=27.48, end=27.58, probability=0.9),
+        TranscriptionWord(text="dam", start=27.58, end=27.92, probability=0.9),
+        TranscriptionWord(text="dam", start=27.92, end=28.22, probability=0.9),
+        TranscriptionWord(text="dam,", start=28.22, end=28.56, probability=0.9),
+        TranscriptionWord(text="degollarte", start=28.64, end=29.3, probability=0.9),
+        TranscriptionWord(text="mami.", start=29.3, end=29.98, probability=0.9),
+    ]
+
+    adjusted, applied = wiaexp.rebalance_short_followup_boundaries_from_whisper(
+        lines, whisper_words
+    )
+
+    assert applied == 1
+    assert adjusted[1].end_time == pytest.approx(26.57, abs=0.01)
+    assert adjusted[2].start_time == pytest.approx(26.62, abs=0.01)
+    assert adjusted[2].end_time == pytest.approx(28.56, abs=0.01)
+
+
+def test_rebalance_short_followup_boundaries_from_whisper_skips_without_prior_carryover():
+    lines = [
+        Line(
+            words=[
+                Word(text="prev", start_time=24.1, end_time=24.8),
+                Word(text="line", start_time=24.8, end_time=25.4),
+                Word(text="ends", start_time=25.4, end_time=26.0),
+                Word(text="here", start_time=26.0, end_time=26.5),
+                Word(text="cleanly", start_time=26.5, end_time=26.9),
+                Word(text="already", start_time=26.9, end_time=27.1),
+                Word(text="today", start_time=27.1, end_time=27.2),
+                Word(text="now", start_time=27.2, end_time=27.25),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Que", start_time=27.379, end_time=27.701),
+                Word(text="ganas", start_time=27.737, end_time=28.059),
+                Word(text="me", start_time=28.095, end_time=28.417),
+                Word(text="dan-dan-dan", start_time=28.453, end_time=28.775),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="cleanly", start=26.5, end=26.9, probability=0.9),
+        TranscriptionWord(text="already", start=26.9, end=27.1, probability=0.9),
+        TranscriptionWord(text="que", start=27.3, end=27.6, probability=0.9),
+        TranscriptionWord(text="gana", start=27.6, end=27.9, probability=0.9),
+        TranscriptionWord(text="me", start=27.9, end=28.0, probability=0.9),
+    ]
+
+    adjusted, applied = wiaexp.rebalance_short_followup_boundaries_from_whisper(
+        lines, whisper_words
+    )
+
+    assert applied == 0
+    assert adjusted[0].end_time == pytest.approx(lines[0].end_time, abs=0.01)
+    assert adjusted[1].start_time == pytest.approx(lines[1].start_time, abs=0.01)

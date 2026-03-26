@@ -89,6 +89,46 @@ def rescale_line_to_new_start(line: models.Line, target_start: float) -> models.
     return models.Line(words=reanchored_words, singer=line.singer)
 
 
+def _rescale_line_to_new_end(line: models.Line, target_end: float) -> models.Line:
+    old_duration = line.end_time - line.start_time
+    new_duration = target_end - line.start_time
+    span = old_duration if old_duration > 0 else 1.0
+    reanchored_words: list[models.Word] = []
+    for word in line.words:
+        rel_start = (word.start_time - line.start_time) / span
+        rel_end = (word.end_time - line.start_time) / span
+        reanchored_words.append(
+            models.Word(
+                text=word.text,
+                start_time=line.start_time + rel_start * new_duration,
+                end_time=line.start_time + rel_end * new_duration,
+                singer=word.singer,
+            )
+        )
+    return models.Line(words=reanchored_words, singer=line.singer)
+
+
+def _rescale_line_to_new_bounds(
+    line: models.Line, target_start: float, target_end: float
+) -> models.Line:
+    old_duration = line.end_time - line.start_time
+    new_duration = target_end - target_start
+    span = old_duration if old_duration > 0 else 1.0
+    reanchored_words: list[models.Word] = []
+    for word in line.words:
+        rel_start = (word.start_time - line.start_time) / span
+        rel_end = (word.end_time - line.start_time) / span
+        reanchored_words.append(
+            models.Word(
+                text=word.text,
+                start_time=target_start + rel_start * new_duration,
+                end_time=target_start + rel_end * new_duration,
+                singer=word.singer,
+            )
+        )
+    return models.Line(words=reanchored_words, singer=line.singer)
+
+
 def line_text_key(line: models.Line) -> str:
     return " ".join(normalized_tokens(line))
 
@@ -126,6 +166,21 @@ def _tokens_match_with_light_stemming(
             break
         shared_prefix += 1
     return shared_prefix >= min_shared_prefix
+
+
+def _tokens_match_with_short_fragment_stemming(a: str, b: str) -> bool:
+    if _tokens_match_with_light_stemming(a, b):
+        return True
+    a_stem = _token_stem(a)
+    b_stem = _token_stem(b)
+    if min(len(a_stem), len(b_stem)) > 3:
+        return False
+    shared_prefix = 0
+    for a_ch, b_ch in zip(a_stem, b_stem):
+        if a_ch != b_ch:
+            break
+        shared_prefix += 1
+    return shared_prefix >= 2
 
 
 def line_token_overlap_ratio(a: models.Line, b: models.Line) -> float:
@@ -224,6 +279,179 @@ def reanchor_light_leading_lines_to_content_words(
         adjusted[idx] = rescale_line_to_new_start(line, target_start)
         applied += 1
     return adjusted, applied
+
+
+def _match_stemmed_prefix_near_word(
+    *,
+    prefix: list[str],
+    whisper_words: List[timing_models.TranscriptionWord],
+    start_idx: int,
+    support_window: float,
+) -> int:
+    match_count = 1
+    cursor = start_idx + 1
+    last_end = whisper_words[start_idx].end
+    anchor_start = whisper_words[start_idx].start
+    for token in prefix[1:]:
+        while cursor < len(whisper_words):
+            candidate = whisper_words[cursor]
+            candidate_norm = re.sub(r"[^a-z]+", "", candidate.text.lower())
+            if candidate.start > anchor_start + support_window:
+                return match_count
+            cursor += 1
+            if candidate.text == "[VOCAL]" or not candidate_norm:
+                continue
+            if candidate.start + 1e-6 < last_end:
+                continue
+            if not _tokens_match_with_light_stemming(token, candidate_norm):
+                continue
+            match_count += 1
+            last_end = candidate.end
+            break
+        else:
+            return match_count
+    return match_count
+
+
+def _find_stemmed_prefix_anchor_start(
+    line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_shift_sec: float,
+    max_shift_sec: float,
+    min_prefix_matches: int,
+    support_window: float,
+) -> float | None:
+    prefix = normalized_prefix_tokens(line, limit=3)
+    if len(prefix) < min_prefix_matches:
+        return None
+    search_start = line.start_time - max_shift_sec
+    search_end = line.start_time - min_shift_sec
+    for idx, word in enumerate(whisper_words):
+        token = re.sub(r"[^a-z]+", "", word.text.lower())
+        if word.text == "[VOCAL]" or not token:
+            continue
+        if word.start < search_start or word.start > search_end:
+            continue
+        if not _tokens_match_with_light_stemming(prefix[0], token):
+            continue
+        match_count = _match_stemmed_prefix_near_word(
+            prefix=prefix,
+            whisper_words=whisper_words,
+            start_idx=idx,
+            support_window=support_window,
+        )
+        if match_count >= min_prefix_matches:
+            return float(word.start)
+    return None
+
+
+def _latest_supported_whisper_end(
+    line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    search_start: float,
+    search_end: float,
+) -> float | None:
+    token_variants: set[str] = set()
+    for word in line.words:
+        normalized = re.sub(r"[^a-z]+", "", word.text.lower())
+        if normalized:
+            token_variants.add(normalized)
+        for fragment in re.split(r"[^a-z]+", word.text.lower()):
+            if fragment:
+                token_variants.add(fragment)
+    if not token_variants:
+        return None
+    latest_end: float | None = None
+    for word in whisper_words:
+        token = re.sub(r"[^a-z]+", "", word.text.lower())
+        if word.text == "[VOCAL]" or not token:
+            continue
+        if word.start < search_start or word.end > search_end:
+            continue
+        if not any(
+            _tokens_match_with_short_fragment_stemming(line_token, token)
+            for line_token in token_variants
+        ):
+            continue
+        latest_end = float(word.end)
+    return latest_end
+
+
+def rebalance_short_followup_boundaries_from_whisper(
+    mapped_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_shift_sec: float = 0.35,
+    max_shift_sec: float = 0.95,
+    min_prefix_matches: int = 2,
+    support_window: float = 1.1,
+    min_gap: float = 0.05,
+    max_word_count: int = 5,
+    min_prev_word_count: int = 8,
+) -> tuple[List[models.Line], int]:
+    updated = list(mapped_lines)
+    applied = 0
+    for idx in range(1, len(updated)):
+        prev_line = updated[idx - 1]
+        line = updated[idx]
+        if (
+            not prev_line.words
+            or not line.words
+            or len(line.words) > max_word_count
+            or len(prev_line.words) < min_prev_word_count
+        ):
+            continue
+        if _count_leading_light_tokens(normalized_tokens(line)) != 1:
+            continue
+        target_start = _find_stemmed_prefix_anchor_start(
+            line,
+            whisper_words,
+            min_shift_sec=min_shift_sec,
+            max_shift_sec=max_shift_sec,
+            min_prefix_matches=min_prefix_matches,
+            support_window=support_window,
+        )
+        if target_start is None or target_start >= prev_line.end_time - 0.25:
+            continue
+        prev_support_end = _latest_supported_whisper_end(
+            prev_line,
+            whisper_words,
+            search_start=max(prev_line.start_time - 0.6, target_start - 1.4),
+            search_end=target_start,
+        )
+        current_support_end = _latest_supported_whisper_end(
+            line,
+            whisper_words,
+            search_start=target_start,
+            search_end=line.end_time + support_window,
+        )
+        if (
+            prev_support_end is None
+            or current_support_end is None
+            or prev_support_end > target_start - min_gap
+            or current_support_end <= target_start + 0.45
+        ):
+            continue
+        new_prev_end = min(prev_line.end_time, target_start - min_gap)
+        next_start = (
+            updated[idx + 1].start_time
+            if idx + 1 < len(updated) and updated[idx + 1].words
+            else None
+        )
+        new_line_end = current_support_end
+        if next_start is not None:
+            new_line_end = min(new_line_end, next_start - min_gap)
+        if (
+            new_prev_end <= prev_line.start_time + 0.8
+            or new_line_end <= target_start + 0.6
+        ):
+            continue
+        updated[idx - 1] = _rescale_line_to_new_end(prev_line, new_prev_end)
+        updated[idx] = _rescale_line_to_new_bounds(line, target_start, new_line_end)
+        applied += 1
+    return updated, applied
 
 
 def _is_late_compact_repetitive_tail_candidate(

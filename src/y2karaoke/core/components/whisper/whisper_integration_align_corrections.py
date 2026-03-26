@@ -12,6 +12,7 @@ from .whisper_integration_align_experimental import (
     reanchor_light_leading_lines_to_content_words as _reanchor_light_leading_lines_to_content_words,
     reanchor_low_support_lines_to_later_onset as _reanchor_low_support_lines_to_later_onset,
     reanchor_repeated_cadence_lines as _reanchor_repeated_cadence_lines,
+    rebalance_short_followup_boundaries_from_whisper as _rebalance_short_followup_boundaries_from_whisper,
     reanchor_unsupported_i_said_lines_to_later_onset as _reanchor_unsupported_i_said_lines_to_later_onset,
     shift_restored_low_support_runs_to_onset as _shift_restored_low_support_runs_to_onset,
 )
@@ -402,6 +403,24 @@ def _apply_audio_reanchor_corrections(
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
         stage="after_reanchor_light_leading_lines_to_content_words",
+    )
+
+    mapped_lines, short_followup_rebalances = (
+        _rebalance_short_followup_boundaries_from_whisper(
+            mapped_lines,
+            all_words,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        short_followup_rebalances,
+        "Rebalanced {count} short followup line boundary/boundaries from Whisper support",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_rebalance_short_followup_boundaries_from_whisper",
     )
 
     mapped_lines, said_reanchors = _reanchor_unsupported_i_said_lines_to_later_onset(
