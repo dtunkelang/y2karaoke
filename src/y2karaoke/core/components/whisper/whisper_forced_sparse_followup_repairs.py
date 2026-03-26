@@ -63,6 +63,49 @@ def _restore_candidate_from_source(
     )
 
 
+def _line_is_sparse_followup_candidate(
+    *,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    prev_line: models.Line,
+    min_word_count: int,
+    max_word_count: int,
+    min_duration_shortfall_sec: float,
+    max_duration_ratio: float,
+    max_start_lead_sec: float,
+) -> bool:
+    if not baseline_line.words or not forced_line.words or not prev_line.words:
+        return False
+    word_count = len(forced_line.words)
+    if word_count < min_word_count or word_count > max_word_count:
+        return False
+    baseline_duration = baseline_line.end_time - baseline_line.start_time
+    forced_duration = forced_line.end_time - forced_line.start_time
+    if baseline_duration <= 0 or forced_duration <= 0:
+        return False
+    if forced_duration > baseline_duration * max_duration_ratio:
+        return False
+    if baseline_duration - forced_duration < min_duration_shortfall_sec:
+        return False
+    if baseline_line.start_time - forced_line.start_time > max_start_lead_sec:
+        return False
+    return forced_line.start_time <= prev_line.end_time + 0.15
+
+
+def _scores_support_sparse_followup_restore(
+    *,
+    aligned_segments: Any,
+    idx: int,
+    min_prev_score: float,
+    max_line_score: float,
+) -> bool:
+    prev_score = _segment_mean_score(aligned_segments[idx - 1])
+    line_score = _segment_mean_score(aligned_segments[idx])
+    if prev_score is None or line_score is None:
+        return False
+    return prev_score >= min_prev_score and line_score <= max_line_score
+
+
 def restore_sparse_forced_followup_lines_from_source(
     baseline_lines: List[models.Line],
     forced_lines: List[models.Line],
@@ -89,29 +132,23 @@ def restore_sparse_forced_followup_lines_from_source(
         baseline_line = baseline_lines[idx]
         forced_line = repaired[idx]
         prev_line = repaired[idx - 1]
-        if not baseline_line.words or not forced_line.words or not prev_line.words:
+        if not _line_is_sparse_followup_candidate(
+            baseline_line=baseline_line,
+            forced_line=forced_line,
+            prev_line=prev_line,
+            min_word_count=min_word_count,
+            max_word_count=max_word_count,
+            min_duration_shortfall_sec=min_duration_shortfall_sec,
+            max_duration_ratio=max_duration_ratio,
+            max_start_lead_sec=max_start_lead_sec,
+        ):
             continue
-        word_count = len(forced_line.words)
-        if word_count < min_word_count or word_count > max_word_count:
-            continue
-        baseline_duration = baseline_line.end_time - baseline_line.start_time
-        forced_duration = forced_line.end_time - forced_line.start_time
-        if baseline_duration <= 0 or forced_duration <= 0:
-            continue
-        if forced_duration > baseline_duration * max_duration_ratio:
-            continue
-        if baseline_duration - forced_duration < min_duration_shortfall_sec:
-            continue
-        if baseline_line.start_time - forced_line.start_time > max_start_lead_sec:
-            continue
-        if forced_line.start_time > prev_line.end_time + 0.15:
-            continue
-
-        prev_score = _segment_mean_score(aligned_segments[idx - 1])
-        line_score = _segment_mean_score(aligned_segments[idx])
-        if prev_score is None or line_score is None:
-            continue
-        if prev_score < min_prev_score or line_score > max_line_score:
+        if not _scores_support_sparse_followup_restore(
+            aligned_segments=aligned_segments,
+            idx=idx,
+            min_prev_score=min_prev_score,
+            max_line_score=max_line_score,
+        ):
             continue
 
         next_line = repaired[idx + 1] if idx + 1 < len(repaired) else None

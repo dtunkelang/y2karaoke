@@ -1258,49 +1258,54 @@ def attempt_whisperx_forced_alignment(
     min_forced_word_coverage: float = 0.2,
     min_forced_line_coverage: float = 0.2,
 ) -> Optional[Tuple[List[models.Line], List[str], Dict[str, Any]]]:
-    forced_language = language or detected_lang
-    forced = align_lines_with_whisperx_fn(lines, vocals_path, forced_language, logger)
-    if forced is None:
-        return None
-    forced_lines, forced_metrics = forced
-    forced_word_coverage = float(forced_metrics.get("forced_word_coverage", 0.0))
-    forced_line_coverage = float(forced_metrics.get("forced_line_coverage", 0.0))
-    aligned_segments = forced_metrics.get("aligned_segments")
-    forced_segments = _coerce_forced_segments(forced_metrics.get("aligned_segments"))
-    if not _forced_coverage_ok(
+    forced_result = _load_forced_alignment_result(
+        lines=lines,
+        vocals_path=vocals_path,
+        language=language,
+        detected_lang=detected_lang,
         logger=logger,
+        align_lines_with_whisperx_fn=align_lines_with_whisperx_fn,
+    )
+    if forced_result is None:
+        return None
+    (
+        forced_lines,
+        forced_word_coverage,
+        forced_line_coverage,
+        aligned_segments,
+        forced_segments,
+    ) = forced_result
+    if not _forced_alignment_is_usable(
+        logger=logger,
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
         forced_word_coverage=forced_word_coverage,
         forced_line_coverage=forced_line_coverage,
         min_forced_word_coverage=min_forced_word_coverage,
         min_forced_line_coverage=min_forced_line_coverage,
-    ):
-        return None
-
-    if _forced_alignment_hurts_sparse_onsets(
-        baseline_lines=baseline_lines,
-        forced_lines=forced_lines,
         whisper_words=whisper_words,
         audio_features=audio_features,
-        logger=logger,
     ):
         return None
-    forced_lines = _repair_short_line_degradation_if_possible(
+    repaired_short_lines = _repair_short_line_degradation_if_possible(
         baseline_lines=baseline_lines,
         forced_lines=forced_lines,
         logger=logger,
         should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
     )
-    if forced_lines is None:
+    if repaired_short_lines is None:
         return None
+    forced_lines = repaired_short_lines
 
-    forced_lines = _repair_sustained_line_degradation_if_possible(
+    repaired_sustained_lines = _repair_sustained_line_degradation_if_possible(
         baseline_lines=baseline_lines,
         forced_lines=forced_lines,
         logger=logger,
     )
-    if forced_lines is None:
+    if repaired_sustained_lines is None:
         return None
+    forced_lines = repaired_sustained_lines
 
     if _reject_compact_line_drift_if_needed(
         baseline_lines=baseline_lines,
@@ -1384,4 +1389,66 @@ def attempt_whisperx_forced_alignment(
         forced_lines,
         [f"Applied WhisperX transcript-constrained forced alignment due to {reason}"],
         forced_payload,
+    )
+
+
+def _load_forced_alignment_result(
+    *,
+    lines: List[models.Line],
+    vocals_path: str,
+    language: str | None,
+    detected_lang: str | None,
+    logger: Any,
+    align_lines_with_whisperx_fn: Callable[..., Any],
+) -> (
+    tuple[
+        List[models.Line],
+        float,
+        float,
+        Any,
+        List[timing_models.TranscriptionSegment],
+    ]
+    | None
+):
+    forced_language = language or detected_lang
+    forced = align_lines_with_whisperx_fn(lines, vocals_path, forced_language, logger)
+    if forced is None:
+        return None
+    forced_lines, forced_metrics = forced
+    aligned_segments = forced_metrics.get("aligned_segments")
+    return (
+        forced_lines,
+        float(forced_metrics.get("forced_word_coverage", 0.0)),
+        float(forced_metrics.get("forced_line_coverage", 0.0)),
+        aligned_segments,
+        _coerce_forced_segments(aligned_segments),
+    )
+
+
+def _forced_alignment_is_usable(
+    *,
+    logger: Any,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    forced_word_coverage: float,
+    forced_line_coverage: float,
+    min_forced_word_coverage: float,
+    min_forced_line_coverage: float,
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None,
+) -> bool:
+    if not _forced_coverage_ok(
+        logger=logger,
+        forced_word_coverage=forced_word_coverage,
+        forced_line_coverage=forced_line_coverage,
+        min_forced_word_coverage=min_forced_word_coverage,
+        min_forced_line_coverage=min_forced_line_coverage,
+    ):
+        return False
+    return not _forced_alignment_hurts_sparse_onsets(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        whisper_words=whisper_words,
+        audio_features=audio_features,
+        logger=logger,
     )
