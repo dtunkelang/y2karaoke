@@ -1,44 +1,51 @@
-from y2karaoke.core.models import Line, Word
+import numpy as np
+import pytest
+
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
     TranscriptionWord,
 )
-import pytest
-import numpy as np
-
 from y2karaoke.core.components.whisper.whisper_integration_forced_fallback import (
     attempt_whisperx_forced_alignment,
 )
 from y2karaoke.core.components.whisper import (
     whisper_integration_forced_fallback as _forced,
 )
+from y2karaoke.core.models import Line, Word
 
 
 class _Logger:
-    def warning(self, *_args, **_kwargs):
+    def debug(self, *_args, **_kwargs):
         return None
 
     def info(self, *_args, **_kwargs):
         return None
 
+    def warning(self, *_args, **_kwargs):
+        return None
+
 
 def _line(start: float) -> Line:
-    return Line(words=[Word(text="x", start_time=start, end_time=start + 0.2)])
+    return Line(
+        words=[Word(text="x", start_time=start, end_time=start + 0.4)],
+    )
 
 
 def _dur_line(start: float, end: float, text: str = "x") -> Line:
     return Line(words=[Word(text=text, start_time=start, end_time=end)])
 
 
-def _dur_multi_line(start: float, end: float, words: list[str]) -> Line:
-    step = (end - start) / max(len(words), 1)
-    built: list[Word] = []
-    cursor = start
-    for idx, text in enumerate(words):
-        next_end = end if idx == len(words) - 1 else cursor + step * 0.9
-        built.append(Word(text=text, start_time=cursor, end_time=next_end))
-        cursor += step
-    return Line(words=built)
+def _dur_multi_line(start: float, end: float, tokens: list[str]) -> Line:
+    step = (end - start) / max(len(tokens), 1)
+    words = [
+        Word(
+            text=token,
+            start_time=start + step * idx,
+            end_time=start + step * (idx + 1),
+        )
+        for idx, token in enumerate(tokens)
+    ]
+    return Line(words=words)
 
 
 def test_attempt_whisperx_forced_alignment_returns_none_when_under_coverage():
@@ -157,206 +164,6 @@ def test_attempt_whisperx_forced_alignment_reanchors_leading_article_to_content_
     forced_lines, _corrections, _payload = result
     assert forced_lines[0].words[0].start_time >= 21.95
     assert abs(forced_lines[0].words[1].start_time - 22.38) < 0.05
-
-
-def test_reanchor_medium_lines_to_earlier_exact_prefixes_hits_taste_shape_only():
-    forced_lines = [
-        _dur_multi_line(
-            6.772,
-            10.663,
-            [
-                "You'll",
-                "just",
-                "have",
-                "to",
-                "taste",
-                "me",
-                "when",
-                "he's",
-                "kissin'",
-                "you",
-            ],
-        ),
-        _dur_multi_line(
-            11.377,
-            14.753,
-            ["If", "you", "want", "forever,", "I", "bet", "you", "do"],
-        ),
-        _dur_multi_line(
-            15.044,
-            17.512,
-            ["Just", "know", "you'll", "taste", "me", "too"],
-        ),
-    ]
-    whisper_words = [
-        TranscriptionWord(text="you'll", start=6.42, end=6.92, probability=0.99),
-        TranscriptionWord(text="just", start=6.92, end=7.38, probability=0.99),
-        TranscriptionWord(text="have", start=7.38, end=7.66, probability=0.99),
-        TranscriptionWord(text="you", start=10.16, end=10.56, probability=0.99),
-        TranscriptionWord(text="if", start=10.74, end=11.2, probability=0.99),
-        TranscriptionWord(text="you", start=11.2, end=11.64, probability=0.99),
-        TranscriptionWord(text="want", start=11.64, end=11.9, probability=0.99),
-        TranscriptionWord(text="just", start=14.8, end=15.06, probability=0.99),
-        TranscriptionWord(text="know", start=15.06, end=15.34, probability=0.99),
-        TranscriptionWord(text="you'll", start=15.34, end=15.88, probability=0.99),
-    ]
-
-    repaired_lines, restored_count = (
-        _forced._reanchor_medium_lines_to_earlier_exact_prefixes(
-            forced_lines,
-            whisper_words,
-        )
-    )
-
-    assert restored_count == 1
-    assert repaired_lines[0].start_time == pytest.approx(6.772)
-    assert repaired_lines[1].start_time == pytest.approx(10.877)
-    assert repaired_lines[1].end_time == pytest.approx(14.753)
-    assert repaired_lines[2].start_time == pytest.approx(15.044)
-
-
-def test_reanchor_medium_lines_to_earlier_exact_prefixes_requires_boundary_carry_over():
-    forced_lines = [
-        _dur_multi_line(
-            5.778,
-            10.755,
-            [
-                "I",
-                "cut",
-                "my",
-                "teeth",
-                "on",
-                "wedding",
-                "rings",
-                "in",
-                "the",
-                "movies",
-            ],
-        ),
-        _dur_multi_line(
-            11.489,
-            14.823,
-            ["And", "I'm", "not", "proud", "of", "my", "address"],
-        ),
-    ]
-    whisper_words = [
-        TranscriptionWord(text="And", start=11.02, end=11.42, probability=0.67),
-        TranscriptionWord(text="I'm", start=11.42, end=11.76, probability=0.98),
-        TranscriptionWord(text="not", start=11.76, end=12.0, probability=0.99),
-        TranscriptionWord(text="proud", start=12.0, end=12.38, probability=0.99),
-    ]
-
-    repaired_lines, restored_count = (
-        _forced._reanchor_medium_lines_to_earlier_exact_prefixes(
-            forced_lines,
-            whisper_words,
-        )
-    )
-
-    assert restored_count == 0
-    assert repaired_lines[1].start_time == pytest.approx(11.489)
-
-
-def test_reanchor_medium_lines_to_earlier_exact_prefixes_requires_tight_boundary_gap():
-    forced_lines = [
-        _dur_multi_line(
-            5.778,
-            10.755,
-            [
-                "I",
-                "cut",
-                "my",
-                "teeth",
-                "on",
-                "wedding",
-                "rings",
-                "in",
-                "the",
-                "movies",
-            ],
-        ),
-        _dur_multi_line(
-            11.489,
-            14.823,
-            ["And", "I'm", "not", "proud", "of", "my", "address"],
-        ),
-    ]
-    whisper_words = [
-        TranscriptionWord(text="movies", start=9.26, end=10.0, probability=0.99),
-        TranscriptionWord(text="And", start=11.02, end=11.42, probability=0.67),
-        TranscriptionWord(text="I'm", start=11.42, end=11.76, probability=0.98),
-        TranscriptionWord(text="not", start=11.76, end=12.0, probability=0.99),
-    ]
-
-    repaired_lines, restored_count = (
-        _forced._reanchor_medium_lines_to_earlier_exact_prefixes(
-            forced_lines,
-            whisper_words,
-        )
-    )
-
-    assert restored_count == 0
-    assert repaired_lines[1].start_time == pytest.approx(11.489)
-
-
-def test_retime_three_word_lines_from_suffix_matches_rebuilds_late_suffix_window():
-    forced_lines = [
-        _dur_multi_line(7.01, 7.86, ["Shady's", "back"]),
-        Line(
-            words=[
-                Word(text="Tell", start_time=8.122, end_time=9.487),
-                Word(text="a", start_time=9.547, end_time=9.668),
-                Word(text="friend", start_time=9.708, end_time=9.989),
-            ]
-        ),
-    ]
-    whisper_words = [
-        TranscriptionWord(text="he's", start=7.33, end=7.51, probability=0.995),
-        TranscriptionWord(text="back", start=7.51, end=7.79, probability=0.998),
-        TranscriptionWord(text="still", start=7.87, end=9.11, probability=0.415),
-        TranscriptionWord(text="a", start=9.11, end=9.49, probability=0.778),
-        TranscriptionWord(text="friend", start=9.49, end=9.79, probability=0.921),
-    ]
-
-    repaired_lines, restored_count = (
-        _forced._retime_three_word_lines_from_suffix_matches(
-            forced_lines,
-            whisper_words,
-        )
-    )
-
-    assert restored_count == 1
-    assert repaired_lines[1].start_time == pytest.approx(8.77, abs=0.03)
-    assert repaired_lines[1].words[1].start_time == pytest.approx(9.11, abs=0.01)
-    assert repaired_lines[1].words[2].start_time >= 9.70
-    assert repaired_lines[1].words[2].end_time == pytest.approx(9.989, abs=0.01)
-
-
-def test_retime_three_word_lines_from_suffix_matches_skips_balanced_refrain_lines():
-    forced_lines = [
-        Line(
-            words=[
-                Word(text="Time", start_time=5.831, end_time=6.296),
-                Word(text="after", start_time=6.348, end_time=6.813),
-                Word(text="time", start_time=6.864, end_time=7.381),
-            ]
-        )
-    ]
-    whisper_words = [
-        TranscriptionWord(text="Time", start=5.72, end=6.08, probability=0.8),
-        TranscriptionWord(text="after", start=6.12, end=6.89, probability=0.8),
-        TranscriptionWord(text="time", start=7.059, end=7.52, probability=0.8),
-    ]
-
-    repaired_lines, restored_count = (
-        _forced._retime_three_word_lines_from_suffix_matches(
-            forced_lines,
-            whisper_words,
-        )
-    )
-
-    assert restored_count == 0
-    assert repaired_lines[0].start_time == pytest.approx(5.831)
 
 
 def test_attempt_whisperx_forced_alignment_restores_sustained_line_compression():

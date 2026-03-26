@@ -14,6 +14,10 @@ from .whisper_forced_refrain_repairs import (
     _neighbor_line_bounds,
     _restore_short_refrains_from_aligned_segment_words,
 )
+from .whisper_forced_prefix_repairs import (
+    find_exact_whisper_sequence_match as _find_exact_whisper_sequence_match,
+    reanchor_medium_lines_to_earlier_exact_prefixes as _reanchor_medium_lines_to_earlier_exact_prefixes_impl,
+)
 from .whisper_forced_word_redistribution import (
     redistribute_line_with_word_weights as _redistribute_line_with_word_weights,
     sustained_word_layout_weights as _sustained_word_layout_weights,
@@ -693,138 +697,6 @@ def _reanchor_forced_lines_to_local_content_words(
     return adjusted, shifted
 
 
-def _find_exact_whisper_sequence_match(
-    whisper_words: List[timing_models.TranscriptionWord],
-    *,
-    tokens: List[str],
-    search_start: float,
-    search_end: float,
-) -> tuple[float, float] | None:
-    indexed_match = _find_exact_whisper_sequence_match_with_index(
-        whisper_words,
-        tokens=tokens,
-        search_start=search_start,
-        search_end=search_end,
-    )
-    if indexed_match is None:
-        return None
-    match_start, match_end, _match_idx = indexed_match
-    return match_start, match_end
-
-
-def _find_exact_whisper_sequence_match_with_index(
-    whisper_words: List[timing_models.TranscriptionWord],
-    *,
-    tokens: List[str],
-    search_start: float,
-    search_end: float,
-) -> tuple[float, float, int] | None:
-    if not whisper_words or not tokens:
-        return None
-    normalized_words = [
-        (_normalize_token(word.text), float(word.start), float(word.end))
-        for word in whisper_words
-    ]
-    best_match: tuple[float, float, int] | None = None
-    best_start: float | None = None
-    for idx in range(0, len(normalized_words) - len(tokens) + 1):
-        candidate = normalized_words[idx : idx + len(tokens)]
-        if [token for token, _start, _end in candidate] != tokens:
-            continue
-        match_start = candidate[0][1]
-        match_end = candidate[-1][2]
-        if match_end < search_start or match_start > search_end:
-            continue
-        if best_start is None or match_start < best_start:
-            best_match = (match_start, match_end, idx)
-            best_start = match_start
-    return best_match
-
-
-def _rescale_line_to_new_start_preserving_end(
-    line: models.Line, target_start: float
-) -> models.Line:
-    old_duration = line.end_time - line.start_time
-    new_duration = line.end_time - target_start
-    span = old_duration if old_duration > 0 else 1.0
-    return models.Line(
-        words=[
-            models.Word(
-                text=word.text,
-                start_time=target_start
-                + ((word.start_time - line.start_time) / span) * new_duration,
-                end_time=target_start
-                + ((word.end_time - line.start_time) / span) * new_duration,
-                singer=word.singer,
-            )
-            for word in line.words
-        ],
-        singer=line.singer,
-    )
-
-
-def _reanchor_medium_lines_to_earlier_exact_prefixes(
-    forced_lines: List[models.Line],
-    whisper_words: List[timing_models.TranscriptionWord] | None,
-    *,
-    min_words: int = 7,
-    max_words: int = 9,
-    prefix_token_count: int = 3,
-    min_shift_sec: float = 0.45,
-    max_shift_sec: float = 0.8,
-    max_applied_shift_sec: float = 0.5,
-    max_boundary_gap_sec: float = 0.15,
-    min_gap: float = 0.05,
-) -> tuple[List[models.Line], int]:
-    if not whisper_words:
-        return forced_lines, 0
-
-    adjusted = list(forced_lines)
-    shifted = 0
-    for idx in range(len(adjusted) - 1, -1, -1):
-        line = adjusted[idx]
-        if idx == 0 or not adjusted[idx - 1].words:
-            continue
-        if len(line.words) < min_words or len(line.words) > max_words:
-            continue
-        prefix_tokens = [
-            _normalize_token(word.text) for word in line.words[:prefix_token_count]
-        ]
-        if len(prefix_tokens) < prefix_token_count or any(
-            not token for token in prefix_tokens
-        ):
-            continue
-        prefix_match = _find_exact_whisper_sequence_match_with_index(
-            whisper_words,
-            tokens=prefix_tokens,
-            search_start=line.start_time - max_shift_sec,
-            search_end=line.start_time - min_shift_sec,
-        )
-        if prefix_match is None:
-            continue
-        match_start, _match_end, match_index = prefix_match
-        if match_index == 0:
-            continue
-        prior_line_last_token = _normalize_token(adjusted[idx - 1].words[-1].text)
-        if not prior_line_last_token:
-            continue
-        boundary_token = _normalize_token(whisper_words[match_index - 1].text)
-        if boundary_token != prior_line_last_token:
-            continue
-        if match_start - adjusted[idx - 1].end_time > max_boundary_gap_sec:
-            continue
-        target_start = max(match_start, line.start_time - max_applied_shift_sec)
-        shifted_line = _rescale_line_to_new_start_preserving_end(line, target_start)
-        if not _can_apply_reanchored_line(adjusted, idx, shifted_line):
-            continue
-        if idx > 0 and adjusted[idx - 1].words:
-            if shifted_line.start_time < adjusted[idx - 1].end_time + min_gap:
-                continue
-        adjusted[idx] = shifted_line
-        shifted += 1
-    return adjusted, shifted
-
-
 def _three_word_suffix_retime_tokens(
     line: models.Line,
     *,
@@ -956,6 +828,7 @@ def _retime_three_word_lines_from_suffix_matches(
             tokens=normalized[1:],
             search_start=line.start_time - search_lookback_sec,
             search_end=line.end_time + search_lookahead_sec,
+            normalize_token_fn=_normalize_token,
         )
         if suffix_match is None:
             continue
@@ -1317,9 +1190,11 @@ def _finalize_forced_line_timing(
             reanchored_count,
         )
     forced_lines, prefix_reanchored_count = (
-        _reanchor_medium_lines_to_earlier_exact_prefixes(
+        _reanchor_medium_lines_to_earlier_exact_prefixes_impl(
             forced_lines,
             whisper_words,
+            normalize_token_fn=_normalize_token,
+            can_apply_reanchored_line_fn=_can_apply_reanchored_line,
         )
     )
     if prefix_reanchored_count:
