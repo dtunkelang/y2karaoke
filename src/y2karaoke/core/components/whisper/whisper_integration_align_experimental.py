@@ -454,6 +454,99 @@ def rebalance_short_followup_boundaries_from_whisper(
     return updated, applied
 
 
+def _truncated_followup_tokens(line: models.Line) -> tuple[str, str] | None:
+    if not line.words or len(line.words) > 3:
+        return None
+    tokens = normalized_tokens(line)
+    leading_count = _count_leading_light_tokens(tokens)
+    if leading_count != 1 or leading_count >= len(tokens):
+        return None
+    if not line.words[-1].text.endswith("..."):
+        return None
+    content_token = tokens[leading_count]
+    tail_token = tokens[-1]
+    if not content_token or not tail_token:
+        return None
+    return content_token, tail_token
+
+
+def _phonetic_followup_candidate(
+    *,
+    word_idx: int,
+    word: timing_models.TranscriptionWord,
+    whisper_words: List[timing_models.TranscriptionWord],
+    content_token: str,
+    tail_token: str,
+    line_start: float,
+    prev_end: float | None,
+    min_shift_sec: float,
+    max_shift_sec: float,
+    min_content_similarity: float,
+    min_tail_similarity: float,
+    min_gap: float,
+) -> tuple[float, float] | None:
+    token = re.sub(r"[^a-z]+", "", word.text.lower())
+    if word.text == "[VOCAL]" or not token:
+        return None
+    shift = line_start - word.start
+    if shift < min_shift_sec or shift > max_shift_sec:
+        return None
+    if prev_end is not None and word.start < prev_end + min_gap:
+        return None
+    similarity = phonetic_utils._phonetic_similarity(content_token, token, "es")
+    if similarity < min_content_similarity:
+        return None
+    next_word = whisper_words[word_idx + 1]
+    next_token = re.sub(r"[^a-z]+", "", next_word.text.lower())
+    if next_word.text == "[VOCAL]" or not next_token:
+        return None
+    tail_similarity = phonetic_utils._phonetic_similarity(tail_token, next_token, "es")
+    if tail_similarity < min_tail_similarity:
+        return None
+    return float(word.start), similarity + tail_similarity
+
+
+def _best_truncated_followup_target(
+    *,
+    line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    prev_end: float | None,
+    min_shift_sec: float,
+    max_shift_sec: float,
+    min_content_similarity: float,
+    min_tail_similarity: float,
+    min_gap: float,
+) -> float | None:
+    tokens = _truncated_followup_tokens(line)
+    if tokens is None:
+        return None
+    content_token, tail_token = tokens
+    best_target: float | None = None
+    best_score = 0.0
+    for word_idx, word in enumerate(whisper_words[:-1]):
+        candidate = _phonetic_followup_candidate(
+            word_idx=word_idx,
+            word=word,
+            whisper_words=whisper_words,
+            content_token=content_token,
+            tail_token=tail_token,
+            line_start=line.start_time,
+            prev_end=prev_end,
+            min_shift_sec=min_shift_sec,
+            max_shift_sec=max_shift_sec,
+            min_content_similarity=min_content_similarity,
+            min_tail_similarity=min_tail_similarity,
+            min_gap=min_gap,
+        )
+        if candidate is None:
+            continue
+        target, score = candidate
+        if score > best_score:
+            best_score = score
+            best_target = target
+    return best_target
+
+
 def reanchor_truncated_followup_lines_from_phonetic_variants(
     mapped_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
@@ -467,48 +560,19 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
     updated = list(mapped_lines)
     applied = 0
     for idx, line in enumerate(updated):
-        if not line.words or len(line.words) > 3:
-            continue
-        tokens = normalized_tokens(line)
-        leading_count = _count_leading_light_tokens(tokens)
-        if leading_count != 1 or leading_count >= len(tokens):
-            continue
-        if not line.words[-1].text.endswith("..."):
-            continue
-        content_token = tokens[leading_count]
-        tail_token = tokens[-1]
-        if not content_token or not tail_token:
-            continue
         prev_end = (
             updated[idx - 1].end_time if idx > 0 and updated[idx - 1].words else None
         )
-        best_target: float | None = None
-        best_score = 0.0
-        for word_idx, word in enumerate(whisper_words[:-1]):
-            token = re.sub(r"[^a-z]+", "", word.text.lower())
-            if word.text == "[VOCAL]" or not token:
-                continue
-            shift = line.start_time - word.start
-            if shift < min_shift_sec or shift > max_shift_sec:
-                continue
-            if prev_end is not None and word.start < prev_end + min_gap:
-                continue
-            similarity = phonetic_utils._phonetic_similarity(content_token, token, "es")
-            if similarity < min_content_similarity:
-                continue
-            next_word = whisper_words[word_idx + 1]
-            next_token = re.sub(r"[^a-z]+", "", next_word.text.lower())
-            if next_word.text == "[VOCAL]" or not next_token:
-                continue
-            tail_similarity = phonetic_utils._phonetic_similarity(
-                tail_token, next_token, "es"
-            )
-            if tail_similarity < min_tail_similarity:
-                continue
-            score = similarity + tail_similarity
-            if score > best_score:
-                best_score = score
-                best_target = float(word.start)
+        best_target = _best_truncated_followup_target(
+            line=line,
+            whisper_words=whisper_words,
+            prev_end=prev_end,
+            min_shift_sec=min_shift_sec,
+            max_shift_sec=max_shift_sec,
+            min_content_similarity=min_content_similarity,
+            min_tail_similarity=min_tail_similarity,
+            min_gap=min_gap,
+        )
         if best_target is None:
             continue
         updated[idx] = rescale_line_to_new_start(line, best_target)
