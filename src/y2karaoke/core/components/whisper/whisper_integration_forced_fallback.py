@@ -18,6 +18,9 @@ from .whisper_forced_prefix_repairs import (
     find_exact_whisper_sequence_match as _find_exact_whisper_sequence_match,
     reanchor_medium_lines_to_earlier_exact_prefixes as _reanchor_medium_lines_to_earlier_exact_prefixes_impl,
 )
+from .whisper_forced_tail_repairs import (
+    extend_low_score_forced_line_tails_from_source as _extend_low_score_forced_line_tails_from_source,
+)
 from .whisper_forced_word_redistribution import (
     redistribute_line_with_word_weights as _redistribute_line_with_word_weights,
     sustained_word_layout_weights as _sustained_word_layout_weights,
@@ -546,83 +549,6 @@ def _redistribute_sparse_support_sustained_words(
         repaired[idx] = _redistribute_line_with_word_weights(forced_line, weights)
         redistributed += 1
     return repaired, redistributed
-
-
-def _extend_low_score_forced_line_tails_from_source(
-    baseline_lines: List[models.Line],
-    forced_lines: List[models.Line],
-    aligned_segments: Any,
-    *,
-    min_word_count: int = 4,
-    max_word_count: int = 6,
-    min_end_shortfall_sec: float = 0.35,
-    max_end_shortfall_sec: float = 0.95,
-    max_low_score: float = 0.55,
-    min_last_word_duration_sec: float = 0.16,
-    max_last_word_duration_sec: float = 0.95,
-    min_gap_sec: float = 0.05,
-) -> tuple[List[models.Line], int]:
-    if not isinstance(aligned_segments, list):
-        return forced_lines, 0
-
-    repaired = list(forced_lines)
-    extended = 0
-    for idx, (baseline_line, forced_line, segment) in enumerate(
-        zip(baseline_lines, forced_lines, aligned_segments)
-    ):
-        if not baseline_line.words or not forced_line.words:
-            continue
-        word_count = len(forced_line.words)
-        if word_count < min_word_count or word_count > max_word_count:
-            continue
-        baseline_end = baseline_line.end_time
-        forced_end = forced_line.end_time
-        end_shortfall = baseline_end - forced_end
-        if (
-            end_shortfall < min_end_shortfall_sec
-            or end_shortfall > max_end_shortfall_sec
-        ):
-            continue
-        if not isinstance(segment, dict):
-            continue
-        seg_words = segment.get("words")
-        if not isinstance(seg_words, list) or len(seg_words) != word_count:
-            continue
-        last_seg_word = seg_words[-1]
-        if not isinstance(last_seg_word, dict):
-            continue
-        last_score = last_seg_word.get("score")
-        if (
-            not isinstance(last_score, (int, float))
-            or float(last_score) > max_low_score
-        ):
-            continue
-        next_start = (
-            repaired[idx + 1].start_time
-            if idx + 1 < len(repaired) and repaired[idx + 1].words
-            else None
-        )
-        target_end = baseline_end
-        if next_start is not None:
-            target_end = min(target_end, next_start - min_gap_sec)
-        if target_end <= forced_line.words[-1].start_time + min_last_word_duration_sec:
-            continue
-        if target_end - forced_line.words[-1].start_time > max_last_word_duration_sec:
-            target_end = forced_line.words[-1].start_time + max_last_word_duration_sec
-        if target_end <= forced_end + 0.05:
-            continue
-        new_words = [
-            models.Word(
-                text=word.text,
-                start_time=word.start_time,
-                end_time=(target_end if word_idx == word_count - 1 else word.end_time),
-                singer=word.singer,
-            )
-            for word_idx, word in enumerate(forced_line.words)
-        ]
-        repaired[idx] = models.Line(words=new_words, singer=forced_line.singer)
-        extended += 1
-    return repaired, extended
 
 
 def _count_compact_line_drift(
