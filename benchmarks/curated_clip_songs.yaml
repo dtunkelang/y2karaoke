@@ -689,7 +689,33 @@ songs:
   youtube_id: awoFZaSuko4
   audio_start_sec: 79
   clip_duration_sec: 12
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Sparse followup clip with sustained lead phrase and weakly supported trailing line.
   slug: tears-for-fears-everybody-wants-to-rule-the-world-freedom-pleasure
   lyrics: |
     Help me make the most of freedom and of pleasure
     Nothing ever lasts forever
+
+- title: Shout
+  artist: Tears for Fears
+  clip_id: opening-call-response
+  clip_tags:
+  - stress
+  - sparse-support
+  - backing-echo
+  - call-response
+  youtube_url: https://www.youtube.com/watch?v=ldAp-mZqAro
+  youtube_id: ldAp-mZqAro
+  audio_start_sec: 9
+  clip_duration_sec: 10
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Echo-heavy opening call-and-response clip for sparse followup timing stress.
+  slug: tears-for-fears-shout-opening-call-response
+  lyrics: |
+    Shout, shout
+    Let it all out
+    These are the things I can do without
