@@ -740,3 +740,24 @@ songs:
   lyrics: |
     You spin me right round, baby, right round
     Like a record, baby, right round, round, round
+
+- title: Only You
+  artist: Yazoo
+  clip_id: love-you-gave
+  clip_tags:
+  - stress
+  - sparse-support
+  - backing-echo
+  - soft-lead
+  youtube_url: https://www.youtube.com/watch?v=-H7MhAuofCM
+  youtube_id: -H7MhAuofCM
+  audio_start_sec: 27
+  clip_duration_sec: 9
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Soft lead-vocal followup pair for zero-local-support timing stress.
+  slug: yazoo-only-you-love-you-gave
+  lyrics: |
+    All I needed was the love you gave
+    All I needed for another day

@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "title": "Only You",
+  "artist": "Yazoo",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/-H7MhAuofCM/trimmed_from_27.00s_for_9.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "All I needed was the love you gave",
+      "start": 0.95,
+      "end": 4.2,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "All",
+          "start": 0.95,
+          "end": 1.2
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 1.2,
+          "end": 1.45
+        },
+        {
+          "word_index": 3,
+          "text": "needed",
+          "start": 1.45,
+          "end": 2.0
+        },
+        {
+          "word_index": 4,
+          "text": "was",
+          "start": 2.0,
+          "end": 2.35
+        },
+        {
+          "word_index": 5,
+          "text": "the",
+          "start": 2.35,
+          "end": 2.65
+        },
+        {
+          "word_index": 6,
+          "text": "love",
+          "start": 2.65,
+          "end": 3.0
+        },
+        {
+          "word_index": 7,
+          "text": "you",
+          "start": 3.0,
+          "end": 3.35
+        },
+        {
+          "word_index": 8,
+          "text": "gave",
+          "start": 3.35,
+          "end": 4.2
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "All I needed for another day",
+      "start": 5.2,
+      "end": 8.6,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "All",
+          "start": 5.2,
+          "end": 5.45
+        },
+        {
+          "word_index": 2,
+          "text": "I",
+          "start": 5.45,
+          "end": 5.75
+        },
+        {
+          "word_index": 3,
+          "text": "needed",
+          "start": 5.75,
+          "end": 6.35
+        },
+        {
+          "word_index": 4,
+          "text": "for",
+          "start": 6.35,
+          "end": 6.75
+        },
+        {
+          "word_index": 5,
+          "text": "another",
+          "start": 6.75,
+          "end": 7.85
+        },
+        {
+          "word_index": 6,
+          "text": "day",
+          "start": 7.85,
+          "end": 8.6
+        }
+      ]
+    }
+  ]
+}
