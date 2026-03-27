@@ -16,20 +16,20 @@ from .whisper_forced_refrain_repairs import (
 )
 from .whisper_forced_prefix_repairs import (
     find_exact_whisper_sequence_match as _find_exact_whisper_sequence_match,
-    reanchor_medium_lines_to_earlier_exact_prefixes as _reanchor_medium_lines_to_earlier_exact_prefixes_impl,
+    reanchor_medium_lines_to_earlier_exact_prefixes as _reanchor_medium_lines_to_earlier_exact_prefixes_impl,  # noqa: E501
 )
 from .whisper_forced_tail_repairs import (
-    extend_low_score_forced_line_tails_from_source as _extend_low_score_forced_line_tails_from_source,
+    extend_low_score_forced_line_tails_from_source as _extend_low_score_forced_line_tails_from_source,  # noqa: E501
 )
 from .whisper_forced_sparse_followup_repairs import (
-    restore_sparse_forced_followup_lines_from_source as _restore_sparse_forced_followup_lines_from_source,
+    restore_sparse_forced_followup_lines_from_source as _restore_sparse_forced_followup_lines_from_source,  # noqa: E501
 )
 from .whisper_forced_sparse_support_repairs import (
-    redistribute_sparse_support_sustained_words as _redistribute_sparse_support_sustained_words,
-    restore_compact_two_word_lines_from_source as _restore_compact_two_word_lines_from_source,
-    restore_sparse_support_line_durations_from_source as _restore_sparse_support_line_durations_from_source,
-    restore_sparse_support_line_starts_from_source as _restore_sparse_support_line_starts_from_source,
-    shift_sparse_support_lines_toward_better_onsets as _shift_sparse_support_lines_toward_better_onsets,
+    redistribute_sparse_support_sustained_words as _redistribute_sparse_support_sustained_words,  # noqa: E501
+    restore_compact_two_word_lines_from_source as _restore_compact_two_word_lines_from_source,  # noqa: E501
+    restore_sparse_support_line_durations_from_source as _restore_sparse_support_line_durations_from_source,  # noqa: E501
+    restore_sparse_support_line_starts_from_source as _restore_sparse_support_line_starts_from_source,  # noqa: E501
+    shift_sparse_support_lines_toward_better_onsets as _shift_sparse_support_lines_toward_better_onsets,  # noqa: E501
 )
 from .whisper_forced_trace import (
     capture_forced_trace_snapshot as _capture_forced_trace_snapshot,
@@ -40,10 +40,10 @@ from .whisper_forced_advisory_trace import (
     maybe_write_forced_advisory_trace as _maybe_write_forced_advisory_trace,
 )
 from .whisper_forced_advisory_nudges import (
-    apply_forced_advisory_start_nudges as _apply_forced_advisory_start_nudges,
+    apply_forced_advisory_start_nudges as _apply_forced_advisory_start_nudges,  # noqa: E501
 )
 from .whisper_split_refrain_restore import (
-    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
+    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,  # noqa: E501
 )
 
 _LIGHT_LEADING_TOKENS = {"the", "a", "an"}
@@ -255,8 +255,12 @@ def _restore_sustained_line_durations_from_source(
             compact_recovered_word_count=compact_recovered_word_count,
             compact_recovered_shift_coeff=compact_recovered_shift_coeff,
             compact_recovered_max_shift_sec=compact_recovered_max_shift_sec,
-            compact_followed_by_longer_line_extra_shift_sec=compact_followed_by_longer_line_extra_shift_sec,
-            compact_followed_by_longer_line_min_words=compact_followed_by_longer_line_min_words,
+            compact_followed_by_longer_line_extra_shift_sec=(
+                compact_followed_by_longer_line_extra_shift_sec
+            ),
+            compact_followed_by_longer_line_min_words=(
+                compact_followed_by_longer_line_min_words
+            ),
             inter_line_gap_sec=inter_line_gap_sec,
         )
         if sustained_restore is None:
@@ -735,7 +739,10 @@ def _repair_short_line_degradation_if_possible(
     )
     if restored_count > 0 and not repaired_rollback:
         logger.info(
-            "Kept WhisperX forced alignment after restoring %d short baseline line(s) (%d -> %d)",
+            (
+                "Kept WhisperX forced alignment after restoring %d short "
+                "baseline line(s) (%d -> %d)"
+            ),
             restored_count,
             short_after,
             repaired_after,
@@ -819,7 +826,10 @@ def _post_normalize_sparse_support_repairs(
     )
     if sparse_duration_restored_count:
         logger.info(
-            "Restored %d sparse-support line duration(s) from source after normalization",
+            (
+                "Restored %d sparse-support line duration(s) from source "
+                "after normalization"
+            ),
             sparse_duration_restored_count,
         )
     forced_lines, sparse_onset_shift_count = (
@@ -834,7 +844,10 @@ def _post_normalize_sparse_support_repairs(
     )
     if sparse_onset_shift_count:
         logger.info(
-            "Shifted %d sparse-support line(s) to better local onsets after normalization",
+            (
+                "Shifted %d sparse-support line(s) to better local onsets "
+                "after normalization"
+            ),
             sparse_onset_shift_count,
         )
     forced_lines, sparse_start_restore_count = (
@@ -889,7 +902,10 @@ def _apply_pre_finalize_forced_refrain_repairs(
     )
     if shifted_refrain_gaps:
         logger.info(
-            "Shifted %d repeated short refrain line(s) later after long preceding lines",
+            (
+                "Shifted %d repeated short refrain line(s) later after "
+                "long preceding lines"
+            ),
             shifted_refrain_gaps,
         )
     return forced_lines, shifted_refrain_gaps
@@ -997,7 +1013,10 @@ def _finalize_forced_line_timing(
     )
     if reanchored_count:
         logger.info(
-            "Reanchored %d forced-aligned line(s) to local content-word Whisper anchors",
+            (
+                "Reanchored %d forced-aligned line(s) to local content-word "
+                "Whisper anchors"
+            ),
             reanchored_count,
         )
     forced_lines, prefix_reanchored_count = (
@@ -1010,7 +1029,10 @@ def _finalize_forced_line_timing(
     )
     if prefix_reanchored_count:
         logger.info(
-            "Reanchored %d medium forced-aligned line(s) to earlier exact Whisper prefixes",
+            (
+                "Reanchored %d medium forced-aligned line(s) to earlier exact "
+                "Whisper prefixes"
+            ),
             prefix_reanchored_count,
         )
     forced_lines, suffix_retimed_count = _retime_three_word_lines_from_suffix_matches(
@@ -1019,7 +1041,10 @@ def _finalize_forced_line_timing(
     )
     if suffix_retimed_count:
         logger.info(
-            "Retimed %d compact forced-aligned line(s) from exact Whisper suffix matches",
+            (
+                "Retimed %d compact forced-aligned line(s) from exact Whisper "
+                "suffix matches"
+            ),
             suffix_retimed_count,
         )
 
@@ -1036,6 +1061,228 @@ def _finalize_forced_line_timing(
     if enforce_non_overlapping_lines_fn is not None:
         forced_lines = enforce_non_overlapping_lines_fn(forced_lines)
     return forced_lines
+
+
+def _trace_forced_rejection(
+    *,
+    trace_path: str,
+    trace_snapshots: list[dict[str, Any]],
+    trace_metadata: dict[str, Any],
+    status: str,
+) -> None:
+    _maybe_write_forced_trace_snapshot_file(
+        trace_path=trace_path,
+        snapshots=trace_snapshots,
+        metadata={**trace_metadata, "status": status},
+    )
+
+
+def _apply_forced_pre_finalize_repairs(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    logger: Any,
+    trace_path: str,
+    trace_snapshots: list[dict[str, Any]],
+    trace_metadata: dict[str, Any],
+    trace_line_range: tuple[int, int] | None,
+    should_rollback_short_line_degradation_fn: Callable[..., Any],
+    restore_implausibly_short_lines_fn: Callable[..., Any],
+) -> List[models.Line] | None:
+    repaired_short_lines = _repair_short_line_degradation_if_possible(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
+        restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
+    )
+    if repaired_short_lines is None:
+        _trace_forced_rejection(
+            trace_path=trace_path,
+            trace_snapshots=trace_snapshots,
+            trace_metadata=trace_metadata,
+            status="rejected_short_line_repair",
+        )
+        return None
+    forced_lines = repaired_short_lines
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_short_line_repair",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+
+    repaired_sustained_lines = _repair_sustained_line_degradation_if_possible(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    )
+    if repaired_sustained_lines is None:
+        _trace_forced_rejection(
+            trace_path=trace_path,
+            trace_snapshots=trace_snapshots,
+            trace_metadata=trace_metadata,
+            status="rejected_sustained_line_repair",
+        )
+        return None
+    forced_lines = repaired_sustained_lines
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_sustained_line_repair",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+
+    if _reject_compact_line_drift_if_needed(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    ):
+        _trace_forced_rejection(
+            trace_path=trace_path,
+            trace_snapshots=trace_snapshots,
+            trace_metadata=trace_metadata,
+            status="rejected_compact_line_drift",
+        )
+        return None
+    if _reject_compact_line_duration_collapse_if_needed(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    ):
+        _trace_forced_rejection(
+            trace_path=trace_path,
+            trace_snapshots=trace_snapshots,
+            trace_metadata=trace_metadata,
+            status="rejected_pre_finalize_collapse",
+        )
+        return None
+    return forced_lines
+
+
+def _apply_forced_post_finalize_repairs(
+    *,
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    aligned_segments: List[timing_models.TranscriptionSegment],
+    forced_segments: List[timing_models.TranscriptionSegment],
+    transcription: List[timing_models.TranscriptionSegment] | None,
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    vocals_path: str,
+    language: str | None,
+    detected_lang: str | None,
+    used_model: str,
+    logger: Any,
+    trace_path: str,
+    trace_snapshots: list[dict[str, Any]],
+    trace_metadata: dict[str, Any],
+    trace_line_range: tuple[int, int] | None,
+) -> tuple[List[models.Line], int, int, int] | None:
+    forced_lines, restored_sparse_followups = (
+        _restore_sparse_forced_followup_lines_from_source(
+            baseline_lines,
+            forced_lines,
+            aligned_segments,
+        )
+    )
+    if restored_sparse_followups:
+        logger.info(
+            "Restored %d sparse forced followup line(s) from source timing",
+            restored_sparse_followups,
+        )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_sparse_followups",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+
+    forced_lines, extended_low_score_tails = (
+        _extend_low_score_forced_line_tails_from_source(
+            baseline_lines,
+            forced_lines,
+            aligned_segments,
+        )
+    )
+    if extended_low_score_tails:
+        logger.info(
+            "Extended %d low-score forced-aligned line tail(s) toward source timing",
+            extended_low_score_tails,
+        )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_extend_low_score_tails",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+
+    (
+        forced_lines,
+        restored_word_sequence_refrains,
+        restored_split_refrains,
+    ) = _apply_post_finalize_forced_refrain_repairs(
+        forced_lines=forced_lines,
+        aligned_segments=aligned_segments,
+        forced_segments=forced_segments,
+        transcription=transcription,
+        logger=logger,
+    )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_post_finalize_refrain_repairs",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+    if _reject_compact_line_duration_collapse_if_needed(
+        baseline_lines=baseline_lines,
+        forced_lines=forced_lines,
+        logger=logger,
+    ):
+        _trace_forced_rejection(
+            trace_path=trace_path,
+            trace_snapshots=trace_snapshots,
+            trace_metadata=trace_metadata,
+            status="rejected_post_finalize_collapse",
+        )
+        return None
+
+    forced_lines, advisory_start_nudges = _apply_forced_advisory_start_nudges(
+        lines=forced_lines,
+        current_segments=transcription,
+        current_words=whisper_words,
+        vocals_path=vocals_path,
+        language=language or detected_lang,
+        model_size=used_model,
+        logger=logger,
+    )
+    if advisory_start_nudges:
+        logger.info(
+            "Applied %d advisory start nudge(s) from alternate transcription support",
+            advisory_start_nudges,
+        )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_advisory_start_nudges",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+    _maybe_write_forced_advisory_trace(
+        lines=forced_lines,
+        current_segments=transcription,
+        current_words=whisper_words,
+        vocals_path=vocals_path,
+        language=language or detected_lang,
+        model_size=used_model,
+        logger=logger,
+    )
+    return (
+        forced_lines,
+        restored_word_sequence_refrains,
+        restored_split_refrains,
+        advisory_start_nudges,
+    )
 
 
 def attempt_whisperx_forced_alignment(
@@ -1111,77 +1358,29 @@ def attempt_whisperx_forced_alignment(
         whisper_words=whisper_words,
         audio_features=audio_features,
     ):
-        _maybe_write_forced_trace_snapshot_file(
+        _trace_forced_rejection(
             trace_path=trace_path,
-            snapshots=trace_snapshots,
-            metadata={**trace_metadata, "status": "rejected_before_repair"},
+            trace_snapshots=trace_snapshots,
+            trace_metadata=trace_metadata,
+            status="rejected_before_repair",
         )
         return None
-    repaired_short_lines = _repair_short_line_degradation_if_possible(
+    repaired_lines = _apply_forced_pre_finalize_repairs(
         baseline_lines=baseline_lines,
         forced_lines=forced_lines,
         logger=logger,
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        trace_path=trace_path,
+        trace_snapshots=trace_snapshots,
+        trace_metadata=trace_metadata,
+        trace_line_range=trace_line_range,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
     )
-    if repaired_short_lines is None:
-        _maybe_write_forced_trace_snapshot_file(
-            trace_path=trace_path,
-            snapshots=trace_snapshots,
-            metadata={**trace_metadata, "status": "rejected_short_line_repair"},
-        )
+    if repaired_lines is None:
         return None
-    forced_lines = repaired_short_lines
-    _capture_forced_trace_snapshot(
-        trace_snapshots,
-        stage="after_short_line_repair",
-        lines=forced_lines,
-        line_range=trace_line_range,
-    )
-
-    repaired_sustained_lines = _repair_sustained_line_degradation_if_possible(
-        baseline_lines=baseline_lines,
-        forced_lines=forced_lines,
-        logger=logger,
-    )
-    if repaired_sustained_lines is None:
-        _maybe_write_forced_trace_snapshot_file(
-            trace_path=trace_path,
-            snapshots=trace_snapshots,
-            metadata={**trace_metadata, "status": "rejected_sustained_line_repair"},
-        )
-        return None
-    forced_lines = repaired_sustained_lines
-    _capture_forced_trace_snapshot(
-        trace_snapshots,
-        stage="after_sustained_line_repair",
-        lines=forced_lines,
-        line_range=trace_line_range,
-    )
-
-    if _reject_compact_line_drift_if_needed(
-        baseline_lines=baseline_lines,
-        forced_lines=forced_lines,
-        logger=logger,
-    ):
-        _maybe_write_forced_trace_snapshot_file(
-            trace_path=trace_path,
-            snapshots=trace_snapshots,
-            metadata={**trace_metadata, "status": "rejected_compact_line_drift"},
-        )
-        return None
-
-    if _reject_compact_line_duration_collapse_if_needed(
-        baseline_lines=baseline_lines,
-        forced_lines=forced_lines,
-        logger=logger,
-    ):
-        _maybe_write_forced_trace_snapshot_file(
-            trace_path=trace_path,
-            snapshots=trace_snapshots,
-            metadata={**trace_metadata, "status": "rejected_pre_finalize_collapse"},
-        )
-        return None
+    forced_lines = repaired_lines
 
     forced_lines, shifted_refrain_gaps = _apply_pre_finalize_forced_refrain_repairs(
         forced_lines=forced_lines,
@@ -1209,90 +1408,31 @@ def attempt_whisperx_forced_alignment(
         lines=forced_lines,
         line_range=trace_line_range,
     )
-    forced_lines, restored_sparse_followups = (
-        _restore_sparse_forced_followup_lines_from_source(
-            baseline_lines,
-            forced_lines,
-            aligned_segments,
-        )
-    )
-    if restored_sparse_followups:
-        logger.info(
-            "Restored %d sparse forced followup line(s) from source timing",
-            restored_sparse_followups,
-        )
-    _capture_forced_trace_snapshot(
-        trace_snapshots,
-        stage="after_restore_sparse_followups",
-        lines=forced_lines,
-        line_range=trace_line_range,
-    )
-    forced_lines, extended_low_score_tails = (
-        _extend_low_score_forced_line_tails_from_source(
-            baseline_lines,
-            forced_lines,
-            aligned_segments,
-        )
-    )
-    if extended_low_score_tails:
-        logger.info(
-            "Extended %d low-score forced-aligned line tail(s) toward source timing",
-            extended_low_score_tails,
-        )
-    _capture_forced_trace_snapshot(
-        trace_snapshots,
-        stage="after_extend_low_score_tails",
-        lines=forced_lines,
-        line_range=trace_line_range,
-    )
-    (
-        forced_lines,
-        restored_word_sequence_refrains,
-        restored_split_refrains,
-    ) = _apply_post_finalize_forced_refrain_repairs(
+    post_finalize_result = _apply_forced_post_finalize_repairs(
+        baseline_lines=baseline_lines,
         forced_lines=forced_lines,
         aligned_segments=aligned_segments,
         forced_segments=forced_segments,
         transcription=transcription,
-        logger=logger,
-    )
-    _capture_forced_trace_snapshot(
-        trace_snapshots,
-        stage="after_post_finalize_refrain_repairs",
-        lines=forced_lines,
-        line_range=trace_line_range,
-    )
-    if _reject_compact_line_duration_collapse_if_needed(
-        baseline_lines=baseline_lines,
-        forced_lines=forced_lines,
-        logger=logger,
-    ):
-        _maybe_write_forced_trace_snapshot_file(
-            trace_path=trace_path,
-            snapshots=trace_snapshots,
-            metadata={**trace_metadata, "status": "rejected_post_finalize_collapse"},
-        )
-        return None
-    forced_lines, advisory_start_nudges = _apply_forced_advisory_start_nudges(
-        lines=forced_lines,
-        current_segments=transcription,
-        current_words=whisper_words,
+        whisper_words=whisper_words,
         vocals_path=vocals_path,
-        language=language or detected_lang,
-        model_size=used_model,
+        language=language,
+        detected_lang=detected_lang,
+        used_model=used_model,
         logger=logger,
+        trace_path=trace_path,
+        trace_snapshots=trace_snapshots,
+        trace_metadata=trace_metadata,
+        trace_line_range=trace_line_range,
     )
-    if advisory_start_nudges:
-        logger.info(
-            "Applied %d advisory start nudge(s) from alternate transcription support",
-            advisory_start_nudges,
-        )
-    _capture_forced_trace_snapshot(
-        trace_snapshots,
-        stage="after_advisory_start_nudges",
-        lines=forced_lines,
-        line_range=trace_line_range,
-    )
+    if post_finalize_result is None:
+        return None
+    (
+        forced_lines,
+        restored_word_sequence_refrains,
+        restored_split_refrains,
+        advisory_start_nudges,
+    ) = post_finalize_result
 
     forced_payload = _build_forced_payload(
         forced_word_coverage=forced_word_coverage,
@@ -1313,15 +1453,6 @@ def attempt_whisperx_forced_alignment(
         trace_path=trace_path,
         snapshots=trace_snapshots,
         metadata={**trace_metadata, "status": "accepted", **forced_payload},
-    )
-    _maybe_write_forced_advisory_trace(
-        lines=forced_lines,
-        current_segments=transcription,
-        current_words=whisper_words,
-        vocals_path=vocals_path,
-        language=language or detected_lang,
-        model_size=used_model,
-        logger=logger,
     )
     return (
         forced_lines,

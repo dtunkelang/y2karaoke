@@ -41,6 +41,78 @@ def _pull_first_word_to_new_start(
     return models.Line(words=words, singer=line.singer)
 
 
+def _load_forced_advisory_candidates(
+    *,
+    lines: Sequence[models.Line],
+    current_segments: Sequence[timing_models.TranscriptionSegment],
+    current_words: Sequence[timing_models.TranscriptionWord],
+    vocals_path: str,
+    language: str | None,
+    model_size: str,
+    logger: Any,
+    load_aggressive_variant_fn: Callable[..., Any],
+) -> list[dict[str, object]]:
+    if not Path(_resolve_advisory_audio_path(vocals_path)).exists():
+        return []
+    aggressive_segments, aggressive_words, _aggressive_language = (
+        load_aggressive_variant_fn(
+            vocals_path=vocals_path,
+            language=language,
+            model_size=model_size,
+            logger=logger,
+        )
+    )
+    return collect_forced_advisory_start_candidates(
+        lines=lines,
+        current_segments=current_segments,
+        current_words=current_words,
+        aggressive_segments=aggressive_segments,
+        aggressive_words=aggressive_words,
+    )
+
+
+def _advisory_candidate_is_eligible(
+    *,
+    candidate: dict[str, object],
+    adjusted_lines: Sequence[models.Line],
+    idx: int,
+) -> bool:
+    if idx < 0 or idx >= len(adjusted_lines):
+        return False
+    line = adjusted_lines[idx]
+    target_start = candidate.get("aggressive_segment_start")
+    aggressive_overlap = candidate.get("aggressive_best_overlap")
+    default_overlap = candidate.get("default_best_overlap")
+    current_window_word_count = candidate.get("current_window_word_count")
+    if not isinstance(target_start, (int, float)):
+        return False
+    if not isinstance(aggressive_overlap, (int, float)):
+        return False
+    if not isinstance(default_overlap, (int, float)):
+        return False
+    if not isinstance(current_window_word_count, int):
+        return False
+    if candidate["bucket"] != "medium_confidence":
+        return False
+    if len(line.words) != 3:
+        return False
+    if float(aggressive_overlap) < 0.99:
+        return False
+    if float(default_overlap) > 0.0:
+        return False
+    if current_window_word_count > 3:
+        return False
+    delta = float(target_start) - line.start_time
+    if delta > -0.25 or delta < -1.0:
+        return False
+    prev_end = (
+        adjusted_lines[idx - 1].end_time
+        if idx > 0 and adjusted_lines[idx - 1].words
+        else None
+    )
+    return prev_end is None or float(target_start) > prev_end + 0.2
+
+
 def apply_forced_advisory_start_nudges(
     *,
     lines: Sequence[models.Line],
@@ -58,52 +130,35 @@ def apply_forced_advisory_start_nudges(
         return list(lines), 0
     if not current_segments or current_words is None:
         return list(lines), 0
-    if not Path(_resolve_advisory_audio_path(vocals_path)).exists():
-        return list(lines), 0
-
-    aggressive_segments, aggressive_words, _aggressive_language = (
-        load_aggressive_variant_fn(
-            vocals_path=vocals_path,
-            language=language,
-            model_size=model_size,
-            logger=logger,
-        )
-    )
-    candidates = collect_forced_advisory_start_candidates(
+    candidates = _load_forced_advisory_candidates(
         lines=lines,
         current_segments=current_segments,
         current_words=current_words,
-        aggressive_segments=aggressive_segments,
-        aggressive_words=aggressive_words,
+        vocals_path=vocals_path,
+        language=language,
+        model_size=model_size,
+        logger=logger,
+        load_aggressive_variant_fn=load_aggressive_variant_fn,
     )
+    if not candidates:
+        return list(lines), 0
     adjusted = list(lines)
     nudged = 0
     for candidate in candidates:
-        idx = int(candidate["index"]) - 1
-        if idx < 0 or idx >= len(adjusted):
-            continue
-        line = adjusted[idx]
+        raw_index = candidate.get("index")
         target_start = candidate.get("aggressive_segment_start")
+        if not isinstance(raw_index, int):
+            continue
         if not isinstance(target_start, (int, float)):
             continue
-        if candidate["bucket"] != "medium_confidence":
+        idx = raw_index - 1
+        if not _advisory_candidate_is_eligible(
+            candidate=candidate,
+            adjusted_lines=adjusted,
+            idx=idx,
+        ):
             continue
-        if len(line.words) != 3:
-            continue
-        if float(candidate["aggressive_best_overlap"]) < 0.99:
-            continue
-        if float(candidate["default_best_overlap"]) > 0.0:
-            continue
-        if int(candidate["current_window_word_count"]) > 3:
-            continue
-        delta = float(target_start) - line.start_time
-        if delta > -0.25 or delta < -1.0:
-            continue
-        prev_end = (
-            adjusted[idx - 1].end_time if idx > 0 and adjusted[idx - 1].words else None
-        )
-        if prev_end is not None and float(target_start) <= prev_end + 0.2:
-            continue
+        line = adjusted[idx]
         adjusted[idx] = _pull_first_word_to_new_start(
             line,
             new_start=float(target_start),
