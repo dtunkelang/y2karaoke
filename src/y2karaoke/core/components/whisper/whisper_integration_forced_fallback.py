@@ -176,6 +176,17 @@ def _restored_sustained_line(
     if forced_duration >= baseline_duration * max_duration_ratio:
         return None
     start_shift = forced_line.start_time - baseline_line.start_time
+    final_compact_tail_restore = _restore_final_compact_sustained_tail_from_source(
+        baseline_lines=baseline_lines,
+        idx=idx,
+        baseline_line=baseline_line,
+        forced_line=forced_line,
+        baseline_duration=baseline_duration,
+        forced_duration=forced_duration,
+        start_shift=start_shift,
+    )
+    if final_compact_tail_restore is not None:
+        return final_compact_tail_restore
     if (
         forced_duration <= baseline_duration * exact_start_restore_ratio
         and abs(start_shift) >= exact_start_restore_min_shift_sec
@@ -206,6 +217,53 @@ def _restored_sustained_line(
         idx=idx,
         later_shift=later_shift,
         inter_line_gap_sec=inter_line_gap_sec,
+    )
+
+
+def _restore_final_compact_sustained_tail_from_source(
+    *,
+    baseline_lines: List[models.Line],
+    idx: int,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    baseline_duration: float,
+    forced_duration: float,
+    start_shift: float,
+    min_word_count: int = 5,
+    max_word_count: int = 5,
+    max_start_shift_sec: float = 0.25,
+    min_duration_ratio_gap: float = 0.45,
+    max_last_word_forced_duration_sec: float = 0.35,
+) -> models.Line | None:
+    if idx != len(baseline_lines) - 1:
+        return None
+    word_count = len(baseline_line.words)
+    if word_count < min_word_count or word_count > max_word_count:
+        return None
+    if len(forced_line.words) != word_count:
+        return None
+    if abs(start_shift) > max_start_shift_sec:
+        return None
+    if forced_duration >= baseline_duration - min_duration_ratio_gap:
+        return None
+    last_word = forced_line.words[-1]
+    last_word_duration = last_word.end_time - last_word.start_time
+    if last_word_duration > max_last_word_forced_duration_sec:
+        return None
+    target_end = baseline_line.end_time
+    if target_end <= last_word.end_time + 0.5:
+        return None
+    return models.Line(
+        words=[
+            models.Word(
+                text=word.text,
+                start_time=word.start_time,
+                end_time=(target_end if word_idx == word_count - 1 else word.end_time),
+                singer=word.singer,
+            )
+            for word_idx, word in enumerate(forced_line.words)
+        ],
+        singer=forced_line.singer,
     )
 
 

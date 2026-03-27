@@ -173,6 +173,42 @@ def test_restore_sustained_durations_shift_compact_recovered_lines_later():
     assert repaired_lines[3].start_time == pytest.approx(forced_lines[3].start_time)
 
 
+def test_restore_sustained_durations_extends_only_final_compact_tail():
+    baseline_lines = [
+        _dur_multi_line(1.12, 4.15, ["Take", "on", "me"]),
+        _dur_multi_line(6.84, 10.42, ["Take", "me", "on"]),
+        _dur_multi_line(12.23, 15.81, ["I'll", "be", "gone"]),
+        _dur_multi_line(17.05, 22.05, ["In", "a", "day", "or", "two"]),
+    ]
+    forced_lines = [
+        baseline_lines[0],
+        baseline_lines[1],
+        baseline_lines[2],
+        Line(
+            words=[
+                Word(text="In", start_time=17.204, end_time=17.265),
+                Word(text="a", start_time=17.365, end_time=17.525),
+                Word(text="day", start_time=17.626, end_time=17.907),
+                Word(text="or", start_time=17.987, end_time=18.288),
+                Word(text="two", start_time=18.529, end_time=18.709),
+            ]
+        ),
+    ]
+
+    repaired_lines, restored_count = (
+        _forced._restore_sustained_line_durations_from_source(
+            baseline_lines,
+            forced_lines,
+        )
+    )
+
+    assert restored_count == 1
+    assert repaired_lines[3].words[0].start_time == pytest.approx(17.204)
+    assert repaired_lines[3].words[1].start_time == pytest.approx(17.365)
+    assert repaired_lines[3].words[4].start_time == pytest.approx(18.529)
+    assert repaired_lines[3].end_time == pytest.approx(22.05)
+
+
 def test_attempt_whisperx_forced_alignment_redistributes_sparse_sustained_words():
     baseline_lines = [
         _dur_multi_line(0.99, 4.57, ["Take", "on", "me"]),
