@@ -14,6 +14,7 @@ from .whisper_advisory_support import (
     advisory_candidate_bucket,
     advisory_candidate_score,
     summarize_line_support,
+    token_overlap_score,
     window_words,
 )
 from .whisper_cache import (
@@ -71,6 +72,31 @@ def _build_report_like_lines(
             }
         )
     return report_lines
+
+
+def _best_segment_match_with_bounds(
+    segments: Sequence[timing_models.TranscriptionSegment],
+    line_text: str,
+    *,
+    start: float,
+    end: float,
+) -> tuple[str, float, float | None, float | None]:
+    best_text = ""
+    best_score = 0.0
+    best_start: float | None = None
+    best_end: float | None = None
+    for segment in segments:
+        seg_start = float(segment.start)
+        seg_end = float(segment.end)
+        if seg_end < start - 1.0 or seg_start > end + 1.0:
+            continue
+        score = token_overlap_score(line_text, segment.text)
+        if score > best_score:
+            best_score = score
+            best_text = segment.text
+            best_start = seg_start
+            best_end = seg_end
+    return best_text, round(best_score, 3), best_start, best_end
 
 
 def _aggressive_cache_is_usable(
@@ -150,6 +176,52 @@ def _load_or_transcribe_aggressive_variant(
     return segments, words, detected_lang
 
 
+def collect_forced_advisory_start_candidates(
+    *,
+    lines: Sequence[models.Line],
+    current_segments: Sequence[timing_models.TranscriptionSegment],
+    current_words: Sequence[timing_models.TranscriptionWord],
+    aggressive_segments: Sequence[timing_models.TranscriptionSegment],
+    aggressive_words: Sequence[timing_models.TranscriptionWord],
+) -> list[dict[str, Any]]:
+    report_lines = _build_report_like_lines(lines, current_words)
+    summaries = summarize_line_support(
+        report_lines=report_lines,
+        default_segments=current_segments,
+        default_words=current_words,
+        aggressive_segments=aggressive_segments,
+        aggressive_words=aggressive_words,
+    )
+    candidates: list[dict[str, Any]] = []
+    for idx, (summary, report_line) in enumerate(zip(summaries, report_lines)):
+        bucket = advisory_candidate_bucket(summary)
+        if bucket is None:
+            continue
+        _text, _score, aggressive_start, aggressive_end = (
+            _best_segment_match_with_bounds(
+                aggressive_segments,
+                summary.text,
+                start=float(report_line["start"]) - 1.0,
+                end=(
+                    float(report_lines[idx + 1]["start"])
+                    if idx + 1 < len(report_lines)
+                    else float(report_line["end"]) + 2.0
+                ),
+            )
+        )
+        candidates.append(
+            {
+                "bucket": bucket,
+                "score": round(advisory_candidate_score(summary), 3),
+                "aggressive_segment_start": aggressive_start,
+                "aggressive_segment_end": aggressive_end,
+                **asdict(summary),
+            }
+        )
+    candidates.sort(key=lambda item: (-float(item["score"]), int(item["index"])))
+    return candidates
+
+
 def build_forced_advisory_trace_payload(
     *,
     lines: Sequence[models.Line],
@@ -166,19 +238,13 @@ def build_forced_advisory_trace_payload(
         aggressive_segments=aggressive_segments,
         aggressive_words=aggressive_words,
     )
-    candidates: list[dict[str, Any]] = []
-    for summary in summaries:
-        bucket = advisory_candidate_bucket(summary)
-        if bucket is None:
-            continue
-        candidates.append(
-            {
-                "bucket": bucket,
-                "score": round(advisory_candidate_score(summary), 3),
-                **asdict(summary),
-            }
-        )
-    candidates.sort(key=lambda item: (-float(item["score"]), int(item["index"])))
+    candidates = collect_forced_advisory_start_candidates(
+        lines=lines,
+        current_segments=current_segments,
+        current_words=current_words,
+        aggressive_segments=aggressive_segments,
+        aggressive_words=aggressive_words,
+    )
     return {
         "lines": [asdict(summary) for summary in summaries],
         "candidates": candidates,

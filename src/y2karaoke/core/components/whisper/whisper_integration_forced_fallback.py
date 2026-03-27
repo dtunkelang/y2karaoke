@@ -39,6 +39,9 @@ from .whisper_forced_trace import (
 from .whisper_forced_advisory_trace import (
     maybe_write_forced_advisory_trace as _maybe_write_forced_advisory_trace,
 )
+from .whisper_forced_advisory_nudges import (
+    apply_forced_advisory_start_nudges as _apply_forced_advisory_start_nudges,
+)
 from .whisper_split_refrain_restore import (
     restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
 )
@@ -933,6 +936,7 @@ def _build_forced_payload(
     restored_word_sequence_refrains: int,
     restored_split_refrains: int,
     used_model: str,
+    advisory_start_nudges: int = 0,
 ) -> Dict[str, Any]:
     return {
         "matched_ratio": forced_word_coverage,
@@ -949,6 +953,7 @@ def _build_forced_payload(
         "shifted_refrain_followup_gaps": float(shifted_refrain_gaps),
         "restored_word_sequence_refrains": float(restored_word_sequence_refrains),
         "restored_split_short_refrains": float(restored_split_refrains),
+        "forced_advisory_start_nudges": float(advisory_start_nudges),
         "whisper_model": used_model,
     }
 
@@ -1268,6 +1273,26 @@ def attempt_whisperx_forced_alignment(
             metadata={**trace_metadata, "status": "rejected_post_finalize_collapse"},
         )
         return None
+    forced_lines, advisory_start_nudges = _apply_forced_advisory_start_nudges(
+        lines=forced_lines,
+        current_segments=transcription,
+        current_words=whisper_words,
+        vocals_path=vocals_path,
+        language=language or detected_lang,
+        model_size=used_model,
+        logger=logger,
+    )
+    if advisory_start_nudges:
+        logger.info(
+            "Applied %d advisory start nudge(s) from alternate transcription support",
+            advisory_start_nudges,
+        )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_advisory_start_nudges",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
 
     forced_payload = _build_forced_payload(
         forced_word_coverage=forced_word_coverage,
@@ -1276,6 +1301,7 @@ def attempt_whisperx_forced_alignment(
         restored_word_sequence_refrains=restored_word_sequence_refrains,
         restored_split_refrains=restored_split_refrains,
         used_model=used_model,
+        advisory_start_nudges=advisory_start_nudges,
     )
     _capture_forced_trace_snapshot(
         trace_snapshots,
