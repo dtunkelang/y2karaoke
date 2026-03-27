@@ -553,7 +553,7 @@ def _best_truncated_followup_target(
     min_content_similarity: float,
     min_tail_similarity: float,
     min_gap: float,
-) -> float | None:
+) -> tuple[float, float] | None:
     tokens = _truncated_followup_tokens(line)
     if tokens is None:
         return None
@@ -581,7 +581,9 @@ def _best_truncated_followup_target(
         if score > best_score:
             best_score = score
             best_target = target
-    return best_target
+    if best_target is None:
+        return None
+    return best_target, best_score
 
 
 def _leading_light_token_slot_sec(line: models.Line) -> float:
@@ -622,6 +624,34 @@ def _truncated_followup_boundary_targets(
     return target_prev_end, target_start
 
 
+def _allow_truncated_followup_start_only_reanchor(
+    *,
+    prev_line: models.Line | None,
+    line: models.Line,
+    content_anchor_start: float,
+    candidate_score: float,
+    min_gap: float,
+    min_existing_gap_sec: float,
+    min_candidate_score: float,
+    min_prev_duration_sec: float,
+    min_current_duration_sec: float,
+) -> bool:
+    if prev_line is None or not prev_line.words:
+        return False
+    if candidate_score < min_candidate_score:
+        return False
+    existing_gap = line.start_time - prev_line.end_time
+    if existing_gap >= min_existing_gap_sec or existing_gap < min_gap:
+        return False
+    if content_anchor_start < prev_line.end_time + min_gap:
+        return False
+    if prev_line.end_time <= prev_line.start_time + min_prev_duration_sec:
+        return False
+    if line.end_time <= content_anchor_start + min_current_duration_sec:
+        return False
+    return True
+
+
 def reanchor_truncated_followup_lines_from_phonetic_variants(
     mapped_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
@@ -636,6 +666,7 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
     max_prev_overlap_sec: float = 0.12,
     min_prev_duration_sec: float = 0.8,
     min_current_duration_sec: float = 0.9,
+    min_start_only_candidate_score: float = 1.2,
 ) -> tuple[List[models.Line], int]:
     updated = list(mapped_lines)
     applied = 0
@@ -654,10 +685,11 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
         )
         if best_target is None:
             continue
+        target_anchor_start, target_score = best_target
         target_prev_end, target_start = _truncated_followup_boundary_targets(
             prev_line=prev_line,
             line=line,
-            content_anchor_start=best_target,
+            content_anchor_start=target_anchor_start,
             min_gap=min_gap,
             min_existing_gap_sec=min_existing_gap_sec,
             max_leading_slot_sec=max_leading_slot_sec,
@@ -666,6 +698,20 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
             min_current_duration_sec=min_current_duration_sec,
         )
         if prev_line is not None and target_prev_end is None:
+            if not _allow_truncated_followup_start_only_reanchor(
+                prev_line=prev_line,
+                line=line,
+                content_anchor_start=target_anchor_start,
+                candidate_score=target_score,
+                min_gap=min_gap,
+                min_existing_gap_sec=min_existing_gap_sec,
+                min_candidate_score=min_start_only_candidate_score,
+                min_prev_duration_sec=min_prev_duration_sec,
+                min_current_duration_sec=min_current_duration_sec,
+            ):
+                continue
+            updated[idx] = rescale_line_to_new_start(line, target_anchor_start)
+            applied += 1
             continue
         if target_prev_end is not None and prev_line is not None:
             updated[idx - 1] = _rescale_line_to_new_end(prev_line, target_prev_end)

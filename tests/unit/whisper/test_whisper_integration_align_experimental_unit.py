@@ -716,7 +716,42 @@ def test_rebalance_short_followup_boundaries_from_whisper_shifts_compact_i_follo
     assert adjusted[1].end_time == pytest.approx(21.36, abs=0.01)
 
 
-def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_tight_existing_gap():
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_overlapping_gap():
+    lines = [
+        Line(
+            words=[
+                Word(text="Que", start_time=26.62, end_time=27.068),
+                Word(text="ganas", start_time=27.117, end_time=27.565),
+                Word(text="me", start_time=27.615, end_time=28.063),
+                Word(text="dan-dan-dan", start_time=28.112, end_time=28.56),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="De", start_time=28.80, end_time=29.127),
+                Word(text="guayarte,", start_time=29.163, end_time=29.491),
+                Word(text="ma...", start_time=29.527, end_time=29.855),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="dam,", start=28.22, end=28.56, probability=0.9),
+        TranscriptionWord(text="degollarte", start=28.64, end=29.3, probability=0.9),
+        TranscriptionWord(text="mami.", start=29.3, end=29.98, probability=0.9),
+    ]
+
+    adjusted, applied = wiaexp.reanchor_truncated_followup_lines_from_phonetic_variants(
+        lines, whisper_words
+    )
+
+    assert applied == 0
+    assert adjusted[0].end_time == pytest.approx(lines[0].end_time, abs=0.01)
+    assert adjusted[1].start_time == pytest.approx(lines[1].start_time, abs=0.01)
+
+
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_moderate_gap_tail_without_rebalancing_prev() -> (
+    None
+):
     lines = [
         Line(
             words=[
@@ -744,9 +779,9 @@ def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_tight_ex
         lines, whisper_words
     )
 
-    assert applied == 0
-    assert adjusted[0].end_time == pytest.approx(lines[0].end_time, abs=0.01)
-    assert adjusted[1].start_time == pytest.approx(lines[1].start_time, abs=0.01)
+    assert applied == 1
+    assert adjusted[0].end_time == pytest.approx(28.56, abs=0.01)
+    assert adjusted[1].start_time == pytest.approx(28.64, abs=0.01)
 
 
 def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_large_gap_tail():
