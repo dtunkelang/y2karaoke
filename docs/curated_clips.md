@@ -278,6 +278,15 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the right future policy, if any, must be narrower than “do not restore suffix-only support”
     - line-2-style repeated hooks and line-3-style sparse tails cannot share the same weak-evidence bypass
+- A new analyzer now splits that `suffix_only_support` bucket into narrower families:
+  - tool: `tools/analyze_weak_evidence_restore_families.py`
+  - on the reverted `Take On Me` short-repeat trace:
+    - line 2 `Take me on` -> `repeated_short_hook_suffix_support`
+    - line 3 `I'll be gone` -> `sparse_tail_suffix_support`
+    - line 4 `In a day or two` -> `sparse_tail_suffix_support`
+  - implication:
+    - the next viable mapped-path experiment is no longer a generic weak-evidence rule
+    - it is a repeated-short-hook-specific exception, likely requiring strong overlap with a neighboring repeated hook
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

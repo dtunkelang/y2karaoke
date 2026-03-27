@@ -1241,6 +1241,15 @@ Most likely next inspection targets:
     - implication:
       - the useful pattern is narrower than “suffix-only support means keep the mapped line”
       - broad weak-evidence relaxation is the wrong fix family here
+  - added `tools/analyze_weak_evidence_restore_families.py` to split `suffix_only_support` into narrower subfamilies
+    - real `Take On Me` reverted short-repeat trace:
+      - line 2 `Take me on` -> `repeated_short_hook_suffix_support`
+      - line 3 `I'll be gone` -> `sparse_tail_suffix_support`
+      - line 4 `In a day or two` -> `sparse_tail_suffix_support`
+    - the distinguishing signal is strong token overlap with a neighboring short repeated hook
+    - implication:
+      - any future weak-evidence exception must target the repeated-short-hook family only
+      - sparse tails cannot share that exception
 
 ## 2026-03-27 Broader strategy reset
 
