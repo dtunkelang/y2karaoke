@@ -269,6 +269,15 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the restore logic is currently over-penalizing short repeated hooks whose first token disappears but whose suffix remains locally supported
     - the next `Take On Me` experiment should focus on that weak-evidence-restore shape rather than broad lexical-support threshold changes
+- A broad diagnostics-only bypass for that suffix-only weak-support shape was tested and reverted:
+  - run dir: `benchmarks/results/20260327T235218Z`
+  - outcome got much worse on forced-off mapped `Take On Me`: about `1.803 / 1.974`
+  - the failure was narrow and informative:
+    - line 2 stayed unchanged
+    - line 3 regressed from about `11.91-15.49` to `8.01-11.17`
+  - implication:
+    - the right future policy, if any, must be narrower than “do not restore suffix-only support”
+    - line-2-style repeated hooks and line-3-style sparse tails cannot share the same weak-evidence bypass
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

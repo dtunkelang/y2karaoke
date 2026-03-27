@@ -1232,6 +1232,15 @@ Most likely next inspection targets:
     - implication:
       - the restore rule is currently treating short repeated hooks with missing first token but strong suffix support as if they have no lexical support at all
       - the next diagnostic or code path should target that specific weak-evidence restore shape, not generic lexical-support relaxation
+  - tested a diagnostics-only broad bypass for that suffix-only weak-support shape and reverted it
+    - run dir: `benchmarks/results/20260327T235218Z`
+    - result got much worse: `0.870 / 1.028 -> 1.803 / 1.974`
+    - line-by-line comparison:
+      - line 2 stayed unchanged at `6.45-8.93`
+      - line 3 regressed from `11.91-15.49` to `8.01-11.17`
+    - implication:
+      - the useful pattern is narrower than “suffix-only support means keep the mapped line”
+      - broad weak-evidence relaxation is the wrong fix family here
 
 ## 2026-03-27 Broader strategy reset
 
