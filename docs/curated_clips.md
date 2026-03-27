@@ -144,6 +144,9 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - clipped-anchor recovery handles most of the `low_text_similarity` cases
   - the rest are still `anchor_outside_window`
   - implication: if you adopt clipped-anchor comparability, treat it as one layer, not the whole fix
+- A follow-up window-phrase diagnostic tightened the second layer too:
+  - most of the remaining `anchor_outside_window` lines in `Con Calma` already have strong local phrases inside the Whisper window
+  - implication: the remaining blocker is largely anchor-start selection, not lack of local lexical evidence, except for the final `De guayarte, ma...` line
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

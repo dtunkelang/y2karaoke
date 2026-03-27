@@ -1053,6 +1053,22 @@ Most likely next inspection targets:
 - implication:
   - clipped-anchor policy is now a good candidate for the `low_text_similarity` half of the problem
   - but `Con Calma` will still need a separate answer for the outside-window lines
+- new outside-window diagnostic:
+  - `tools/analyze_anchor_outside_window_recovery.py`
+  - on the kept `Con Calma` baseline, `6` of the `7` `anchor_outside_window` lines have strong local window phrases that would meet agreement thresholds if the anchor started inside the local phrase:
+    - lines 2, 3, 6, 7, 10, 11 recover
+    - only line 12 still fails (`degollarte mami`)
+- stronger architecture read:
+  - `Con Calma` is not one opaque DTW failure anymore
+  - it splits into:
+    - merged-anchor text comparability, which the guarded clipped-anchor simulation largely fixes
+    - anchor-start/window anchoring, which is also locally recoverable on most remaining lines
+  - only line 12 still looks like genuinely weak lexical evidence
+- next best step:
+  - prototype a benchmark-only two-layer comparability policy for `Con Calma`:
+    1. guarded clipped-anchor text for `low_text_similarity`
+    2. local window phrase anchoring for recoverable `anchor_outside_window`
+  - do not touch production timing yet
 
 ## 2026-03-27 Broader strategy reset
 
