@@ -168,6 +168,67 @@ def _has_repeated_tail_token_support(
     return False
 
 
+def _is_short_forced_hook_tail_candidate(
+    *,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    min_word_count: int,
+    max_word_count: int,
+    min_end_shortfall_sec: float,
+    max_end_shortfall_sec: float,
+    max_start_delta_sec: float,
+    max_last_word_duration_sec: float,
+) -> bool:
+    if not baseline_line.words or not forced_line.words:
+        return False
+    word_count = len(forced_line.words)
+    if word_count < min_word_count or word_count > max_word_count:
+        return False
+    end_shortfall = baseline_line.end_time - forced_line.end_time
+    if end_shortfall < min_end_shortfall_sec or end_shortfall > max_end_shortfall_sec:
+        return False
+    if abs(forced_line.start_time - baseline_line.start_time) > max_start_delta_sec:
+        return False
+    last_word = forced_line.words[-1]
+    return last_word.end_time - last_word.start_time <= max_last_word_duration_sec
+
+
+def _short_forced_hook_target_end(
+    *,
+    baseline_end: float,
+    forced_end: float,
+    next_start: float | None,
+    min_gap_sec: float,
+) -> float | None:
+    target_end = baseline_end
+    if next_start is not None:
+        target_end = min(target_end, next_start - min_gap_sec)
+    if target_end <= forced_end + 0.05:
+        return None
+    return target_end
+
+
+def _extend_last_forced_word_end(
+    line: models.Line,
+    *,
+    target_end: float,
+) -> models.Line:
+    return models.Line(
+        words=[
+            models.Word(
+                text=word.text,
+                start_time=word.start_time,
+                end_time=(
+                    target_end if word_idx == len(line.words) - 1 else word.end_time
+                ),
+                singer=word.singer,
+            )
+            for word_idx, word in enumerate(line.words)
+        ],
+        singer=line.singer,
+    )
+
+
 def extend_short_forced_hook_tails_from_source(
     baseline_lines: List[models.Line],
     forced_lines: List[models.Line],
@@ -191,21 +252,16 @@ def extend_short_forced_hook_tails_from_source(
     for idx, (baseline_line, forced_line) in enumerate(
         zip(baseline_lines, forced_lines)
     ):
-        if not baseline_line.words or not forced_line.words:
-            continue
-        word_count = len(forced_line.words)
-        if word_count < min_word_count or word_count > max_word_count:
-            continue
-        end_shortfall = baseline_line.end_time - forced_line.end_time
-        if (
-            end_shortfall < min_end_shortfall_sec
-            or end_shortfall > max_end_shortfall_sec
+        if not _is_short_forced_hook_tail_candidate(
+            baseline_line=baseline_line,
+            forced_line=forced_line,
+            min_word_count=min_word_count,
+            max_word_count=max_word_count,
+            min_end_shortfall_sec=min_end_shortfall_sec,
+            max_end_shortfall_sec=max_end_shortfall_sec,
+            max_start_delta_sec=max_start_delta_sec,
+            max_last_word_duration_sec=max_last_word_duration_sec,
         ):
-            continue
-        if abs(forced_line.start_time - baseline_line.start_time) > max_start_delta_sec:
-            continue
-        last_word = forced_line.words[-1]
-        if last_word.end_time - last_word.start_time > max_last_word_duration_sec:
             continue
         next_start = (
             repaired[idx + 1].start_time
@@ -220,26 +276,17 @@ def extend_short_forced_hook_tails_from_source(
             max_repeat_search_sec=max_repeat_search_sec,
         ):
             continue
-        target_end = baseline_line.end_time
-        if next_start is not None:
-            target_end = min(target_end, next_start - min_gap_sec)
-        if target_end <= forced_line.end_time + 0.05:
+        target_end = _short_forced_hook_target_end(
+            baseline_end=baseline_line.end_time,
+            forced_end=forced_line.end_time,
+            next_start=next_start,
+            min_gap_sec=min_gap_sec,
+        )
+        if target_end is None:
             continue
-        repaired[idx] = models.Line(
-            words=[
-                models.Word(
-                    text=word.text,
-                    start_time=word.start_time,
-                    end_time=(
-                        target_end
-                        if word_idx == len(forced_line.words) - 1
-                        else word.end_time
-                    ),
-                    singer=word.singer,
-                )
-                for word_idx, word in enumerate(forced_line.words)
-            ],
-            singer=forced_line.singer,
+        repaired[idx] = _extend_last_forced_word_end(
+            forced_line,
+            target_end=target_end,
         )
         extended += 1
     return repaired, extended
