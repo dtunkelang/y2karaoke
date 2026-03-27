@@ -694,3 +694,35 @@ Most likely next inspection targets:
 - next best target:
   - `Con Calma` remains the biggest miss, but gains there are getting brittle
   - if continuing code-side quality, the next clean investigation should start from accepted-forced-alignment diagnostics again rather than DTW traces
+
+## 2026-03-27 Con Calma truncated-tail gate tighten keep
+
+- curation context:
+  - after the latest curated gold cleanup, [27_daddy-yankee-snow-con-calma-first-chorus-bilingual.gold.json](/Users/dtunkelang/y2karaoke/benchmarks/clip_gold_candidate/20260312T_curated_clips/27_daddy-yankee-snow-con-calma-first-chorus-bilingual.gold.json) moved the tail later:
+    - line 11: `27.0-28.75`
+    - line 12: `28.75-30.0`
+  - that changed the old truncated-tail repair from helpful to slightly over-aggressive
+- what the rerun showed:
+  - focused rerun on the new gold in `benchmarks/results/20260327T001229Z` still had:
+    - line 11 predicted `26.62-28.35`
+    - line 12 predicted `28.40-29.94`
+  - the issue was no longer line-12 lexical anchoring; it was the helper pulling line 12 earlier even though the existing line-11/12 boundary was already reasonably tight
+- kept code change:
+  - tightened `reanchor_truncated_followup_lines_from_phonetic_variants()` in [whisper_integration_align_experimental.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_align_experimental.py)
+  - the helper now requires a genuinely large existing gap before it can move a truncated followup line, and it skips the repair entirely if it cannot also reserve a valid preceding boundary slot
+  - updated coverage in [test_whisper_integration_align_experimental_unit.py](/Users/dtunkelang/y2karaoke/tests/unit/whisper/test_whisper_integration_align_experimental_unit.py):
+    - tight-gap case now explicitly skips by default
+    - large-gap case is still covered with an explicit lower threshold override
+- kept results:
+  - focused `Con Calma|Taste` rerun improved in `benchmarks/results/20260327T002145Z`
+  - `Con Calma`: `0.2354 / 0.2326 -> 0.2320 / 0.2266`
+  - `Taste` stayed flat at `0.2080 / 0.2730`
+  - broad cached canary improved in `benchmarks/results/20260327T002229Z`
+  - aggregate weighted start mean: `0.1980 -> 0.1970`
+  - only material movement was `Con Calma`
+- negative learning:
+  - the original truncated-tail repair was now overshooting because the gold moved later, not because the phonetic content anchor itself got worse
+  - the useful fix was to narrow the existing helper, not to invent a new Con Calma-specific retime
+- next best target:
+  - `Sweet Caroline` is now the cleaner next target if `Con Calma` stops paying off
+  - `Con Calma` can still be revisited, but only if a new tail idea explains both lines together

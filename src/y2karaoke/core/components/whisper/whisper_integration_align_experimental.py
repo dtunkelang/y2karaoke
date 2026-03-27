@@ -596,6 +596,7 @@ def _truncated_followup_boundary_targets(
     line: models.Line,
     content_anchor_start: float,
     min_gap: float,
+    min_existing_gap_sec: float,
     max_leading_slot_sec: float,
     max_prev_overlap_sec: float,
     min_prev_duration_sec: float,
@@ -604,6 +605,8 @@ def _truncated_followup_boundary_targets(
     if prev_line is None or not prev_line.words:
         return None, content_anchor_start
     if prev_line.end_time < content_anchor_start - max_prev_overlap_sec:
+        return None, content_anchor_start
+    if line.start_time - prev_line.end_time < min_existing_gap_sec:
         return None, content_anchor_start
 
     leading_slot = min(_leading_light_token_slot_sec(line), max_leading_slot_sec)
@@ -628,6 +631,7 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
     min_content_similarity: float = 0.55,
     min_tail_similarity: float = 0.6,
     min_gap: float = 0.05,
+    min_existing_gap_sec: float = 0.4,
     max_leading_slot_sec: float = 0.24,
     max_prev_overlap_sec: float = 0.12,
     min_prev_duration_sec: float = 0.8,
@@ -655,11 +659,14 @@ def reanchor_truncated_followup_lines_from_phonetic_variants(
             line=line,
             content_anchor_start=best_target,
             min_gap=min_gap,
+            min_existing_gap_sec=min_existing_gap_sec,
             max_leading_slot_sec=max_leading_slot_sec,
             max_prev_overlap_sec=max_prev_overlap_sec,
             min_prev_duration_sec=min_prev_duration_sec,
             min_current_duration_sec=min_current_duration_sec,
         )
+        if prev_line is not None and target_prev_end is None:
+            continue
         if target_prev_end is not None and prev_line is not None:
             updated[idx - 1] = _rescale_line_to_new_end(prev_line, target_prev_end)
         updated[idx] = rescale_line_to_new_start(line, target_start)
