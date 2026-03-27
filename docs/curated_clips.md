@@ -165,6 +165,18 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - A small guard-tradeoff sweep confirmed that choice:
   - the current best benchmark-only candidate is still `line_words >= 6`, `anchor_surplus >= 15`, `anchor_words >= 20`
   - implication: use that exact setting for the first real comparability-policy prototype, not a looser version
+- The first additive benchmark-side prototype now exists in `tools/analyze_two_layer_benchmark_prototype.py`:
+  - on mixed kept pack `benchmarks/results/20260327T180340Z`
+    - baseline `agreement_coverage_ratio_total = 0.3514`
+    - prototype `agreement_coverage_ratio_total = 0.6562`
+    - baseline `agreement_bad_ratio_total = 0.1081`
+    - prototype `agreement_bad_ratio_total = 0.1081`
+  - the whole simulated gain is currently isolated to `Con Calma`:
+    - `0/5 -> 8/9`
+  - prototype assumption is explicit:
+    - recovered lines count as good matches
+    - bad/warn/severe counts stay fixed
+  - implication: the next step can stay benchmark-side, but it is now grounded in runner-compatible aggregate math rather than raw line recovery counts
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

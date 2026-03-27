@@ -1123,6 +1123,18 @@ Most likely next inspection targets:
 - next actual coding move:
   - port exactly this guarded two-layer policy into a benchmark-runner-only prototype
   - measure aggregate `agreement_coverage_ratio_total`, `agreement_bad_ratio_total`, and hotspot ordering against the current baseline
+  - first additive prototype is now available in `tools/analyze_two_layer_benchmark_prototype.py`
+  - on mixed kept pack `benchmarks/results/20260327T180340Z` with the selected guard:
+    - baseline `agreement_coverage_ratio_total = 0.3514`
+    - prototype `agreement_coverage_ratio_total = 0.6562`
+    - baseline `agreement_bad_ratio_total = 0.1081`
+    - prototype `agreement_bad_ratio_total = 0.1081`
+    - recovered song count: `1`
+    - recovered song: `Con Calma` `0/5 -> 8/9`
+  - prototype assumption is explicit:
+    - recovered lines count as good matches
+    - bad/warn/severe line counts remain fixed
+  - this is still benchmark-only analysis, not production or runner integration
 
 ## 2026-03-27 Broader strategy reset
 
