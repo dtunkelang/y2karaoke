@@ -726,3 +726,32 @@ Most likely next inspection targets:
 - next best target:
   - `Sweet Caroline` is now the cleaner next target if `Con Calma` stops paying off
   - `Con Calma` can still be revisited, but only if a new tail idea explains both lines together
+
+## 2026-03-27 Forced fallback stage tracing
+
+- kept infrastructure change:
+  - added env-gated accepted-forced stage tracing in [whisper_integration_forced_fallback.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_forced_fallback.py)
+  - new env vars:
+    - `Y2K_TRACE_FORCED_FALLBACK_STAGES_JSON`
+    - `Y2K_TRACE_WHISPER_LINE_RANGE`
+  - added unit coverage in [test_whisper_integration_forced_fallback_unit.py](/Users/dtunkelang/y2karaoke/tests/unit/whisper/test_whisper_integration_forced_fallback_unit.py)
+- why:
+  - recent `Sweet Caroline`, `Without Me`, and `Con Calma` probes were failing because the real moving stage on the accepted forced path was still unclear
+  - the old WhisperX trace only exposed accepted aligned segments, not the post-acceptance fallback stages
+- first useful readout:
+  - `Sweet Caroline` traced with
+    - `Y2K_TRACE_FORCED_FALLBACK_STAGES_JSON=/tmp/sweet_caroline_forced_stages_20260327.json`
+    - `Y2K_TRACE_WHISPER_LINE_RANGE=3-4`
+  - result:
+    - line 3 `I've been inclined` stayed unchanged through every fallback stage:
+      - loaded: `12.741-14.125`
+      - after short-line repair: unchanged
+      - after sustained-line repair: unchanged
+      - after finalize: unchanged
+      - after sparse followups: unchanged
+      - final: unchanged
+    - line 4 only changed at the existing low-score tail extension:
+      - `16.656-19.183 -> 16.656-19.826`
+- conclusion:
+  - `Sweet Caroline` line 3 is not blocked in the current forced-fallback postpasses
+  - the next real code target must be before or inside forced alignment acceptance, not another post-fallback heuristic
