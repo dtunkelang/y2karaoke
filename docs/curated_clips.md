@@ -129,6 +129,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - A follow-up clipping simulation made that more concrete:
   - on the kept `Con Calma` baseline, clipping merged anchor text down to the best contiguous phrase would recover most of the `low_text_similarity` lines
   - implication: anchor-text clipping is now a more credible next strategy than another boundary retime or broad threshold relaxation
+  - the stronger quantified read is:
+    - baseline agreement coverage `0/5`
+    - clipped-anchor simulated coverage `4/5`
+  - that is strong enough to justify an explicit clipped-anchor comparability experiment before more song-specific retiming work
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

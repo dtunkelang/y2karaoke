@@ -1005,6 +1005,19 @@ Most likely next inspection targets:
 - stronger implication:
   - the next `Con Calma` architecture step should probably be clipped-anchor agreement / comparability on merged segments
   - not broader threshold relaxation and not another local timing correction
+- quantified recovery simulation:
+  - `tools/simulate_clipped_agreement_recovery.py`
+  - on `benchmarks/results/20260327T193726Z/01_daddy-yankee-snow-con-calma-first-chorus-bilingual_timing_report.json`
+  - baseline agreement coverage is `0/5`
+  - clipped-anchor simulated coverage is `4/5`
+  - recovered lines:
+    - line 1 `Con calma, yo quiero ver cómo ella lo menea`
+    - line 4 `I like your poom-poom, girl (Sube, sube)`
+    - line 5 `Con calma, yo quiero ver cómo ella lo menea`
+    - line 9 `Ya vi que estás solita, acompáñame`
+- current best next step:
+  - prototype clipped-anchor agreement in the benchmark/comparability path first
+  - if it improves coverage cleanly without inflating bad-ratio, then consider porting the same anchor-clipping idea into production DTW/agreement policy
 
 ## 2026-03-27 Broader strategy reset
 
