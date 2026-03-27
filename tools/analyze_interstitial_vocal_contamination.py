@@ -178,22 +178,16 @@ def _analyze_gap(
     }
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("gold_json", help="Gold timing JSON path")
-    parser.add_argument(
-        "--output-dir",
-        default="/tmp/interstitial_windows",
-        help="Directory for temporary trimmed gap clips",
-    )
-    parser.add_argument("--json", action="store_true", help="Emit JSON")
-    args = parser.parse_args()
-
-    gold = _load_json(Path(args.gold_json))
+def analyze_gold_json(
+    gold_json: Path,
+    *,
+    output_dir: Path | None = None,
+) -> dict[str, Any]:
+    gold = _load_json(gold_json)
     audio_path = str(Path(gold["audio_path"]).expanduser().resolve())
     gold_lines = gold.get("lines", [])
     windows = _build_gap_windows(gold_lines)
-    output_dir = Path(args.output_dir)
+    output_dir = output_dir or Path("/tmp/interstitial_windows")
     output_dir.mkdir(parents=True, exist_ok=True)
     model = WhisperModel("large-v3", device="cpu", compute_type="int8")
 
@@ -221,18 +215,35 @@ def main() -> int:
                 aggressive_language=aggressive_language,
             )
         )
-
-    payload = {
-        "gold_json": str(Path(args.gold_json).resolve()),
+    return {
+        "gold_json": str(gold_json.resolve()),
         "audio_path": audio_path,
         "gaps": results,
     }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("gold_json", help="Gold timing JSON path")
+    parser.add_argument(
+        "--output-dir",
+        default="/tmp/interstitial_windows",
+        help="Directory for temporary trimmed gap clips",
+    )
+    parser.add_argument("--json", action="store_true", help="Emit JSON")
+    args = parser.parse_args()
+
+    # Keep CLI-compatible output while exposing reusable analysis for other tools.
+    payload = analyze_gold_json(
+        Path(args.gold_json),
+        output_dir=Path(args.output_dir),
+    )
     if args.json:
         print(json.dumps(payload, indent=2))
         return 0
 
     print(f"# {payload['gold_json']}")
-    for gap in results:
+    for gap in payload["gaps"]:
         print(
             f"## gap {gap['gap_index']}->{gap['gap_index'] + 1} "
             f"{gap['classification']}"
