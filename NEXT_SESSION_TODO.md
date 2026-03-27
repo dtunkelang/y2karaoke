@@ -1069,6 +1069,20 @@ Most likely next inspection targets:
     1. guarded clipped-anchor text for `low_text_similarity`
     2. local window phrase anchoring for recoverable `anchor_outside_window`
   - do not touch production timing yet
+- combined simulator:
+  - `tools/simulate_two_layer_agreement_recovery.py`
+  - on the kept `Con Calma` baseline:
+    - baseline comparable coverage `0/5`
+    - simulated two-layer comparable coverage `10/11 = 0.909`
+  - recovered lines:
+    - clipped-anchor layer: 1, 4, 5, 9
+    - local-window-anchor layer: 2, 3, 6, 7, 10, 11
+  - still unresolved:
+    - line 8 `I like your poom-poom, girl (¡Hey!)`
+    - line 12 `De guayarte, ma...`
+- current best next step is now explicit:
+  - implement the same two-layer rule in a benchmark-only agreement/comparability prototype
+  - compare aggregate coverage and bad-ratio against the current baseline before touching any live production alignment path
 
 ## 2026-03-27 Broader strategy reset
 

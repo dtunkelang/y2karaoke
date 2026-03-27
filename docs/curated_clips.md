@@ -147,6 +147,11 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - A follow-up window-phrase diagnostic tightened the second layer too:
   - most of the remaining `anchor_outside_window` lines in `Con Calma` already have strong local phrases inside the Whisper window
   - implication: the remaining blocker is largely anchor-start selection, not lack of local lexical evidence, except for the final `De guayarte, ma...` line
+- The combined two-layer simulation is the current best strategic read:
+  - `Con Calma` moves from `0/5` comparable lines to `10/11` under:
+    - guarded clipped-anchor text for merged-anchor mismatches
+    - local window phrase anchoring for recoverable outside-window lines
+  - implication: the next benchmark-only policy experiment is justified; further local timing heuristics are not the best use of time here
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
