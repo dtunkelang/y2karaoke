@@ -1,6 +1,6 @@
 # Curated Clip Workflow
 
-Last updated: 2026-03-20
+Last updated: 2026-03-27
 
 Use curated clips to isolate specific timing or alignment behaviors without paying whole-song iteration costs on every pass.
 
@@ -121,6 +121,11 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - gold start/end metrics became decent while DTW / agreement coverage stayed poor
   - the practical signal was `dtw_line_coverage = 0.667` with `gold_start_mean_abs_sec = 0.2242`
   - implication: stop assuming the next gain is another boundary retime; the remaining issue is likely in mapping / coverage policy
+- A deeper agreement diagnostic sharpened that read:
+  - the remaining `Con Calma` agreement failures split into `anchor_outside_window` and `low_text_similarity`
+  - but several `low_text_similarity` cases are not true text mismatches
+  - they are exact local lyric phrases being compared against over-merged anchor text that spans multiple lines
+  - implication: before relaxing similarity thresholds on bilingual / chorus-merging clips, inspect anchor granularity and anchor-selection policy
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

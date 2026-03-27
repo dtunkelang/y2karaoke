@@ -977,6 +977,23 @@ Most likely next inspection targets:
   - the apparent local earlier phrase is not the active live lever
   - the remaining `Con Calma` miss is deeper than another start-shift / boundary heuristic
   - the next useful target is why DTW / agreement coverage stays weak even when the gold metrics are already decent
+- new agreement-level diagnostic:
+  - `tools/analyze_agreement_skip_reasons.py`
+  - concrete read on the same kept baseline:
+    - `anchor_outside_window = 7`
+    - `low_text_similarity = 5`
+  - but the `low_text_similarity` rows are not mainly threshold-near misses
+  - several are exact local phrases compared against over-merged anchor text spanning multiple lyric lines:
+    - line 1 `Con calma, yo quiero ver cómo ella lo menea`
+      - anchor is the whole merged chorus opening
+      - similarity `0.4398`, token overlap `1.0`
+    - line 5 shows the same pattern
+    - line 9 `Ya vi que estás solita, acompáñame`
+      - anchor is the whole merged `Hey ... acompáñame ... la noche ... que gana ...` phrase
+      - similarity `0.4615`, token overlap `1.0`
+- implication:
+  - the next likely win is not “relax agreement text similarity”
+  - it is anchor granularity / anchor selection policy for merged segments, likely shared with the DTW coverage weakness
 
 ## 2026-03-27 Broader strategy reset
 
