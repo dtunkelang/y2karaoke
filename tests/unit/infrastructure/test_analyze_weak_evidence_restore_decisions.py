@@ -45,6 +45,64 @@ def test_analyze_weak_evidence_restore_decisions_classifies_reason() -> None:
     assert len(payload["rows"]) == 1
     row = payload["rows"][0]
     assert row["line_index"] == 9
-    assert row["reason"] == "lexical_support_missing"
+    assert row["reason"] == "suffix_only_support"
     assert row["has_lexical_support"] is False
+    assert row["suffix_support_tokens"] == 1
     assert row["nearby_support_words"] == 0
+
+
+def test_analyze_weak_evidence_restore_decisions_detects_suffix_only_support() -> None:
+    trace = {
+        "snapshots": [
+            {
+                "stage": "before",
+                "count": 1,
+                "lines": [
+                    {
+                        "line_index": 2,
+                        "text": "Take me on",
+                        "start": 4.22,
+                        "end": 8.22,
+                    }
+                ],
+            },
+            {
+                "stage": "after_restore_weak_evidence_large_start_shifts",
+                "count": 1,
+                "lines": [
+                    {
+                        "line_index": 2,
+                        "text": "Take me on",
+                        "start": 6.451,
+                        "end": 10.033,
+                    }
+                ],
+            },
+        ]
+    }
+    report = {
+        "lines": [
+            {
+                "index": 2,
+                "text": "Take me on",
+                "start": 6.451,
+                "end": 10.033,
+                "words": [{"text": "Take"}, {"text": "me"}, {"text": "on"}],
+                "whisper_window_avg_prob": 0.868,
+                "whisper_window_low_conf_count": 0,
+                "whisper_window_word_count": 3,
+                "whisper_window_words": [
+                    {"text": "me", "start": 5.64, "end": 8.16, "probability": 0.986},
+                    {"text": "on,", "start": 8.16, "end": 9.64, "probability": 0.724},
+                    {"text": "I'll", "start": 9.84, "end": 13.2, "probability": 0.895},
+                ],
+            }
+        ]
+    }
+
+    payload = tool.analyze(trace, report)
+
+    row = payload["rows"][0]
+    assert row["reason"] == "suffix_only_support"
+    assert row["has_lexical_support"] is False
+    assert row["suffix_support_tokens"] == 2

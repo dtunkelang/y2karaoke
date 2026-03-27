@@ -262,6 +262,13 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the main mapped-path error is earlier than baseline restoration
     - `postpass_extend_trailing` remains the first stage that makes the layout clearly wrong
+- Weak-evidence restore diagnostics now distinguish `suffix_only_support` from true missing lexical support:
+  - on the reverted short-repeat diagnostic trace `/tmp/take_on_me_short_repeat_skip.json`
+  - line 2 `Take me on` is classified as `suffix_only_support`, not `lexical_support_missing`
+  - local support window still contains `me`, `on`, `I'll`
+  - implication:
+    - the restore logic is currently over-penalizing short repeated hooks whose first token disappears but whose suffix remains locally supported
+    - the next `Take On Me` experiment should focus on that weak-evidence-restore shape rather than broad lexical-support threshold changes
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

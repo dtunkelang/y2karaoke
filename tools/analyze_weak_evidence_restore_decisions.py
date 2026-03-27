@@ -35,6 +35,15 @@ def _first_substantive_support_token(words: list[dict[str, Any]]) -> str:
     return fallback
 
 
+def _normalized_line_support_tokens(line_words: list[dict[str, Any]]) -> list[str]:
+    tokens: list[str] = []
+    for word in line_words:
+        token = _normalize_token(str(word.get("text", "")))
+        if token:
+            tokens.append(token)
+    return tokens
+
+
 def _line_has_local_first_token_support(
     line_words: list[dict[str, Any]],
     whisper_words: list[dict[str, Any]],
@@ -65,6 +74,37 @@ def _line_has_local_first_token_support(
         ):
             return True
     return False
+
+
+def _count_local_suffix_support_tokens(
+    line_words: list[dict[str, Any]],
+    whisper_words: list[dict[str, Any]],
+) -> int:
+    line_tokens = _normalized_line_support_tokens(line_words)
+    if len(line_tokens) < 2:
+        return 0
+    suffix_tokens = line_tokens[1:]
+    observed_tokens: list[str] = []
+    for word in whisper_words:
+        if str(word.get("text")) == "[VOCAL]":
+            continue
+        token = _normalize_token(str(word.get("text", "")))
+        if token:
+            observed_tokens.append(token)
+    matched = 0
+    for suffix_token in suffix_tokens:
+        if any(
+            observed == suffix_token
+            or observed.startswith(suffix_token)
+            or suffix_token.startswith(observed)
+            or (
+                len(suffix_token) >= 2
+                and (observed in suffix_token or suffix_token in observed)
+            )
+            for observed in observed_tokens
+        ):
+            matched += 1
+    return matched
 
 
 def _line_window_has_low_confidence(
@@ -173,6 +213,10 @@ def analyze(
             whisper_words,
             line_start=float(before_line["start"]),
         )
+        suffix_support_tokens = _count_local_suffix_support_tokens(
+            line_words,
+            whisper_words,
+        )
         next_start = None
         next_report_line = report_lines.get(line_index + 1)
         if next_report_line is not None:
@@ -189,7 +233,13 @@ def analyze(
             window_sec=support_window_sec,
         )
 
-        if abs_shift >= lexical_support_shift_sec and not has_lexical_support:
+        if (
+            abs_shift >= lexical_support_shift_sec
+            and not has_lexical_support
+            and suffix_support_tokens >= 1
+        ):
+            reason = "suffix_only_support"
+        elif abs_shift >= lexical_support_shift_sec and not has_lexical_support:
             reason = "lexical_support_missing"
         elif low_confidence:
             reason = "low_confidence_window"
@@ -210,6 +260,7 @@ def analyze(
                 "end_delta": round(end_delta, 3),
                 "abs_shift": round(abs_shift, 3),
                 "has_lexical_support": has_lexical_support,
+                "suffix_support_tokens": suffix_support_tokens,
                 "low_confidence_window": low_confidence,
                 "nearby_support_words": nearby_support,
                 "reason": reason,

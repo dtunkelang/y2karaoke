@@ -1225,6 +1225,13 @@ Most likely next inspection targets:
     - long-gap continuous-vocals pull partially repairs that jump
     - baseline constraint then partially repairs it again
     - so the next meaningful target is the trailing-extension acceptance itself, not continuous-vocals or baseline gating
+  - weak-evidence restore analyzer was extended to distinguish `suffix_only_support` from true `lexical_support_missing`
+    - real trace on the reverted short-repeat branch: `/tmp/take_on_me_short_repeat_skip.json`
+    - line 2 `Take me on` is now correctly classified as `suffix_only_support`
+    - local window words are `me`, `on`, `I'll`
+    - implication:
+      - the restore rule is currently treating short repeated hooks with missing first token but strong suffix support as if they have no lexical support at all
+      - the next diagnostic or code path should target that specific weak-evidence restore shape, not generic lexical-support relaxation
 
 ## 2026-03-27 Broader strategy reset
 
