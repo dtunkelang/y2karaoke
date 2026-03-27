@@ -13,6 +13,11 @@ from .whisper_forced_advisory_trace import (
 )
 
 
+def _forced_advisory_start_nudge_enabled() -> bool:
+    raw = os.environ.get("Y2K_DISABLE_FORCED_ADVISORY_START_NUDGE", "").strip().lower()
+    return raw not in {"1", "true", "yes", "on"}
+
+
 def _pull_first_word_to_new_start(
     line: models.Line,
     *,
@@ -47,8 +52,7 @@ def apply_forced_advisory_start_nudges(
         ..., Any
     ] = _load_or_transcribe_aggressive_variant,
 ) -> tuple[list[models.Line], int]:
-    raw = os.environ.get("Y2K_ENABLE_FORCED_ADVISORY_START_NUDGE", "").strip().lower()
-    if raw not in {"1", "true", "yes", "on"}:
+    if not _forced_advisory_start_nudge_enabled():
         return list(lines), 0
     if not current_segments or current_words is None:
         return list(lines), 0

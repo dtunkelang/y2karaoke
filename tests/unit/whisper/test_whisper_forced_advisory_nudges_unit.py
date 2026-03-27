@@ -31,7 +31,6 @@ def _line(text: str, start: float, end: float) -> Line:
 def test_apply_forced_advisory_start_nudges_shifts_only_exact_three_word_candidate(
     monkeypatch,
 ) -> None:
-    monkeypatch.setenv("Y2K_ENABLE_FORCED_ADVISORY_START_NUDGE", "1")
     lines = [
         _line("Good times never seemed so good", 4.97, 8.60),
         _line("I've been inclined", 12.74, 14.12),
@@ -81,3 +80,22 @@ def test_apply_forced_advisory_start_nudges_shifts_only_exact_three_word_candida
     assert nudged == 1
     assert adjusted[1].start_time == 12.0
     assert adjusted[1].end_time == lines[1].end_time
+
+
+def test_apply_forced_advisory_start_nudges_respects_disable_env(monkeypatch) -> None:
+    monkeypatch.setenv("Y2K_DISABLE_FORCED_ADVISORY_START_NUDGE", "1")
+    line = _line("I've been inclined", 12.74, 14.12)
+
+    adjusted, nudged = apply_forced_advisory_start_nudges(
+        lines=[line],
+        current_segments=[],
+        current_words=[],
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="large",
+        logger=_Logger(),
+        load_aggressive_variant_fn=lambda **_kwargs: ([], [], "en"),
+    )
+
+    assert nudged == 0
+    assert adjusted[0].start_time == line.start_time
