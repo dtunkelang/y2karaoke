@@ -36,6 +36,9 @@ from .whisper_forced_trace import (
     maybe_write_forced_trace_snapshot_file as _maybe_write_forced_trace_snapshot_file,
     parse_forced_trace_line_range as _parse_forced_trace_line_range,
 )
+from .whisper_forced_advisory_trace import (
+    maybe_write_forced_advisory_trace as _maybe_write_forced_advisory_trace,
+)
 from .whisper_split_refrain_restore import (
     restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
 )
@@ -1284,6 +1287,15 @@ def attempt_whisperx_forced_alignment(
         trace_path=trace_path,
         snapshots=trace_snapshots,
         metadata={**trace_metadata, "status": "accepted", **forced_payload},
+    )
+    _maybe_write_forced_advisory_trace(
+        lines=forced_lines,
+        current_segments=transcription,
+        current_words=whisper_words,
+        vocals_path=vocals_path,
+        language=language or detected_lang,
+        model_size=used_model,
+        logger=logger,
     )
     return (
         forced_lines,
