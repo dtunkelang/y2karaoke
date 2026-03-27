@@ -147,6 +147,76 @@ def _final_held_tail_target_end(
     return target_end
 
 
+def _is_final_line_with_words(
+    *,
+    idx: int,
+    line_count: int,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    audio_features: timing_models.AudioFeatures | None,
+) -> bool:
+    return (
+        idx == line_count - 1
+        and audio_features is not None
+        and bool(baseline_line.words)
+        and bool(forced_line.words)
+    )
+
+
+def _held_tail_word_count_and_duration_ok(
+    *,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    min_word_count: int,
+    max_word_count: int,
+    min_baseline_duration_sec: float,
+    max_duration_ratio: float,
+) -> bool:
+    word_count = len(forced_line.words)
+    if word_count < min_word_count or word_count > max_word_count:
+        return False
+    baseline_duration = baseline_line.end_time - baseline_line.start_time
+    if baseline_duration < min_baseline_duration_sec:
+        return False
+    forced_duration = forced_line.end_time - forced_line.start_time
+    return 0.0 < forced_duration <= baseline_duration * max_duration_ratio
+
+
+def _held_tail_alignment_shortfall_ok(
+    *,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    min_end_shortfall_sec: float,
+    max_end_shortfall_sec: float,
+    max_start_delta_sec: float,
+) -> bool:
+    end_shortfall = baseline_line.end_time - forced_line.end_time
+    if end_shortfall < min_end_shortfall_sec or end_shortfall > max_end_shortfall_sec:
+        return False
+    return abs(forced_line.start_time - baseline_line.start_time) <= max_start_delta_sec
+
+
+def _held_tail_has_supported_activity(
+    *,
+    forced_line: models.Line,
+    target_end: float,
+    audio_features: timing_models.AudioFeatures,
+    min_tail_activity: float,
+    silence_min_duration: float,
+) -> bool:
+    activity = _check_vocal_activity_in_range(
+        forced_line.end_time, target_end, audio_features
+    )
+    if activity < min_tail_activity:
+        return False
+    return not _check_for_silence_in_range(
+        forced_line.end_time,
+        target_end,
+        audio_features,
+        min_silence_duration=silence_min_duration,
+    )
+
+
 def _is_final_held_tail_candidate(
     *,
     idx: int,
@@ -165,27 +235,32 @@ def _is_final_held_tail_candidate(
     silence_min_duration: float,
     min_extension_sec: float,
 ) -> bool:
-    if idx != line_count - 1 or audio_features is None:
-        return False
-    if not baseline_line.words or not forced_line.words:
-        return False
-    word_count = len(forced_line.words)
-    if word_count < min_word_count or word_count > max_word_count:
-        return False
-    baseline_duration = baseline_line.end_time - baseline_line.start_time
-    if baseline_duration < min_baseline_duration_sec:
-        return False
-    forced_duration = forced_line.end_time - forced_line.start_time
-    if (
-        forced_duration <= 0.0
-        or forced_duration > baseline_duration * max_duration_ratio
+    if not _is_final_line_with_words(
+        idx=idx,
+        line_count=line_count,
+        baseline_line=baseline_line,
+        forced_line=forced_line,
+        audio_features=audio_features,
     ):
         return False
-    end_shortfall = baseline_line.end_time - forced_line.end_time
-    if end_shortfall < min_end_shortfall_sec or end_shortfall > max_end_shortfall_sec:
+    if not _held_tail_word_count_and_duration_ok(
+        baseline_line=baseline_line,
+        forced_line=forced_line,
+        min_word_count=min_word_count,
+        max_word_count=max_word_count,
+        min_baseline_duration_sec=min_baseline_duration_sec,
+        max_duration_ratio=max_duration_ratio,
+    ):
         return False
-    if abs(forced_line.start_time - baseline_line.start_time) > max_start_delta_sec:
+    if not _held_tail_alignment_shortfall_ok(
+        baseline_line=baseline_line,
+        forced_line=forced_line,
+        min_end_shortfall_sec=min_end_shortfall_sec,
+        max_end_shortfall_sec=max_end_shortfall_sec,
+        max_start_delta_sec=max_start_delta_sec,
+    ):
         return False
+    assert audio_features is not None
     target_end = _final_held_tail_target_end(
         baseline_end=baseline_line.end_time,
         forced_end=forced_line.end_time,
@@ -194,19 +269,13 @@ def _is_final_held_tail_candidate(
     )
     if target_end is None:
         return False
-    activity = _check_vocal_activity_in_range(
-        forced_line.end_time, target_end, audio_features
+    return _held_tail_has_supported_activity(
+        forced_line=forced_line,
+        target_end=target_end,
+        audio_features=audio_features,
+        min_tail_activity=min_tail_activity,
+        silence_min_duration=silence_min_duration,
     )
-    if activity < min_tail_activity:
-        return False
-    if _check_for_silence_in_range(
-        forced_line.end_time,
-        target_end,
-        audio_features,
-        min_silence_duration=silence_min_duration,
-    ):
-        return False
-    return True
 
 
 def extend_final_held_tail_lines_from_activity(
