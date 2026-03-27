@@ -787,3 +787,31 @@ Most likely next inspection targets:
 - next best step:
   - use the new analyzer first on candidate problem clips before changing transcription policy again
   - if upstream work resumes, the cleaner direction is likely segment-aware reuse of aggressive `faster_whisper` evidence, not wholesale transcript replacement
+
+## 2026-03-27 Line support comparison diagnostics
+
+- kept diagnostics addition:
+  - added [analyze_line_support_variants.py](/Users/dtunkelang/y2karaoke/tools/analyze_line_support_variants.py)
+  - added unit coverage in [test_analyze_line_support_variants.py](/Users/dtunkelang/y2karaoke/tests/unit/infrastructure/test_analyze_line_support_variants.py)
+- why:
+  - transcript-level summaries were still too coarse
+  - the next useful question is line-local: does aggressive `faster_whisper` add localized lexical support on the exact lines that are failing?
+- first useful findings:
+  - `Sweet Caroline`:
+    - lines 3-5 all show real aggressive gains
+    - line 3 `I've been inclined` moves from no default support to exact aggressive support
+    - line 4 gains strong aggressive support, though still on the `would` vs `were` variant family
+    - conclusion: aggressive evidence is genuinely line-local here and may be useful as an advisory side channel
+  - `Take On Me`:
+    - all later lines show only weak overlap against one merged aggressive segment
+    - conclusion: this is still merged-noise evidence, not something to trust line-locally
+  - `Con Calma`:
+    - most lines show strong aggressive gains
+    - the hard tail does not: line 11 overlap is very weak and line 12 has none
+    - conclusion: aggressive evidence helps the main body, but not the stubborn tail family
+- negative learning:
+  - a second upstream production branch that tried phrase-gap splitting on aggressive transcripts was reverted
+  - even after splitting, clean `Take On Me` still regressed badly
+- next best step:
+  - if upstream work continues, it should be selective and line-local
+  - the clearest target is `Sweet Caroline`, using aggressive support as advisory evidence only on lines with strong localized gain
