@@ -836,3 +836,22 @@ Most likely next inspection targets:
   - the selection logic is now good enough to distinguish a real localized advisory opportunity (`Sweet Caroline` line 3) from a merged-evidence trap (`Take On Me`)
 - next best step:
   - if a production experiment happens, make it one narrow `Sweet Caroline` line-3 start-only advisory nudge driven by this ranked signal
+
+## 2026-03-27 Advisory nudge simulation
+
+- kept diagnostics addition:
+  - added [simulate_advisory_line_start_nudges.py](/Users/dtunkelang/y2karaoke/tools/simulate_advisory_line_start_nudges.py)
+  - added unit coverage in [test_simulate_advisory_line_start_nudges.py](/Users/dtunkelang/y2karaoke/tests/unit/infrastructure/test_simulate_advisory_line_start_nudges.py)
+- why:
+  - before touching runtime code, we needed an offline check that a ranked advisory candidate would actually improve the metric in the direction we want
+- first useful readout:
+  - `Sweet Caroline` on `benchmarks/results/20260327T002229Z/benchmark_report.json`
+  - applying the ranked start-only advisory nudge to line 3 (`I've been inclined`) would move:
+    - song start mean: `0.242 -> 0.094`
+    - line 3 start error: `0.790 -> 0.050`
+    - end mean stays unchanged in the simulation because it is a start-only nudge
+- conclusion:
+  - unlike the aggressive transcript replacement branches, the line-local advisory idea now has positive offline evidence
+- next best step:
+  - if a production experiment happens, wire only this exact start-only advisory family into forced alignment acceptance
+  - keep it narrow enough that `Take On Me`-style merged-evidence lines remain excluded
