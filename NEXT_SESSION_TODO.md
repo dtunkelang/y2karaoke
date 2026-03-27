@@ -1095,6 +1095,19 @@ Most likely next inspection targets:
 - implication:
   - the two-layer policy is strong enough to justify a benchmark-runner prototype
   - but it still needs at least one more guard if we want it cleanly isolated before any production-port discussion
+- stronger guard candidate:
+  - `min_line_words = 6`
+  - `min_anchor_surplus_words = 15`
+  - `min_anchor_words = 20`
+  - mixed-pack two-layer simulation with that stricter guard:
+    - baseline comparable coverage `13/28 = 0.4643`
+    - adjusted comparable coverage `21/32 = 0.6562`
+    - only recovered song: `Con Calma` `0/5 -> 8/9`
+- practical effect:
+  - this drops the residual `Take On Me` spillover
+  - but it also stops recovering shorter `Con Calma` lines like `Mueve ese poom-poom, girl`
+- current best benchmark-only candidate:
+  - use the stricter `min_anchor_words = 20` version first if the goal is isolation over recall
 
 ## 2026-03-27 Broader strategy reset
 

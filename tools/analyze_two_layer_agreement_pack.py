@@ -29,6 +29,7 @@ def analyze(
     min_token_overlap: float = 0.5,
     min_line_words: int = 6,
     min_anchor_surplus_words: int = 15,
+    min_anchor_words: int = 20,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     baseline_eligible_total = 0
@@ -50,6 +51,7 @@ def analyze(
             min_token_overlap=min_token_overlap,
             min_line_words=min_line_words,
             min_anchor_surplus_words=min_anchor_surplus_words,
+            min_anchor_words=min_anchor_words,
         )
         baseline_eligible = int(payload.get("baseline_eligible_lines", 0) or 0)
         baseline_matched = int(payload.get("baseline_matched_lines", 0) or 0)
@@ -106,6 +108,7 @@ def analyze(
         ),
         "min_line_words": min_line_words,
         "min_anchor_surplus_words": min_anchor_surplus_words,
+        "min_anchor_words": min_anchor_words,
         "rows": rows,
     }
 
@@ -137,6 +140,12 @@ def main() -> int:
         default=15,
         help="Guard for clipped-anchor recovery",
     )
+    parser.add_argument(
+        "--min-anchor-words",
+        type=int,
+        default=20,
+        help="Guard for clipped-anchor recovery",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     args = parser.parse_args()
 
@@ -146,6 +155,7 @@ def main() -> int:
         min_token_overlap=float(args.min_token_overlap),
         min_line_words=int(args.min_line_words),
         min_anchor_surplus_words=int(args.min_anchor_surplus_words),
+        min_anchor_words=int(args.min_anchor_words),
     )
     if args.json:
         print(json.dumps(payload, indent=2))

@@ -28,6 +28,7 @@ def analyze(
     min_token_overlap: float = 0.5,
     min_line_words: int = 6,
     min_anchor_surplus_words: int = 15,
+    min_anchor_words: int = 20,
 ) -> dict[str, Any]:
     clipped = clip_tool.analyze(
         timing_report,
@@ -35,6 +36,7 @@ def analyze(
         min_token_overlap=min_token_overlap,
         min_line_words=min_line_words,
         min_anchor_surplus_words=min_anchor_surplus_words,
+        min_anchor_words=min_anchor_words,
     )
     outside = window_tool.analyze(
         timing_report,
@@ -64,8 +66,14 @@ def analyze(
             if row.get(
                 "baseline_skip_reason"
             ) == "anchor_outside_window" and outside_row.get("candidate_would_match"):
-                resolution = "recovered_by_window_phrase"
-                extra_eligible += 1
+                line_words = len(
+                    clip_tool.skip_tool.suite._normalize_agreement_text(
+                        row.get("text", "")
+                    ).split()
+                )
+                if line_words >= min_line_words:
+                    resolution = "recovered_by_window_phrase"
+                    extra_eligible += 1
         if resolution != "unresolved" and resolution != "baseline_match":
             recovered += 1
         rows.append(
@@ -96,6 +104,7 @@ def analyze(
         "recovered_lines": recovered,
         "min_line_words": min_line_words,
         "min_anchor_surplus_words": min_anchor_surplus_words,
+        "min_anchor_words": min_anchor_words,
         "rows": rows,
     }
 
@@ -127,6 +136,12 @@ def main() -> int:
         default=15,
         help="Guard for clipped-anchor recovery",
     )
+    parser.add_argument(
+        "--min-anchor-words",
+        type=int,
+        default=20,
+        help="Guard for clipped-anchor recovery",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     args = parser.parse_args()
 
@@ -136,6 +151,7 @@ def main() -> int:
         min_token_overlap=float(args.min_token_overlap),
         min_line_words=int(args.min_line_words),
         min_anchor_surplus_words=int(args.min_anchor_surplus_words),
+        min_anchor_words=int(args.min_anchor_words),
     )
     if args.json:
         print(json.dumps(payload, indent=2))

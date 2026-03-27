@@ -90,6 +90,7 @@ def test_simulate_clipped_agreement_recovery_applies_guards() -> None:
         payload,
         min_line_words=6,
         min_anchor_surplus_words=15,
+        min_anchor_words=20,
     )
 
     assert result["baseline_eligible_lines"] == 1

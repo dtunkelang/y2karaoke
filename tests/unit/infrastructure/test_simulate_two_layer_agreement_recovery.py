@@ -49,23 +49,25 @@ def test_simulate_two_layer_agreement_recovery_combines_both_paths() -> None:
             },
             {
                 "index": 2,
-                "text": "Mueve ese poom-poom, girl",
-                "start": 4.0,
-                "end": 5.0,
+                "text": "La noche es de nosotros, tú lo sabe' (You know)",
+                "start": 6.0,
+                "end": 8.0,
                 "nearest_segment_start": 0.0,
                 "nearest_segment_start_text": (
-                    "Con calma yo quiero ver como ella lo menea mueve ese pum pum girl"
+                    "Hey ya vi que estas solita acompaname la noche de nosotros "
+                    "tu lo sabes que gana me dam dam dam"
                 ),
-                "whisper_window_start": 3.0,
-                "whisper_window_end": 6.0,
+                "whisper_window_start": 5.0,
+                "whisper_window_end": 8.5,
                 "whisper_window_word_count": 5,
                 "whisper_window_avg_prob": 0.8,
                 "whisper_window_words": [
-                    {"text": "mueve", "start": 3.2, "end": 3.4},
-                    {"text": "ese", "start": 3.4, "end": 3.6},
-                    {"text": "pum", "start": 3.6, "end": 3.8},
-                    {"text": "pum", "start": 3.8, "end": 4.0},
-                    {"text": "girl", "start": 4.0, "end": 4.2},
+                    {"text": "la", "start": 5.8, "end": 5.9},
+                    {"text": "noche", "start": 5.9, "end": 6.1},
+                    {"text": "de", "start": 6.1, "end": 6.2},
+                    {"text": "nosotros", "start": 6.2, "end": 6.6},
+                    {"text": "tu", "start": 6.6, "end": 6.7},
+                    {"text": "lo", "start": 6.7, "end": 6.8},
                 ],
             },
         ],

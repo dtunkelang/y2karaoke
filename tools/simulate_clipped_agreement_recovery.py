@@ -25,8 +25,9 @@ def analyze(
     min_text_similarity: float = 0.58,
     min_token_overlap: float = 0.5,
     hook_boundary: bool = False,
-    min_line_words: int = 0,
-    min_anchor_surplus_words: int = 0,
+    min_line_words: int = 6,
+    min_anchor_surplus_words: int = 15,
+    min_anchor_words: int = 20,
 ) -> dict[str, Any]:
     baseline = skip_tool.analyze(
         timing_report,
@@ -70,6 +71,7 @@ def analyze(
             recovered = (
                 bool(clip_row.get("clipped_would_match", False))
                 and line_words >= min_line_words
+                and anchor_words >= min_anchor_words
                 and (anchor_words - line_words) >= min_anchor_surplus_words
             )
         if eligible:
@@ -107,6 +109,7 @@ def analyze(
         "adjusted_coverage_ratio": round(adjusted_coverage, 4),
         "min_line_words": min_line_words,
         "min_anchor_surplus_words": min_anchor_surplus_words,
+        "min_anchor_words": min_anchor_words,
         "rows": rows,
     }
 
@@ -140,8 +143,14 @@ def main() -> int:
     parser.add_argument(
         "--min-anchor-surplus-words",
         type=int,
-        default=0,
+        default=15,
         help="Only count clipped recoveries when anchor is this many words longer",
+    )
+    parser.add_argument(
+        "--min-anchor-words",
+        type=int,
+        default=20,
+        help="Only count clipped recoveries when anchor has at least this many words",
     )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     args = parser.parse_args()
@@ -153,6 +162,7 @@ def main() -> int:
         hook_boundary=bool(args.hook_boundary),
         min_line_words=int(args.min_line_words),
         min_anchor_surplus_words=int(args.min_anchor_surplus_words),
+        min_anchor_words=int(args.min_anchor_words),
     )
     if args.json:
         print(json.dumps(payload, indent=2))

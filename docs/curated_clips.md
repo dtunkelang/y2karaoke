@@ -156,6 +156,12 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `Con Calma` improves heavily
   - `Take On Me` still picks up one recovery
   - implication: benchmark-only integration is reasonable next, but keep treating guard design as part of the experiment
+- A stricter guard improved isolation:
+  - `line_words >= 6`
+  - `anchor_words - line_words >= 15`
+  - `anchor_words >= 20`
+  - on the mixed pack, that keeps a strong `Con Calma` gain while dropping the `Take On Me` spillover
+  - implication: the first benchmark-only policy prototype should probably start from this stricter version
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
