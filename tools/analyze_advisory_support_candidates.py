@@ -10,26 +10,10 @@ from typing import Any
 from faster_whisper import WhisperModel
 
 from tools import analyze_line_support_variants as support_tool
-
-
-def _candidate_score(line: dict[str, Any]) -> float:
-    return (
-        float(line["aggressive_best_overlap"]) * 10.0
-        + min(int(line["aggressive_window_word_count"]), 8) * 0.2
-        - min(int(line["current_window_word_count"]), 8) * 0.15
-    )
-
-
-def _candidate_bucket(line: dict[str, Any]) -> str | None:
-    overlap = float(line["aggressive_best_overlap"])
-    current_words = int(line["current_window_word_count"])
-    default_words = int(line["default_window_word_count"])
-    aggressive_words = int(line["aggressive_window_word_count"])
-    if overlap >= 0.95 and aggressive_words >= 3 and default_words == 0:
-        return "high_confidence"
-    if overlap >= 0.75 and aggressive_words >= 3 and current_words <= 3:
-        return "medium_confidence"
-    return None
+from y2karaoke.core.components.whisper.whisper_advisory_support import (
+    advisory_candidate_bucket,
+    advisory_candidate_score,
+)
 
 
 def _collect_candidates(
@@ -71,7 +55,7 @@ def _collect_candidates(
         )
         for line in lines:
             line_payload = asdict_no_dataclass(line)
-            bucket = _candidate_bucket(line_payload)
+            bucket = advisory_candidate_bucket(line)
             if bucket is None:
                 continue
             candidates.append(
@@ -80,7 +64,7 @@ def _collect_candidates(
                     "report_path": str(report_path),
                     "audio_path": audio_path,
                     "bucket": bucket,
-                    "score": round(_candidate_score(line_payload), 3),
+                    "score": round(advisory_candidate_score(line), 3),
                     **line_payload,
                 }
             )
