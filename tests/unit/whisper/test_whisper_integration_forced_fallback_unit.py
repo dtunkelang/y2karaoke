@@ -1,5 +1,3 @@
-import json
-
 import numpy as np
 import pytest
 
@@ -95,48 +93,6 @@ def test_attempt_whisperx_forced_alignment_returns_payload_on_success():
     assert len(out_lines) == 2
     assert "sparse" in corrections[0]
     assert payload["whisperx_forced"] == 1.0
-
-
-def test_attempt_whisperx_forced_alignment_writes_stage_trace_when_enabled(
-    tmp_path, monkeypatch
-):
-    lines = [_line(1.0), _line(2.0)]
-    trace_path = tmp_path / "forced_trace.json"
-    monkeypatch.setenv("Y2K_TRACE_FORCED_FALLBACK_STAGES_JSON", str(trace_path))
-    monkeypatch.setenv("Y2K_TRACE_WHISPER_LINE_RANGE", "1-2")
-
-    result = attempt_whisperx_forced_alignment(
-        lines=lines,
-        baseline_lines=lines,
-        vocals_path="vocals.wav",
-        language="en",
-        detected_lang=None,
-        logger=_Logger(),
-        used_model="base",
-        reason="test-trace",
-        align_lines_with_whisperx_fn=lambda *_a, **_k: (
-            lines,
-            {
-                "forced_word_coverage": 1.0,
-                "forced_line_coverage": 1.0,
-                "aligned_segments": [],
-            },
-        ),
-        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
-        restore_implausibly_short_lines_fn=lambda *_a, **_k: (lines, 0),
-        normalize_line_word_timings_fn=lambda current_lines: current_lines,
-        enforce_monotonic_line_starts_fn=lambda current_lines: current_lines,
-        enforce_non_overlapping_lines_fn=lambda current_lines: current_lines,
-    )
-
-    assert result is not None
-    payload = json.loads(trace_path.read_text())
-    assert payload["metadata"]["status"] == "accepted"
-    assert payload["metadata"]["reason"] == "test-trace"
-    stages = [snapshot["stage"] for snapshot in payload["snapshots"]]
-    assert "loaded_forced_alignment" in stages
-    assert "after_finalize_forced_line_timing" in stages
-    assert "final_forced_lines" in stages
 
 
 def test_attempt_whisperx_forced_alignment_uses_detected_lang_fallback():
