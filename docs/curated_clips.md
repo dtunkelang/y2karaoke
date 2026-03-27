@@ -206,6 +206,17 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the benchmark-only comparability idea is broader than just `Con Calma`
     - but it still does not solve the contamination / zero-support family, which keeps `Take On Me` as the clearest remaining hotspot
+- A new contamination-family pack analyzer now exists:
+  - `tools/analyze_contaminated_gap_pack.py`
+  - focused cached subset on `benchmarks/results/20260327T165543Z` with `Take On Me|Stayin' Alive`:
+    - `gaps_total = 4`
+    - `prev_line_truncated_total = 3`
+    - `next_line_delayed_total = 0`
+    - `Take On Me`: `2/3` gaps are `prev_line_truncated`
+    - `Stayin' Alive`: `1/1` gap is `prev_line_truncated`
+  - implication:
+    - the contamination family is mostly previous-line end loss, not next-line delay
+    - `Take On Me` is the stronger contamination case and remains the best target in that family
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

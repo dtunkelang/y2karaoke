@@ -1168,6 +1168,18 @@ Most likely next inspection targets:
     - the two-layer benchmark-only policy is broader than just `Con Calma`
     - but it still does not touch the contamination/zero-support `Take On Me` family
     - that makes `Take On Me` the clearest remaining hotspot even under improved comparability
+  - new contamination-family pack analyzer:
+    - `tools/analyze_contaminated_gap_pack.py`
+    - focused cached subset on `benchmarks/results/20260327T165543Z` with `Take On Me|Stayin' Alive`:
+      - `gaps_total = 4`
+      - `prev_line_truncated_total = 3`
+      - `next_line_delayed_total = 0`
+      - `Take On Me`: `2/3` gaps classify as `prev_line_truncated`
+      - `Stayin' Alive`: `1/1` gap classifies as `prev_line_truncated`
+    - implication:
+      - the contamination family is real and mostly previous-line end loss
+      - `Take On Me` is the stronger version of that family, not a generic held-tail case
+      - next useful code work should target earlier previous-line end retention on the mapped/assembly path, not another next-line-start fallback
 
 ## 2026-03-27 Broader strategy reset
 
