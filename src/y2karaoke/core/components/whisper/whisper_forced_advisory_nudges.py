@@ -71,6 +71,67 @@ def _load_forced_advisory_candidates(
     )
 
 
+def _candidate_core_fields(
+    candidate: dict[str, object],
+) -> tuple[float, float, float, int] | None:
+    target_start = candidate.get("aggressive_segment_start")
+    aggressive_overlap = candidate.get("aggressive_best_overlap")
+    default_overlap = candidate.get("default_best_overlap")
+    current_window_word_count = candidate.get("current_window_word_count")
+    if not isinstance(target_start, (int, float)):
+        return None
+    if not isinstance(aggressive_overlap, (int, float)):
+        return None
+    if not isinstance(default_overlap, (int, float)):
+        return None
+    if not isinstance(current_window_word_count, int):
+        return None
+    return (
+        float(target_start),
+        float(aggressive_overlap),
+        float(default_overlap),
+        current_window_word_count,
+    )
+
+
+def _candidate_matches_bucket_and_support(
+    *,
+    candidate: dict[str, object],
+    aggressive_overlap: float,
+    default_overlap: float,
+    current_window_word_count: int,
+) -> bool:
+    return (
+        candidate["bucket"] == "medium_confidence"
+        and aggressive_overlap >= 0.99
+        and default_overlap <= 0.0
+        and current_window_word_count <= 3
+    )
+
+
+def _candidate_target_delta_is_safe(
+    *,
+    target_start: float,
+    line: models.Line,
+) -> bool:
+    delta = target_start - line.start_time
+    return -1.0 <= delta <= -0.25
+
+
+def _candidate_respects_previous_line(
+    *,
+    adjusted_lines: Sequence[models.Line],
+    idx: int,
+    target_start: float,
+) -> bool:
+    prev_end = (
+        adjusted_lines[idx - 1].end_time
+        if idx > 0 and adjusted_lines[idx - 1].words
+        else None
+    )
+    return prev_end is None or target_start > prev_end + 0.2
+
+
 def _advisory_candidate_is_eligible(
     *,
     candidate: dict[str, object],
@@ -80,37 +141,28 @@ def _advisory_candidate_is_eligible(
     if idx < 0 or idx >= len(adjusted_lines):
         return False
     line = adjusted_lines[idx]
-    target_start = candidate.get("aggressive_segment_start")
-    aggressive_overlap = candidate.get("aggressive_best_overlap")
-    default_overlap = candidate.get("default_best_overlap")
-    current_window_word_count = candidate.get("current_window_word_count")
-    if not isinstance(target_start, (int, float)):
+    core_fields = _candidate_core_fields(candidate)
+    if core_fields is None:
         return False
-    if not isinstance(aggressive_overlap, (int, float)):
-        return False
-    if not isinstance(default_overlap, (int, float)):
-        return False
-    if not isinstance(current_window_word_count, int):
-        return False
-    if candidate["bucket"] != "medium_confidence":
+    target_start, aggressive_overlap, default_overlap, current_window_word_count = (
+        core_fields
+    )
+    if not _candidate_matches_bucket_and_support(
+        candidate=candidate,
+        aggressive_overlap=aggressive_overlap,
+        default_overlap=default_overlap,
+        current_window_word_count=current_window_word_count,
+    ):
         return False
     if len(line.words) != 3:
         return False
-    if float(aggressive_overlap) < 0.99:
+    if not _candidate_target_delta_is_safe(target_start=target_start, line=line):
         return False
-    if float(default_overlap) > 0.0:
-        return False
-    if current_window_word_count > 3:
-        return False
-    delta = float(target_start) - line.start_time
-    if delta > -0.25 or delta < -1.0:
-        return False
-    prev_end = (
-        adjusted_lines[idx - 1].end_time
-        if idx > 0 and adjusted_lines[idx - 1].words
-        else None
+    return _candidate_respects_previous_line(
+        adjusted_lines=adjusted_lines,
+        idx=idx,
+        target_start=target_start,
     )
-    return prev_end is None or float(target_start) > prev_end + 0.2
 
 
 def apply_forced_advisory_start_nudges(
