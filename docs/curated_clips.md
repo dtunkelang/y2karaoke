@@ -126,6 +126,9 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - but several `low_text_similarity` cases are not true text mismatches
   - they are exact local lyric phrases being compared against over-merged anchor text that spans multiple lines
   - implication: before relaxing similarity thresholds on bilingual / chorus-merging clips, inspect anchor granularity and anchor-selection policy
+- A follow-up clipping simulation made that more concrete:
+  - on the kept `Con Calma` baseline, clipping merged anchor text down to the best contiguous phrase would recover most of the `low_text_similarity` lines
+  - implication: anchor-text clipping is now a more credible next strategy than another boundary retime or broad threshold relaxation
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

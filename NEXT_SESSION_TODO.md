@@ -994,6 +994,17 @@ Most likely next inspection targets:
 - implication:
   - the next likely win is not “relax agreement text similarity”
   - it is anchor granularity / anchor selection policy for merged segments, likely shared with the DTW coverage weakness
+- follow-up simulator:
+  - `tools/analyze_agreement_anchor_clipping.py`
+  - on the same kept `Con Calma` report, clipping the merged anchor down to the best contiguous phrase would recover `4` of the `5` `low_text_similarity` lines:
+    - line 1 `Con calma...` -> clipped phrase is exact and would pass
+    - line 5 `Con calma...` -> clipped phrase is exact and would pass
+    - line 9 `Ya vi que estás solita, acompáñame` -> clipped phrase is exact and would pass
+    - line 4 `I like your poom-poom, girl (Sube, sube)` -> suffix-style clipped phrase would pass despite the `your/you` lexical variant
+    - only line 8 still fails
+- stronger implication:
+  - the next `Con Calma` architecture step should probably be clipped-anchor agreement / comparability on merged segments
+  - not broader threshold relaxation and not another local timing correction
 
 ## 2026-03-27 Broader strategy reset
 
