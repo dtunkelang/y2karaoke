@@ -133,6 +133,9 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - baseline agreement coverage `0/5`
     - clipped-anchor simulated coverage `4/5`
   - that is strong enough to justify an explicit clipped-anchor comparability experiment before more song-specific retiming work
+- A pack-level simulation showed the same idea is not automatically isolated:
+  - on a mixed kept pack, clipped-anchor simulated agreement improves `Con Calma` strongly, but also recovers `Take On Me` and one `Without Me` line
+  - implication: if this becomes a real comparability policy, it will need guards rather than a blanket enable
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

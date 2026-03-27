@@ -1018,6 +1018,18 @@ Most likely next inspection targets:
 - current best next step:
   - prototype clipped-anchor agreement in the benchmark/comparability path first
   - if it improves coverage cleanly without inflating bad-ratio, then consider porting the same anchor-clipping idea into production DTW/agreement policy
+- pack-level simulation:
+  - `tools/analyze_clipped_agreement_pack.py`
+  - mixed kept pack `benchmarks/results/20260327T180340Z`
+  - baseline agreement coverage: `13/28 = 0.4643`
+  - clipped-anchor simulated coverage: `20/28 = 0.7143`
+  - recoveries are not isolated to `Con Calma`:
+    - `Con Calma`: `0/5 -> 4/5`
+    - `Take On Me`: `0/2 -> 2/2`
+    - `Without Me`: `2/4 -> 3/4`
+- guard implication:
+  - clipped-anchor agreement is promising, but not ready to ship as an unconditional policy
+  - the next experiment needs explicit guards, likely around line family or anchor/window shape, before porting this idea into the main benchmark or production comparability logic
 
 ## 2026-03-27 Broader strategy reset
 
