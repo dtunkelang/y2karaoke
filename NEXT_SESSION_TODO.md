@@ -1131,6 +1131,10 @@ Most likely next inspection targets:
     - prototype `agreement_bad_ratio_total = 0.1081`
     - recovered song count: `1`
     - recovered song: `Con Calma` `0/5 -> 8/9`
+    - hotspot ordering also changes materially:
+      - baseline worst tier: `Take On Me`, `Con Calma`
+      - prototype worst hotspot: `Take On Me`
+      - prototype `Con Calma`: `8/9`, ranked just ahead of `Total Eclipse`
   - prototype assumption is explicit:
     - recovered lines count as good matches
     - bad/warn/severe line counts remain fixed

@@ -173,6 +173,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - prototype `agreement_bad_ratio_total = 0.1081`
   - the whole simulated gain is currently isolated to `Con Calma`:
     - `0/5 -> 8/9`
+  - hotspot ordering changes in the expected direction:
+    - baseline worst tier: `Take On Me`, `Con Calma`
+    - prototype worst hotspot: `Take On Me`
+    - prototype `Con Calma` moves to `8/9`, ahead of only `Total Eclipse`
   - prototype assumption is explicit:
     - recovered lines count as good matches
     - bad/warn/severe counts stay fixed

@@ -92,6 +92,20 @@ def test_analyze_two_layer_benchmark_prototype_adjusts_aggregate_counts(
             "agreement_good_ratio_total": 0.3,
             "agreement_warn_ratio_total": 0.1,
             "agreement_severe_ratio_total": 0.0,
+            "agreement_comparability_report": [
+                {
+                    "song": "Artist - Song",
+                    "eligible_lines": 1,
+                    "matched_lines_anchor": 0,
+                    "match_ratio_within_eligible": 0.0,
+                },
+                {
+                    "song": "Other - Control",
+                    "eligible_lines": 3,
+                    "matched_lines_anchor": 2,
+                    "match_ratio_within_eligible": 2 / 3,
+                },
+            ],
         },
         "songs": [
             {
@@ -114,3 +128,11 @@ def test_analyze_two_layer_benchmark_prototype_adjusts_aggregate_counts(
     assert result["prototype"]["agreement_bad_ratio_total"] == 0.05
     assert result["delta"]["agreement_matched_anchor_lines_total"] == 2
     assert result["recovered_song_count"] == 1
+    baseline_rank = [row["song"] for row in result["baseline_hotspots"]].index(
+        "Artist - Song"
+    )
+    prototype_rank = [row["song"] for row in result["prototype_hotspots"]].index(
+        "Artist - Song"
+    )
+    assert baseline_rank == 0
+    assert prototype_rank > baseline_rank

@@ -58,6 +58,9 @@ def analyze(
     baseline_bad = _safe_int(aggregate.get("agreement_bad_lines_total"))
     baseline_warn = _safe_int(aggregate.get("agreement_warn_lines_total"))
     baseline_severe = _safe_int(aggregate.get("agreement_severe_lines_total"))
+    baseline_comparability_report = aggregate.get("agreement_comparability_report", [])
+    if not isinstance(baseline_comparability_report, list):
+        baseline_comparability_report = []
 
     eligible_gain = _safe_int(
         pack_payload.get("adjusted_eligible_lines_total")
@@ -70,6 +73,14 @@ def analyze(
     adjusted_matched = baseline_matched + matched_gain
     adjusted_count = baseline_count + matched_gain
     adjusted_good = baseline_good + matched_gain
+
+    baseline_report_by_song: dict[str, dict[str, Any]] = {}
+    for raw_row in baseline_comparability_report:
+        if not isinstance(raw_row, dict):
+            continue
+        song_name = str(raw_row.get("song", "")).strip()
+        if song_name:
+            baseline_report_by_song[song_name] = raw_row
 
     rows = []
     for row in pack_payload.get("rows", []) or []:
@@ -86,6 +97,10 @@ def analyze(
             {
                 "song": str(row.get("song", "")),
                 "recovered_lines": recovered,
+                "baseline_eligible_lines": baseline_row_eligible,
+                "baseline_matched_lines": baseline_row_matched,
+                "adjusted_eligible_lines": adjusted_row_eligible,
+                "adjusted_matched_lines": adjusted_row_matched,
                 "baseline_coverage_ratio": _safe_float(
                     row.get("baseline_coverage_ratio")
                 ),
@@ -125,6 +140,65 @@ def analyze(
     )
     adjusted_severe_ratio = (
         baseline_severe / baseline_line_count if baseline_line_count else 0.0
+    )
+    baseline_hotspots: list[dict[str, Any]] = []
+    prototype_hotspots: list[dict[str, Any]] = []
+    all_song_names = {
+        *baseline_report_by_song.keys(),
+        *(str(row.get("song", "")).strip() for row in rows),
+    }
+    for song_name in sorted(name for name in all_song_names if name):
+        baseline_row = baseline_report_by_song.get(song_name, {})
+        prototype_row = next(
+            (row for row in rows if str(row.get("song", "")).strip() == song_name),
+            {},
+        )
+        baseline_song_eligible = _safe_int(baseline_row.get("eligible_lines"))
+        baseline_song_matched = _safe_int(baseline_row.get("matched_lines_anchor"))
+        adjusted_song_eligible = _safe_int(
+            prototype_row.get("adjusted_eligible_lines", baseline_song_eligible)
+        )
+        adjusted_song_matched = _safe_int(
+            prototype_row.get("adjusted_matched_lines", baseline_song_matched)
+        )
+        baseline_hotspots.append(
+            {
+                "song": song_name,
+                "eligible_lines": baseline_song_eligible,
+                "matched_lines": baseline_song_matched,
+                "match_ratio_within_eligible": (
+                    baseline_song_matched / baseline_song_eligible
+                    if baseline_song_eligible
+                    else 0.0
+                ),
+            }
+        )
+        prototype_hotspots.append(
+            {
+                "song": song_name,
+                "eligible_lines": adjusted_song_eligible,
+                "matched_lines": adjusted_song_matched,
+                "match_ratio_within_eligible": (
+                    adjusted_song_matched / adjusted_song_eligible
+                    if adjusted_song_eligible
+                    else 0.0
+                ),
+            }
+        )
+
+    baseline_hotspots.sort(
+        key=lambda row: (
+            _safe_float(row.get("match_ratio_within_eligible")),
+            _safe_int(row.get("eligible_lines")),
+            str(row.get("song", "")),
+        )
+    )
+    prototype_hotspots.sort(
+        key=lambda row: (
+            _safe_float(row.get("match_ratio_within_eligible")),
+            _safe_int(row.get("eligible_lines")),
+            str(row.get("song", "")),
+        )
     )
     return {
         "guard": {
@@ -200,6 +274,8 @@ def analyze(
             ),
         },
         "recovered_song_count": len(rows),
+        "baseline_hotspots": baseline_hotspots,
+        "prototype_hotspots": prototype_hotspots,
         "rows": rows,
     }
 
@@ -233,6 +309,38 @@ def _write_markdown(path: Path, payload: dict[str, Any]) -> None:
         lines.append(
             f"| {key} | {baseline.get(key, 0)} | "
             f"{prototype.get(key, 0)} | {delta.get(key, 0)} |"
+        )
+    lines.append("")
+    lines.append("## Hotspot Order")
+    lines.append("")
+    lines.append("| Baseline Rank | Prototype Rank | Song | Baseline | Prototype |")
+    lines.append("|---:|---:|---|---:|---:|")
+    baseline_hotspots = payload.get("baseline_hotspots", []) or []
+    prototype_hotspots = payload.get("prototype_hotspots", []) or []
+    prototype_rank = {
+        str(row.get("song", "")): index + 1
+        for index, row in enumerate(prototype_hotspots)
+        if isinstance(row, dict)
+    }
+    for index, row in enumerate(baseline_hotspots):
+        if not isinstance(row, dict):
+            continue
+        song_name = str(row.get("song", ""))
+        prototype_row = next(
+            (
+                candidate
+                for candidate in prototype_hotspots
+                if isinstance(candidate, dict)
+                and str(candidate.get("song", "")) == song_name
+            ),
+            {},
+        )
+        lines.append(
+            f"| {index + 1} | {prototype_rank.get(song_name, '-')} | {song_name} | "
+            f"{_safe_int(row.get('matched_lines'))}/"
+            f"{_safe_int(row.get('eligible_lines'))} | "
+            f"{_safe_int(prototype_row.get('matched_lines'))}/"
+            f"{_safe_int(prototype_row.get('eligible_lines'))} |"
         )
     lines.append("")
     lines.append("| Song | Recovered | Baseline | Prototype |")
