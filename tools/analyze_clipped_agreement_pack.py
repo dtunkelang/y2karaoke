@@ -27,6 +27,8 @@ def analyze(
     *,
     min_text_similarity: float = 0.58,
     min_token_overlap: float = 0.5,
+    min_line_words: int = 0,
+    min_anchor_surplus_words: int = 0,
 ) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     total_baseline_eligible = 0
@@ -45,6 +47,8 @@ def analyze(
             timing_report,
             min_text_similarity=min_text_similarity,
             min_token_overlap=min_token_overlap,
+            min_line_words=min_line_words,
+            min_anchor_surplus_words=min_anchor_surplus_words,
         )
         baseline_eligible = int(payload.get("baseline_eligible_lines", 0) or 0)
         baseline_matched = int(payload.get("baseline_matched_lines", 0) or 0)
@@ -79,6 +83,8 @@ def analyze(
         "baseline_matched_lines_total": total_baseline_matched,
         "adjusted_matched_lines_total": total_adjusted_matched,
         "recovered_lines_total": total_recovered,
+        "min_line_words": min_line_words,
+        "min_anchor_surplus_words": min_anchor_surplus_words,
         "baseline_coverage_ratio_total": round(
             (
                 total_baseline_matched / total_baseline_eligible
@@ -114,6 +120,18 @@ def main() -> int:
         default=0.5,
         help="Agreement minimum token overlap",
     )
+    parser.add_argument(
+        "--min-line-words",
+        type=int,
+        default=0,
+        help="Only count clipped recoveries for lines at or above this word count",
+    )
+    parser.add_argument(
+        "--min-anchor-surplus-words",
+        type=int,
+        default=0,
+        help="Only count clipped recoveries when anchor is this many words longer",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     args = parser.parse_args()
 
@@ -121,6 +139,8 @@ def main() -> int:
         _load_report(Path(args.report)),
         min_text_similarity=float(args.min_text_similarity),
         min_token_overlap=float(args.min_token_overlap),
+        min_line_words=int(args.min_line_words),
+        min_anchor_surplus_words=int(args.min_anchor_surplus_words),
     )
     if args.json:
         print(json.dumps(payload, indent=2))

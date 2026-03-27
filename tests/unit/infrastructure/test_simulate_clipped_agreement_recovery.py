@@ -57,3 +57,41 @@ def test_simulate_clipped_agreement_recovery_counts_recovered_lines() -> None:
     assert result["recovered_lines"] == 1
     assert result["adjusted_matched_lines"] == 1
     assert result["adjusted_coverage_ratio"] == 1.0
+
+
+def test_simulate_clipped_agreement_recovery_applies_guards() -> None:
+    payload = {
+        "artist": "Artist",
+        "title": "Song",
+        "lines": [
+            {
+                "index": 1,
+                "text": "Take on me",
+                "start": 1.4,
+                "end": 2.4,
+                "nearest_segment_start": 0.0,
+                "nearest_segment_start_text": (
+                    "Take on me take me on I'll be gone in a day or two"
+                ),
+                "whisper_window_start": -0.2,
+                "whisper_window_end": 2.4,
+                "whisper_window_word_count": 3,
+                "whisper_window_avg_prob": 0.8,
+                "whisper_window_words": [
+                    {"text": "Take", "start": 1.0, "end": 1.2},
+                    {"text": "on", "start": 1.2, "end": 1.4},
+                    {"text": "me", "start": 1.4, "end": 1.6},
+                ],
+            }
+        ],
+    }
+
+    result = _MODULE.analyze(
+        payload,
+        min_line_words=6,
+        min_anchor_surplus_words=15,
+    )
+
+    assert result["baseline_eligible_lines"] == 1
+    assert result["recovered_lines"] == 0
+    assert result["adjusted_matched_lines"] == 0

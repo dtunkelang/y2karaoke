@@ -136,6 +136,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - A pack-level simulation showed the same idea is not automatically isolated:
   - on a mixed kept pack, clipped-anchor simulated agreement improves `Con Calma` strongly, but also recovers `Take On Me` and one `Without Me` line
   - implication: if this becomes a real comparability policy, it will need guards rather than a blanket enable
+- The first simple guard that looked clean was:
+  - `line_words >= 6`
+  - `anchor_words - line_words >= 15`
+  - on the mixed kept pack, that still recovers `Con Calma` while dropping the `Take On Me` / `Without Me` spillover
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

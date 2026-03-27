@@ -25,6 +25,8 @@ def analyze(
     min_text_similarity: float = 0.58,
     min_token_overlap: float = 0.5,
     hook_boundary: bool = False,
+    min_line_words: int = 0,
+    min_anchor_surplus_words: int = 0,
 ) -> dict[str, Any]:
     baseline = skip_tool.analyze(
         timing_report,
@@ -57,7 +59,19 @@ def analyze(
         recovered = False
         if row.get("skip_reason") == "low_text_similarity":
             clip_row = clip_rows.get(line_index, {})
-            recovered = bool(clip_row.get("clipped_would_match", False))
+            line_words = len(
+                skip_tool.suite._normalize_agreement_text(row.get("text", "")).split()
+            )
+            anchor_words = len(
+                skip_tool.suite._normalize_agreement_text(
+                    clip_row.get("anchor_text", "")
+                ).split()
+            )
+            recovered = (
+                bool(clip_row.get("clipped_would_match", False))
+                and line_words >= min_line_words
+                and (anchor_words - line_words) >= min_anchor_surplus_words
+            )
         if eligible:
             baseline_eligible += 1
         if matched:
@@ -91,6 +105,8 @@ def analyze(
         "recovered_lines": recovered_matches,
         "adjusted_matched_lines": adjusted_matched,
         "adjusted_coverage_ratio": round(adjusted_coverage, 4),
+        "min_line_words": min_line_words,
+        "min_anchor_surplus_words": min_anchor_surplus_words,
         "rows": rows,
     }
 
@@ -115,6 +131,18 @@ def main() -> int:
         action="store_true",
         help="Use hook-boundary agreement normalization",
     )
+    parser.add_argument(
+        "--min-line-words",
+        type=int,
+        default=0,
+        help="Only count clipped recoveries for lines at or above this word count",
+    )
+    parser.add_argument(
+        "--min-anchor-surplus-words",
+        type=int,
+        default=0,
+        help="Only count clipped recoveries when anchor is this many words longer",
+    )
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     args = parser.parse_args()
 
@@ -123,6 +151,8 @@ def main() -> int:
         min_text_similarity=float(args.min_text_similarity),
         min_token_overlap=float(args.min_token_overlap),
         hook_boundary=bool(args.hook_boundary),
+        min_line_words=int(args.min_line_words),
+        min_anchor_surplus_words=int(args.min_anchor_surplus_words),
     )
     if args.json:
         print(json.dumps(payload, indent=2))

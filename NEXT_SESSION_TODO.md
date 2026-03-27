@@ -1030,6 +1030,16 @@ Most likely next inspection targets:
 - guard implication:
   - clipped-anchor agreement is promising, but not ready to ship as an unconditional policy
   - the next experiment needs explicit guards, likely around line family or anchor/window shape, before porting this idea into the main benchmark or production comparability logic
+- first promising guard:
+  - `min_line_words = 6`
+  - `min_anchor_surplus_words = 15`
+  - guarded pack simulation on `benchmarks/results/20260327T180340Z`:
+    - baseline coverage `13/28 = 0.4643`
+    - guarded clipped-anchor simulated coverage `17/28 = 0.6071`
+    - only recovered song: `Con Calma` `0/5 -> 4/5`
+- next concrete move:
+  - try this guarded clipped-anchor policy in a benchmark-only comparability prototype
+  - do not port it into production matching until the benchmark-only path confirms it improves coverage without inflating bad-ratio
 
 ## 2026-03-27 Broader strategy reset
 

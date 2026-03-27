@@ -67,3 +67,52 @@ def test_analyze_clipped_agreement_pack_aggregates_recovery(tmp_path: Path) -> N
     assert result["adjusted_matched_lines_total"] == 1
     assert result["recovered_lines_total"] == 1
     assert result["adjusted_coverage_ratio_total"] == 1.0
+
+
+def test_analyze_clipped_agreement_pack_propagates_guards(tmp_path: Path) -> None:
+    timing_report = {
+        "artist": "Artist",
+        "title": "Song",
+        "lines": [
+            {
+                "index": 1,
+                "text": "Take on me",
+                "start": 1.4,
+                "end": 2.4,
+                "nearest_segment_start": 0.0,
+                "nearest_segment_start_text": (
+                    "Take on me take me on I'll be gone in a day or two"
+                ),
+                "whisper_window_start": -0.2,
+                "whisper_window_end": 2.4,
+                "whisper_window_word_count": 3,
+                "whisper_window_avg_prob": 0.8,
+                "whisper_window_words": [
+                    {"text": "Take", "start": 1.0, "end": 1.2},
+                    {"text": "on", "start": 1.2, "end": 1.4},
+                    {"text": "me", "start": 1.4, "end": 1.6},
+                ],
+            }
+        ],
+    }
+    report_path = tmp_path / "song_timing_report.json"
+    report_path.write_text(json.dumps(timing_report), encoding="utf-8")
+    benchmark_report = {
+        "songs": [
+            {
+                "artist": "Artist",
+                "title": "Song",
+                "report_path": str(report_path),
+            }
+        ]
+    }
+
+    result = _MODULE.analyze(
+        benchmark_report,
+        min_line_words=6,
+        min_anchor_surplus_words=15,
+    )
+
+    assert result["baseline_eligible_lines_total"] == 1
+    assert result["recovered_lines_total"] == 0
+    assert result["adjusted_matched_lines_total"] == 0
