@@ -29,7 +29,7 @@ def _line(text: str, start: float, end: float) -> Line:
 
 
 def test_apply_forced_advisory_start_nudges_shifts_only_exact_three_word_candidate(
-    monkeypatch,
+    tmp_path,
 ) -> None:
     lines = [
         _line("Good times never seemed so good", 4.97, 8.60),
@@ -62,11 +62,14 @@ def test_apply_forced_advisory_start_nudges_shifts_only_exact_three_word_candida
         )
     ]
 
+    vocals_path = tmp_path / "vocals.wav"
+    vocals_path.write_bytes(b"")
+
     adjusted, nudged = apply_forced_advisory_start_nudges(
         lines=lines,
         current_segments=current_segments,
         current_words=current_words,
-        vocals_path="vocals.wav",
+        vocals_path=str(vocals_path),
         language="en",
         model_size="large",
         logger=_Logger(),
@@ -95,6 +98,29 @@ def test_apply_forced_advisory_start_nudges_respects_disable_env(monkeypatch) ->
         model_size="large",
         logger=_Logger(),
         load_aggressive_variant_fn=lambda **_kwargs: ([], [], "en"),
+    )
+
+    assert nudged == 0
+    assert adjusted[0].start_time == line.start_time
+
+
+def test_apply_forced_advisory_start_nudges_skips_missing_audio(tmp_path) -> None:
+    line = _line("I've been inclined", 12.74, 14.12)
+    missing = tmp_path / "vocals.wav"
+
+    adjusted, nudged = apply_forced_advisory_start_nudges(
+        lines=[line],
+        current_segments=[
+            TranscriptionSegment(start=12.0, end=13.8, text="x", words=[])
+        ],
+        current_words=[],
+        vocals_path=str(missing),
+        language="en",
+        model_size="large",
+        logger=_Logger(),
+        load_aggressive_variant_fn=lambda **_kwargs: (_ for _ in ()).throw(
+            AssertionError("unexpected advisory load")
+        ),
     )
 
     assert nudged == 0

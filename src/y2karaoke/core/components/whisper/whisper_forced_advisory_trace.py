@@ -265,6 +265,8 @@ def maybe_write_forced_advisory_trace(
     trace_path = os.environ.get("Y2K_TRACE_FORCED_ADVISORY_JSON", "").strip()
     if not trace_path or not current_segments or current_words is None:
         return None
+    if not Path(_resolve_advisory_audio_path(vocals_path)).exists():
+        return None
 
     aggressive_segments, aggressive_words, aggressive_language = (
         load_aggressive_variant_fn(

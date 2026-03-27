@@ -23,3 +23,5 @@ def test_analyze_line_scores_noisy_spanish_tail_tokens() -> None:
     assert result["token_scores"][1]["best_joint_similarity"] >= 0.55
     assert result["token_scores"][2]["best_match"] == "mami"
     assert result["token_scores"][2]["best_joint_similarity"] >= 0.66
+    assert result["best_span"]["span_text"] == "degollarte mami"
+    assert result["best_span"]["joint_score"] >= 0.55

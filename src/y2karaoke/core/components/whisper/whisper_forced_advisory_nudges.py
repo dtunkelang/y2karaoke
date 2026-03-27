@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from ... import models
 from ..alignment import timing_models
 from .whisper_forced_advisory_trace import (
     _load_or_transcribe_aggressive_variant,
+    _resolve_advisory_audio_path,
     collect_forced_advisory_start_candidates,
 )
 
@@ -55,6 +57,8 @@ def apply_forced_advisory_start_nudges(
     if not _forced_advisory_start_nudge_enabled():
         return list(lines), 0
     if not current_segments or current_words is None:
+        return list(lines), 0
+    if not Path(_resolve_advisory_audio_path(vocals_path)).exists():
         return list(lines), 0
 
     aggressive_segments, aggressive_words, _aggressive_language = (

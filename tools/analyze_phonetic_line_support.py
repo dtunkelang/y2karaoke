@@ -28,6 +28,23 @@ def _line_tokens(text: str) -> list[str]:
     ]
 
 
+def _whisper_token_windows(
+    whisper_tokens: list[str],
+    *,
+    target_len: int,
+) -> list[tuple[int, int, list[str]]]:
+    if not whisper_tokens or target_len <= 0:
+        return []
+    windows: list[tuple[int, int, list[str]]] = []
+    min_len = max(1, target_len - 1)
+    max_len = min(len(whisper_tokens), target_len + 1)
+    for window_len in range(min_len, max_len + 1):
+        for start in range(0, len(whisper_tokens) - window_len + 1):
+            end = start + window_len
+            windows.append((start, end, whisper_tokens[start:end]))
+    return windows
+
+
 def _token_scores(
     line_tokens: list[str],
     whisper_tokens: list[str],
@@ -67,6 +84,57 @@ def _token_scores(
     return scores
 
 
+def _best_span_score(
+    line_tokens: list[str],
+    whisper_tokens: list[str],
+    *,
+    language: str,
+) -> dict[str, Any]:
+    best: dict[str, Any] = {
+        "span_start": None,
+        "span_end": None,
+        "span_text": "",
+        "text_similarity": 0.0,
+        "phonetic_similarity_mean": 0.0,
+        "joint_score": 0.0,
+    }
+    line_text = " ".join(line_tokens)
+    for start, end, window_tokens in _whisper_token_windows(
+        whisper_tokens,
+        target_len=len(line_tokens),
+    ):
+        span_text = " ".join(window_tokens)
+        text_score = phonetic_utils._text_similarity_basic(line_text, span_text)
+        phonetic_scores = []
+        for idx, line_token in enumerate(line_tokens):
+            if idx >= len(window_tokens):
+                break
+            phonetic_scores.append(
+                phonetic_utils._phonetic_similarity(
+                    line_token,
+                    window_tokens[idx],
+                    language,
+                )
+            )
+        phonetic_mean = (
+            sum(phonetic_scores) / max(1, len(phonetic_scores))
+            if phonetic_scores
+            else 0.0
+        )
+        joint_score = max(text_score, phonetic_mean)
+        if joint_score <= float(best["joint_score"]):
+            continue
+        best = {
+            "span_start": start,
+            "span_end": end,
+            "span_text": span_text,
+            "text_similarity": round(text_score, 3),
+            "phonetic_similarity_mean": round(phonetic_mean, 3),
+            "joint_score": round(joint_score, 3),
+        }
+    return best
+
+
 def _analyze_line(line: dict[str, Any], *, language: str) -> dict[str, Any]:
     whisper_words = line.get("whisper_window_words", [])
     whisper_tokens = [
@@ -76,6 +144,7 @@ def _analyze_line(line: dict[str, Any], *, language: str) -> dict[str, Any]:
     ]
     line_tokens = _line_tokens(str(line.get("text") or ""))
     token_scores = _token_scores(line_tokens, whisper_tokens, language=language)
+    best_span = _best_span_score(line_tokens, whisper_tokens, language=language)
     joint_scores = [float(score["best_joint_similarity"]) for score in token_scores]
     return {
         "index": int(line["index"]),
@@ -87,6 +156,7 @@ def _analyze_line(line: dict[str, Any], *, language: str) -> dict[str, Any]:
             str(word.get("text") or "") for word in whisper_words
         ).strip(),
         "token_scores": token_scores,
+        "best_span": best_span,
         "joint_similarity_mean": round(
             sum(joint_scores) / max(1, len(joint_scores)),
             3,
@@ -136,6 +206,12 @@ def main() -> int:
         print(
             f"- whisper window ({line['whisper_window_word_count']}): "
             f"{line['whisper_window_text']}"
+        )
+        print(
+            f"- best span: {line['best_span']['span_text']} "
+            f"(text={line['best_span']['text_similarity']:.3f}, "
+            f"phon={line['best_span']['phonetic_similarity_mean']:.3f}, "
+            f"joint={line['best_span']['joint_score']:.3f})"
         )
         for score in line["token_scores"]:
             print(
