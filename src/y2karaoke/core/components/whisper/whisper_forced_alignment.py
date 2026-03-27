@@ -15,6 +15,11 @@ _TOKEN_RE = re.compile(r"[a-z0-9']+")
 _LIGHT_LEADING_TOKENS = {"the", "a", "an"}
 
 
+def _trace_whisperx_char_alignments_enabled() -> bool:
+    raw = os.environ.get("Y2K_TRACE_WHISPERX_FORCED_CHAR_ALIGN", "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
+
+
 def _maybe_write_whisperx_trace(payload: Dict[str, Any]) -> None:
     trace_path = os.environ.get("Y2K_TRACE_WHISPERX_FORCED_JSON", "").strip()
     if not trace_path:
@@ -381,6 +386,8 @@ def align_lines_with_whisperx(  # noqa: C901
             language_code=lang_code,
             device="cpu",
         )
+        return_char_alignments = _trace_whisperx_char_alignments_enabled()
+        trace["return_char_alignments"] = return_char_alignments
         segs = []
         for idx in non_empty:
             line = lines[idx]
@@ -400,7 +407,7 @@ def align_lines_with_whisperx(  # noqa: C901
             metadata,
             audio,
             device="cpu",
-            return_char_alignments=False,
+            return_char_alignments=return_char_alignments,
         )
     except Exception as exc:
         logger.debug("whisperx forced alignment failed: %s", exc)
@@ -410,6 +417,7 @@ def align_lines_with_whisperx(  # noqa: C901
 
     aligned_segments = aligned.get("segments", [])
     trace["aligned_segment_count"] = len(aligned_segments)
+    trace["aligned_segments"] = aligned_segments
     if not aligned_segments:
         trace["status"] = "no_aligned_segments"
         _maybe_write_whisperx_trace(trace)

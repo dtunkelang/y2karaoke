@@ -214,6 +214,8 @@ def test_align_lines_with_whisperx_trace_includes_line_mapping_details(
     ]
 
     class _WhisperX:
+        observed_return_char_alignments = None
+
         @staticmethod
         def load_audio(_path):
             return [0.0] * 32000
@@ -229,7 +231,7 @@ def test_align_lines_with_whisperx_trace_includes_line_mapping_details(
             _segs, _align_model, _metadata, _audio, *, device, return_char_alignments
         ):
             assert device == "cpu"
-            assert return_char_alignments is False
+            _WhisperX.observed_return_char_alignments = return_char_alignments
             return {
                 "segments": [
                     {
@@ -261,6 +263,7 @@ def test_align_lines_with_whisperx_trace_includes_line_mapping_details(
     monkeypatch.setattr(wfa, "patch_torchaudio_for_whisperx", lambda: None)
     monkeypatch.setitem(__import__("sys").modules, "whisperx", _WhisperX)
     monkeypatch.setenv("Y2K_TRACE_WHISPERX_FORCED_JSON", str(trace_path))
+    monkeypatch.setenv("Y2K_TRACE_WHISPERX_FORCED_CHAR_ALIGN", "1")
 
     forced = wfa.align_lines_with_whisperx(
         lines,
@@ -272,8 +275,11 @@ def test_align_lines_with_whisperx_trace_includes_line_mapping_details(
     assert forced is not None
     trace = __import__("json").loads(trace_path.read_text(encoding="utf-8"))
     assert trace["status"] == "accepted"
+    assert trace["return_char_alignments"] is True
+    assert _WhisperX.observed_return_char_alignments is True
     assert len(trace["requested_segments"]) == 2
     assert trace["requested_segments"][0]["text"] == "I've been inclined"
+    assert len(trace["aligned_segments"]) == 2
     assert len(trace["line_mappings"]) == 2
     assert trace["line_mappings"][0]["line_index"] == 0
     assert trace["line_mappings"][0]["line_text"] == "I've been inclined"
