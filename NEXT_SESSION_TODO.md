@@ -815,3 +815,24 @@ Most likely next inspection targets:
 - next best step:
   - if upstream work continues, it should be selective and line-local
   - the clearest target is `Sweet Caroline`, using aggressive support as advisory evidence only on lines with strong localized gain
+
+## 2026-03-27 Advisory candidate ranking
+
+- kept diagnostics addition:
+  - added [analyze_advisory_support_candidates.py](/Users/dtunkelang/y2karaoke/tools/analyze_advisory_support_candidates.py)
+  - added unit coverage in [test_analyze_advisory_support_candidates.py](/Users/dtunkelang/y2karaoke/tests/unit/infrastructure/test_analyze_advisory_support_candidates.py)
+- why:
+  - the line-support comparer was informative, but still too manual
+  - we needed a simple ranker that promotes only high-confidence advisory opportunities and screens out merged-noise cases automatically
+- first useful readout:
+  - on `benchmarks/results/20260327T002229Z/benchmark_report.json`
+    - `Sweet Caroline` produced exactly one high-confidence candidate:
+      - line 3 `I've been inclined`
+      - current/default/aggressive window words: `3 / 0 / 4`
+      - default overlap `0.000`, aggressive overlap `1.000`
+      - aggressive best segment: `I've been inclined`
+    - `Take On Me` produced no high-confidence candidates
+- conclusion:
+  - the selection logic is now good enough to distinguish a real localized advisory opportunity (`Sweet Caroline` line 3) from a merged-evidence trap (`Take On Me`)
+- next best step:
+  - if a production experiment happens, make it one narrow `Sweet Caroline` line-3 start-only advisory nudge driven by this ranked signal
