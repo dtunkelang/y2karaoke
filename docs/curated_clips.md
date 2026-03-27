@@ -152,6 +152,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - guarded clipped-anchor text for merged-anchor mismatches
     - local window phrase anchoring for recoverable outside-window lines
   - implication: the next benchmark-only policy experiment is justified; further local timing heuristics are not the best use of time here
+- On a mixed kept pack, the same two-layer simulation is still mostly driven by `Con Calma`, but not perfectly isolated:
+  - `Con Calma` improves heavily
+  - `Take On Me` still picks up one recovery
+  - implication: benchmark-only integration is reasonable next, but keep treating guard design as part of the experiment
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

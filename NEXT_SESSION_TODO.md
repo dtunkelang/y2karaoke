@@ -1083,6 +1083,18 @@ Most likely next inspection targets:
 - current best next step is now explicit:
   - implement the same two-layer rule in a benchmark-only agreement/comparability prototype
   - compare aggregate coverage and bad-ratio against the current baseline before touching any live production alignment path
+- benchmark-only pack prototype result:
+  - `tools/analyze_two_layer_agreement_pack.py`
+  - mixed kept pack `benchmarks/results/20260327T180340Z`
+  - baseline comparable coverage: `13/28 = 0.4643`
+  - two-layer simulated comparable coverage: `24/35 = 0.6857`
+  - dominant recovery is still `Con Calma`:
+    - `0/5 -> 10/11`
+  - but there is still some spillover:
+    - `Take On Me`: `0/2 -> 1/3`
+- implication:
+  - the two-layer policy is strong enough to justify a benchmark-runner prototype
+  - but it still needs at least one more guard if we want it cleanly isolated before any production-port discussion
 
 ## 2026-03-27 Broader strategy reset
 
