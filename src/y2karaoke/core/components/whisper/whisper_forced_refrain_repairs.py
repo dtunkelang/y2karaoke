@@ -213,10 +213,18 @@ def _followup_refrain_window(
     current_gap = line.start_time - prev.end_time
     if current_gap > min_current_gap:
         return None
+    current_duration = line.end_time - line.start_time
+    if (
+        line.text.strip().startswith("(")
+        and len(line.words) >= 4
+        and current_duration >= 2.8
+        and current_gap <= 0.1
+    ):
+        return None
 
     target_start = prev.end_time + min_gap_base + min_gap_per_word * len(line.words)
     target_duration = min(
-        line.end_time - line.start_time,
+        current_duration,
         max(1.0, min(max_refrain_duration, 0.8 + 0.25 * len(line.words))),
     )
     if idx + 1 < len(adjusted) and adjusted[idx + 1].words:

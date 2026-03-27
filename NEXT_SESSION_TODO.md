@@ -888,5 +888,30 @@ Most likely next inspection targets:
   - the stronger offline harmonization family is real, but not yet production-safe as a generic rule
   - `Total Eclipse` and `I Gotta Feeling` still need a different live lever, because they do not expose the same exact-prefix support that made the narrow `Con Calma` fix safe
 - next best step:
-  - inspect `Total Eclipse` repeated refrain on the live path
-  - if it exposes a similarly isolated start-only repeat-family lever, that is the next best code target
+  - inspect `I Gotta Feeling` next if more repeat-family gains are needed
+  - `Total Eclipse` is no longer the top repeat-family target after the forced-refrain fix below
+
+## 2026-03-27 Total Eclipse forced-refrain repair
+
+- kept production change:
+  - tightened [_enforce_repeated_short_refrain_followup_gap()](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_forced_refrain_repairs.py) so it skips already-long parenthetical 4-word sustained refrains
+  - this is a narrow `Total Eclipse`-family guard, not a general refrain rollback
+- key live finding:
+  - `Total Eclipse` never reached the mapped-line repeat fixes
+  - the real damage happened on the forced path:
+    - `loaded_forced_alignment`: line 3 started at `6.529`
+    - `after_pre_finalize_refrain_repairs`: line 3 was pushed late to `8.040`
+    - every later forced stage preserved that shift
+- kept results:
+  - focused canary: `benchmarks/results/20260327T155427Z`
+    - `Total Eclipse of the Heart`: `0.1752 / 0.2540 -> 0.1697 / 0.2465`
+    - `Con Calma`, `Taste`, `I Gotta Feeling`: unchanged
+  - broad cached canary: `benchmarks/results/20260327T155602Z`
+    - only material song movement was `Total Eclipse of the Heart`
+    - `Total Eclipse of the Heart`: `0.1752 / 0.2540 -> 0.1697 / 0.2465`
+- negative learning:
+  - the earlier repeated-suffix mapped-line branch was a dead path and was reverted
+  - the generic repeated-line offline harmonizer still does not expose the real live stage on this song
+- next best step:
+  - rerank the remaining broad misses from `20260327T155602Z`
+  - likely next targets are `Con Calma`, `Taste`, or `Take On Me`, depending on whether we want tractable code-side gains or upstream-analysis work

@@ -252,7 +252,7 @@ def test_attempt_whisperx_forced_alignment_restores_sustained_line_durations():
     assert payload["whisperx_forced"] == 1.0
 
 
-def test_restore_sustained_line_durations_from_source_restores_exact_baseline_start_for_extreme_collapse():
+def test_restore_sustained_durations_restore_baseline_start_on_extreme_collapse():
     baseline_lines = [
         _dur_line(1.3, 5.7, "Ah, ha, ha, ha, stayin' alive, stayin' alive"),
         _dur_line(5.85, 16.0, "Ah, ha, ha, ha, stayin' alive"),
@@ -275,7 +275,7 @@ def test_restore_sustained_line_durations_from_source_restores_exact_baseline_st
     assert repaired_lines[1].end_time == pytest.approx(16.0)
 
 
-def test_restore_sustained_line_durations_from_source_shifts_compact_recovered_lines_later():
+def test_restore_sustained_durations_shift_compact_recovered_lines_later():
     baseline_lines = [
         _dur_multi_line(1.0, 5.58, ["Take", "on", "me"]),
         _dur_multi_line(6.13, 10.71, ["Take", "me", "on"]),
@@ -343,7 +343,7 @@ def test_attempt_whisperx_forced_alignment_rejects_compact_line_drift():
     assert result is None
 
 
-def test_attempt_whisperx_forced_alignment_shifts_repeated_short_refrains_after_long_lines():
+def test_attempt_whisperx_forced_alignment_shifts_refrains_after_long_lines():
     baseline_lines = [
         Line(
             words=[
@@ -492,6 +492,74 @@ def test_attempt_whisperx_forced_alignment_shifts_refrains_before_non_overlap():
     assert repaired_lines[3].start_time == pytest.approx(13.149, abs=0.01)
 
 
+def test_attempt_whisperx_forced_alignment_skips_long_parenthetical_refrain_gap_shift():
+    forced_lines = [
+        Line(
+            words=[
+                Word(text="(Turn", start_time=0.55, end_time=1.02),
+                Word(text="around,", start_time=1.04, end_time=2.02),
+                Word(text="bright", start_time=2.18, end_time=3.18),
+                Word(text="eyes)", start_time=3.62, end_time=4.29),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Every", start_time=4.272, end_time=4.6),
+                Word(text="now", start_time=4.6, end_time=4.93),
+                Word(text="and", start_time=4.93, end_time=5.16),
+                Word(text="then,", start_time=5.16, end_time=5.46),
+                Word(text="I", start_time=5.46, end_time=5.63),
+                Word(text="fall", start_time=5.63, end_time=6.08),
+                Word(text="apart", start_time=6.08, end_time=6.54),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="(Turn", start_time=6.529, end_time=7.01),
+                Word(text="around,", start_time=7.03, end_time=7.95),
+                Word(text="bright", start_time=8.06, end_time=8.95),
+                Word(text="eyes)", start_time=9.28, end_time=9.867),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Every", start_time=9.789, end_time=10.12),
+                Word(text="now", start_time=10.12, end_time=10.39),
+                Word(text="and", start_time=10.39, end_time=10.64),
+                Word(text="then,", start_time=10.64, end_time=10.89),
+                Word(text="I", start_time=10.89, end_time=11.03),
+                Word(text="fall", start_time=11.03, end_time=11.29),
+                Word(text="apart", start_time=11.29, end_time=11.575),
+            ]
+        ),
+    ]
+
+    result = attempt_whisperx_forced_alignment(
+        lines=forced_lines,
+        baseline_lines=forced_lines,
+        vocals_path="vocals.wav",
+        language="en",
+        detected_lang="en",
+        logger=_Logger(),
+        used_model="base",
+        reason="test",
+        align_lines_with_whisperx_fn=lambda *_a, **_k: (
+            forced_lines,
+            {"forced_word_coverage": 1.0, "forced_line_coverage": 1.0},
+        ),
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: (forced_lines, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+    )
+
+    assert result is not None
+    repaired_lines, _corrections, payload = result
+    assert payload["shifted_refrain_followup_gaps"] == pytest.approx(0.0)
+    assert repaired_lines[2].start_time == pytest.approx(6.529, abs=0.01)
+
+
 def test_attempt_whisperx_forced_alignment_rejects_compact_line_duration_collapse():
     baseline_lines = [
         _dur_line(2.4, 3.92, "Guess who's back"),
@@ -572,7 +640,7 @@ def test_attempt_whisperx_forced_alignment_rejects_post_normalize_compact_collap
     assert result is None
 
 
-def test_post_normalize_sparse_support_repairs_restore_compact_two_word_lines_from_source():
+def test_post_normalize_sparse_repairs_restore_two_word_lines_from_source():
     baseline_lines = [
         _dur_multi_line(2.4, 3.92, ["Guess", "who's", "back"]),
         _dur_multi_line(4.69, 5.78, ["Back", "again"]),
@@ -600,7 +668,7 @@ def test_post_normalize_sparse_support_repairs_restore_compact_two_word_lines_fr
     assert repaired[3].start_time == pytest.approx(8.77)
 
 
-def test_attempt_whisperx_forced_alignment_restores_sparse_support_durations_post_normalize():
+def test_attempt_whisperx_forced_alignment_restores_sparse_durations_post_normalize():
     baseline_lines = [
         _dur_line(0.99, 4.21, "Take on me"),
         _dur_line(6.51, 9.73, "Take me on"),
@@ -653,7 +721,7 @@ def test_attempt_whisperx_forced_alignment_restores_sparse_support_durations_pos
     assert repaired_lines[3].end_time == pytest.approx(21.03, abs=0.05)
 
 
-def test_attempt_whisperx_forced_alignment_rejects_sparse_forced_when_baseline_onsets_are_better():
+def test_attempt_whisperx_forced_alignment_rejects_sparse_forced_on_better_baseline():
     baseline_lines = [
         _dur_line(0.99, 4.21, "Take on me"),
         _dur_line(6.51, 9.73, "Take me on"),
