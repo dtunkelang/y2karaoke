@@ -235,6 +235,45 @@ def test_reanchor_late_supported_lines_to_earlier_whisper_requires_prefix_suppor
     assert adjusted[1].start_time == pytest.approx(12.0, abs=0.01)
 
 
+def test_reanchor_late_supported_lines_to_earlier_whisper_relaxes_overlap_for_repeats():
+    lines = [
+        Line(
+            words=[
+                Word(text="Con", start_time=0.78, end_time=0.98),
+                Word(text="calma,", start_time=0.98, end_time=1.94),
+                Word(text="yo", start_time=2.04, end_time=2.44),
+                Word(text="quiero", start_time=2.44, end_time=2.62),
+                Word(text="ver", start_time=2.62, end_time=2.78),
+                Word(text="cómo", start_time=2.78, end_time=2.96),
+            ]
+        ),
+        Line(words=[Word(text="bridge", start_time=9.54, end_time=11.18)]),
+        Line(
+            words=[
+                Word(text="Con", start_time=11.55, end_time=11.75),
+                Word(text="calma,", start_time=11.75, end_time=12.71),
+                Word(text="yo", start_time=12.81, end_time=13.21),
+                Word(text="quiero", start_time=13.21, end_time=13.39),
+                Word(text="ver", start_time=13.39, end_time=13.55),
+                Word(text="cómo", start_time=13.55, end_time=13.73),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="Con", start=10.82, end=11.02, probability=0.99),
+        TranscriptionWord(text="calma,", start=11.02, end=11.98, probability=1.0),
+        TranscriptionWord(text="yo", start=12.08, end=12.48, probability=1.0),
+        TranscriptionWord(text="quiero", start=12.48, end=12.66, probability=1.0),
+    ]
+
+    adjusted, applied = wiaexp.reanchor_late_supported_lines_to_earlier_whisper(
+        lines, whisper_words
+    )
+
+    assert applied == 1
+    assert adjusted[2].start_time == pytest.approx(11.23, abs=0.01)
+
+
 def test_shift_restored_low_support_runs_to_onset_moves_dense_run_together():
     baseline = [
         Line(words=[Word(text="prev", start_time=50.72, end_time=52.98)]),
@@ -299,7 +338,9 @@ def test_shift_restored_low_support_runs_to_onset_moves_dense_run_together():
     assert adjusted[3].start_time == pytest.approx(60.78, abs=0.01)
 
 
-def test_shift_restored_low_support_runs_to_onset_allows_late_compact_repetitive_tail_run():
+def test_shift_restored_low_support_runs_to_onset_allows_late_compact_repetitive_tail_run() -> (  # noqa: E501
+    None
+):
     baseline = [
         Line(words=[Word(text="lead", start_time=0.0, end_time=1.0)]),
         Line(words=[Word(text="bridge", start_time=1.2, end_time=2.2)]),
@@ -357,7 +398,9 @@ def test_shift_restored_low_support_runs_to_onset_allows_late_compact_repetitive
     assert adjusted[5].start_time == pytest.approx(13.991, abs=0.01)
 
 
-def test_reanchor_late_compact_repetitive_tail_lines_to_later_onsets_hits_houdini_suffix():
+def test_reanchor_late_compact_repetitive_tail_lines_to_later_onsets_hits_houdini_suffix() -> (  # noqa: E501
+    None
+):
     baseline = [
         Line(words=[Word(text="lead", start_time=8.46, end_time=9.94)]),
         Line(
@@ -449,7 +492,9 @@ def test_reanchor_late_compact_repetitive_tail_lines_to_later_onsets_hits_houdin
     assert adjusted[3].start_time == pytest.approx(14.257, abs=0.01)
 
 
-def test_reanchor_late_compact_repetitive_tail_lines_to_later_onsets_skips_non_tail_gap():
+def test_reanchor_late_compact_repetitive_tail_lines_to_later_onsets_skips_non_tail_gap() -> (  # noqa: E501
+    None
+):
     baseline = [
         Line(words=[Word(text="lead", start_time=8.46, end_time=9.94)]),
         Line(words=[Word(text="Guess", start_time=11.436, end_time=12.936)]),
@@ -606,7 +651,9 @@ def test_rebalance_short_followup_boundaries_from_whisper_shifts_con_calma_tail(
     assert adjusted[2].end_time == pytest.approx(28.56, abs=0.01)
 
 
-def test_rebalance_short_followup_boundaries_from_whisper_skips_without_prior_carryover():
+def test_rebalance_short_followup_boundaries_from_whisper_skips_without_prior_carryover() -> (  # noqa: E501
+    None
+):
     lines = [
         Line(
             words=[
@@ -716,7 +763,9 @@ def test_rebalance_short_followup_boundaries_from_whisper_shifts_compact_i_follo
     assert adjusted[1].end_time == pytest.approx(21.36, abs=0.01)
 
 
-def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_overlapping_gap():
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_overlapping_gap() -> (  # noqa: E501
+    None
+):
     lines = [
         Line(
             words=[
@@ -749,7 +798,7 @@ def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_overlapp
     assert adjusted[1].start_time == pytest.approx(lines[1].start_time, abs=0.01)
 
 
-def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_moderate_gap_tail_without_rebalancing_prev() -> (
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_moderate_gap_tail_without_rebalancing_prev() -> (  # noqa: E501
     None
 ):
     lines = [
@@ -784,7 +833,9 @@ def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_moderate
     assert adjusted[1].start_time == pytest.approx(28.64, abs=0.01)
 
 
-def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_large_gap_tail():
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_large_gap_tail() -> (  # noqa: E501
+    None
+):
     lines = [
         Line(
             words=[
@@ -817,7 +868,9 @@ def test_reanchor_truncated_followup_lines_from_phonetic_variants_moves_large_ga
     assert adjusted[1].start_time == pytest.approx(28.40, abs=0.01)
 
 
-def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_non_truncated_lines():
+def test_reanchor_truncated_followup_lines_from_phonetic_variants_skips_non_truncated_lines() -> (  # noqa: E501
+    None
+):
     lines = [
         Line(words=[Word(text="prev", start_time=26.62, end_time=28.56)]),
         Line(

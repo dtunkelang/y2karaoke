@@ -855,3 +855,38 @@ Most likely next inspection targets:
 - next best step:
   - if a production experiment happens, wire only this exact start-only advisory family into forced alignment acceptance
   - keep it narrow enough that `Take On Me`-style merged-evidence lines remain excluded
+
+## 2026-03-27 Repeated-line start drift
+
+- kept diagnostics additions:
+  - added [analyze_line_error_patterns.py](/Users/dtunkelang/y2karaoke/tools/analyze_line_error_patterns.py)
+  - added [analyze_repeated_line_drift.py](/Users/dtunkelang/y2karaoke/tools/analyze_repeated_line_drift.py)
+  - added [simulate_repeated_line_start_harmonization.py](/Users/dtunkelang/y2karaoke/tools/simulate_repeated_line_start_harmonization.py)
+  - added [analyze_repeated_line_start_harmonization_candidates.py](/Users/dtunkelang/y2karaoke/tools/analyze_repeated_line_start_harmonization_candidates.py)
+- useful findings:
+  - `Take On Me` contamination is real, but suppression is not the fix:
+    - `simulate_interstitial_gap_suppression.py` worsened affected-line start mean from `0.100 -> 0.277`
+  - `Con Calma` is no longer mainly a line-12 tail problem:
+    - repeated families drift apart in the second half
+    - `Con calma...` line 1 vs 5: start error `-0.020` vs `+0.500`
+    - `Mueve ese poom-poom, girl` line 2 vs 6: `-0.410` vs `+0.110`
+  - the broad repeat-start scan on `benchmarks/results/20260327T030328Z/benchmark_report.json` surfaced three real families:
+    - `Total Eclipse of the Heart`: `0.775 -> 0.415` offline
+    - `Con Calma`: `0.243 -> 0.178` offline
+    - `I Gotta Feeling`: `0.180 -> 0.155` offline
+- kept production change:
+  - relaxed the previous-line overlap gate in [whisper_integration_align_experimental.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_align_experimental.py) for repeated exact-text late-supported lines
+  - this is intentionally much narrower than the offline harmonizer: it only lets the existing exact-prefix Whisper repair fire on repeated lines like `Con Calma` line 5
+- kept results:
+  - focused guardrail canary: `benchmarks/results/20260327T044103Z`
+    - `Con Calma`: `0.2433 / 0.3017 -> 0.2142 / 0.3017`
+    - `Take On Me`, `Taste`, `Total Eclipse`: unchanged
+  - broad cached canary: `benchmarks/results/20260327T044256Z`
+    - weighted start mean: `0.210 -> 0.206`
+    - only material song movement was `Con Calma`: `0.2320 / 0.2266 -> 0.2242 / 0.2238`
+- negative learning:
+  - the stronger offline harmonization family is real, but not yet production-safe as a generic rule
+  - `Total Eclipse` and `I Gotta Feeling` still need a different live lever, because they do not expose the same exact-prefix support that made the narrow `Con Calma` fix safe
+- next best step:
+  - inspect `Total Eclipse` repeated refrain on the live path
+  - if it exposes a similarly isolated start-only repeat-family lever, that is the next best code target

@@ -837,6 +837,20 @@ def _choose_earlier_whisper_target(
     return best_target
 
 
+def _allow_repeated_exact_line_overlap_relaxation(
+    lines: List[models.Line], idx: int
+) -> bool:
+    if idx <= 0 or idx >= len(lines):
+        return False
+    line = lines[idx]
+    if len(line.words) < 5:
+        return False
+    key = line_text_key(line)
+    if not key:
+        return False
+    return any(line_text_key(prev) == key for prev in lines[:idx])
+
+
 def reanchor_late_supported_lines_to_earlier_whisper(
     lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord],
@@ -863,6 +877,9 @@ def reanchor_late_supported_lines_to_earlier_whisper(
         prev_end = (
             adjusted[idx - 1].end_time if idx > 0 and adjusted[idx - 1].words else None
         )
+        overlap_limit = max_prev_overlap
+        if _allow_repeated_exact_line_overlap_relaxation(adjusted, idx):
+            overlap_limit = max(overlap_limit, 0.42)
         best_target = _choose_earlier_whisper_target(
             line=line,
             prev_end=prev_end,
@@ -873,7 +890,7 @@ def reanchor_late_supported_lines_to_earlier_whisper(
             max_shift=max_shift,
             min_prefix_matches=min_prefix_matches,
             min_gap=min_gap,
-            max_prev_overlap=max_prev_overlap,
+            max_prev_overlap=overlap_limit,
             support_window=support_window,
         )
         if best_target is None:
