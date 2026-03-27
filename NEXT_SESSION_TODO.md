@@ -1108,6 +1108,21 @@ Most likely next inspection targets:
   - but it also stops recovering shorter `Con Calma` lines like `Mueve ese poom-poom, girl`
 - current best benchmark-only candidate:
   - use the stricter `min_anchor_words = 20` version first if the goal is isolation over recall
+- explicit guard tradeoff result:
+  - `tools/analyze_two_layer_guard_tradeoffs.py`
+  - mixed kept pack `benchmarks/results/20260327T180340Z`
+  - best current candidate:
+    - `min_line_words = 6`
+    - `min_anchor_surplus_words = 15`
+    - `min_anchor_words = 20`
+  - tradeoff summary:
+    - adjusted coverage `0.6562`
+    - `Con Calma` recovered lines: `8`
+    - spillover song count: `0`
+  - weaker `min_anchor_words = 15` ties on current score and coverage, but the sorter now prefers the stricter guard when outcomes are otherwise equal
+- next actual coding move:
+  - port exactly this guarded two-layer policy into a benchmark-runner-only prototype
+  - measure aggregate `agreement_coverage_ratio_total`, `agreement_bad_ratio_total`, and hotspot ordering against the current baseline
 
 ## 2026-03-27 Broader strategy reset
 

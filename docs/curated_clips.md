@@ -162,6 +162,9 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `anchor_words >= 20`
   - on the mixed pack, that keeps a strong `Con Calma` gain while dropping the `Take On Me` spillover
   - implication: the first benchmark-only policy prototype should probably start from this stricter version
+- A small guard-tradeoff sweep confirmed that choice:
+  - the current best benchmark-only candidate is still `line_words >= 6`, `anchor_surplus >= 15`, `anchor_words >= 20`
+  - implication: use that exact setting for the first real comparability-policy prototype, not a looser version
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
