@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any, List
 
 from ... import models
@@ -10,6 +11,12 @@ from ...audio_analysis import (
     _check_vocal_activity_in_range,
 )
 from ..alignment import timing_models
+
+_TOKEN_RE = re.compile(r"[a-z0-9']+")
+
+
+def _normalize_token(text: str) -> str:
+    return "".join(_TOKEN_RE.findall(text.lower()))
 
 
 def _forced_tail_target_end(
@@ -113,6 +120,110 @@ def extend_low_score_forced_line_tails_from_source(
             max_last_word_duration_sec=max_last_word_duration_sec,
         )
         if target_end is None:
+            continue
+        repaired[idx] = models.Line(
+            words=[
+                models.Word(
+                    text=word.text,
+                    start_time=word.start_time,
+                    end_time=(
+                        target_end
+                        if word_idx == len(forced_line.words) - 1
+                        else word.end_time
+                    ),
+                    singer=word.singer,
+                )
+                for word_idx, word in enumerate(forced_line.words)
+            ],
+            singer=forced_line.singer,
+        )
+        extended += 1
+    return repaired, extended
+
+
+def _has_repeated_tail_token_support(
+    *,
+    line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    next_start: float | None,
+    min_repeat_gap_sec: float,
+    max_repeat_search_sec: float,
+) -> bool:
+    if not whisper_words or not line.words:
+        return False
+    tail_token = _normalize_token(line.words[-1].text)
+    if not tail_token:
+        return False
+    search_end = line.end_time + max_repeat_search_sec
+    if next_start is not None:
+        search_end = min(search_end, next_start)
+    for word in whisper_words:
+        if word.text == "[VOCAL]":
+            continue
+        if word.start < line.end_time + min_repeat_gap_sec or word.start > search_end:
+            continue
+        if _normalize_token(word.text) != tail_token:
+            continue
+        return True
+    return False
+
+
+def extend_short_forced_hook_tails_from_source(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    *,
+    min_word_count: int = 2,
+    max_word_count: int = 3,
+    min_end_shortfall_sec: float = 0.2,
+    max_end_shortfall_sec: float = 0.8,
+    max_start_delta_sec: float = 0.4,
+    max_last_word_duration_sec: float = 0.3,
+    min_repeat_gap_sec: float = 0.03,
+    max_repeat_search_sec: float = 2.0,
+    min_gap_sec: float = 0.05,
+) -> tuple[List[models.Line], int]:
+    if not whisper_words:
+        return forced_lines, 0
+
+    repaired = list(forced_lines)
+    extended = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        if not baseline_line.words or not forced_line.words:
+            continue
+        word_count = len(forced_line.words)
+        if word_count < min_word_count or word_count > max_word_count:
+            continue
+        end_shortfall = baseline_line.end_time - forced_line.end_time
+        if (
+            end_shortfall < min_end_shortfall_sec
+            or end_shortfall > max_end_shortfall_sec
+        ):
+            continue
+        if abs(forced_line.start_time - baseline_line.start_time) > max_start_delta_sec:
+            continue
+        last_word = forced_line.words[-1]
+        if last_word.end_time - last_word.start_time > max_last_word_duration_sec:
+            continue
+        next_start = (
+            repaired[idx + 1].start_time
+            if idx + 1 < len(repaired) and repaired[idx + 1].words
+            else None
+        )
+        if not _has_repeated_tail_token_support(
+            line=forced_line,
+            whisper_words=whisper_words,
+            next_start=next_start,
+            min_repeat_gap_sec=min_repeat_gap_sec,
+            max_repeat_search_sec=max_repeat_search_sec,
+        ):
+            continue
+        target_end = baseline_line.end_time
+        if next_start is not None:
+            target_end = min(target_end, next_start - min_gap_sec)
+        if target_end <= forced_line.end_time + 0.05:
             continue
         repaired[idx] = models.Line(
             words=[

@@ -16,6 +16,7 @@ from .whisper_forced_prefix_repairs import (
     reanchor_medium_lines_to_earlier_exact_prefixes as _reanchor_medium_lines_to_earlier_exact_prefixes_impl,  # noqa: E501
 )
 from .whisper_forced_tail_repairs import (
+    extend_short_forced_hook_tails_from_source as _extend_short_forced_hook_tails_from_source,  # noqa: E501
     extend_low_score_forced_line_tails_from_source as _extend_low_score_forced_line_tails_from_source,  # noqa: E501
     extend_final_held_tail_lines_from_activity as _extend_final_held_tail_lines_from_activity,  # noqa: E501
 )
@@ -628,6 +629,18 @@ def _post_normalize_sparse_support_repairs(
         logger.info(
             "Redistributed %d sparse-support sustained line(s) for held final words",
             sustained_word_redistributed_count,
+        )
+    forced_lines, short_hook_tail_extended_count = (
+        _extend_short_forced_hook_tails_from_source(
+            baseline_lines,
+            forced_lines,
+            whisper_words,
+        )
+    )
+    if short_hook_tail_extended_count:
+        logger.info(
+            "Extended %d short forced hook tail(s) from source",
+            short_hook_tail_extended_count,
         )
     return forced_lines
 

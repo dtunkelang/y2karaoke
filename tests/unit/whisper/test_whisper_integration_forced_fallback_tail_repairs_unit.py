@@ -1,7 +1,10 @@
-import pytest
 import numpy as np
+import pytest
 
-from y2karaoke.core.components.alignment.timing_models import AudioFeatures
+from y2karaoke.core.components.alignment.timing_models import (
+    AudioFeatures,
+    TranscriptionWord,
+)
 from y2karaoke.core.components.whisper import whisper_forced_tail_repairs as _tails
 from y2karaoke.core.models import Line, Word
 
@@ -223,3 +226,74 @@ def test_extend_final_held_tail_lines_from_activity_skips_short_take_on_me_tail(
 
     assert extended == 0
     assert repaired_lines[0].end_time == pytest.approx(18.71, abs=0.01)
+
+
+def test_extend_short_forced_hook_tails_from_source_extends_without_me_hook():
+    baseline_lines = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=2.4, end_time=2.95),
+                Word(text="who's", start_time=2.95, end_time=3.4),
+                Word(text="back", start_time=3.4, end_time=4.062),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Back", start_time=4.692, end_time=5.208),
+                Word(text="again", start_time=5.265, end_time=5.781),
+            ]
+        ),
+    ]
+    forced_lines = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=2.753, end_time=3.055),
+                Word(text="who's", start_time=3.095, end_time=3.296),
+                Word(text="back", start_time=3.336, end_time=3.577),
+            ]
+        ),
+        baseline_lines[1],
+    ]
+    whisper_words = [
+        TranscriptionWord(text="back", start=3.62, end=4.92, probability=0.95),
+    ]
+
+    repaired_lines, extended = _tails.extend_short_forced_hook_tails_from_source(
+        baseline_lines,
+        forced_lines,
+        whisper_words,
+    )
+
+    assert extended == 1
+    assert repaired_lines[0].start_time == pytest.approx(2.753)
+    assert repaired_lines[0].end_time == pytest.approx(4.062)
+
+
+def test_extend_short_forced_hook_tails_from_source_skips_without_repeat_support():
+    baseline_lines = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=2.4, end_time=2.95),
+                Word(text="who's", start_time=2.95, end_time=3.4),
+                Word(text="back", start_time=3.4, end_time=4.062),
+            ]
+        )
+    ]
+    forced_lines = [
+        Line(
+            words=[
+                Word(text="Guess", start_time=2.753, end_time=3.055),
+                Word(text="who's", start_time=3.095, end_time=3.296),
+                Word(text="back", start_time=3.336, end_time=3.577),
+            ]
+        )
+    ]
+
+    repaired_lines, extended = _tails.extend_short_forced_hook_tails_from_source(
+        baseline_lines,
+        forced_lines,
+        [],
+    )
+
+    assert extended == 0
+    assert repaired_lines[0].end_time == pytest.approx(3.577)
