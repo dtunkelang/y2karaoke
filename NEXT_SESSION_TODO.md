@@ -1139,6 +1139,21 @@ Most likely next inspection targets:
     - recovered lines count as good matches
     - bad/warn/severe line counts remain fixed
   - this is still benchmark-only analysis, not production or runner integration
+  - direct runner integration was attempted and then abandoned:
+    - touching `tools/run_benchmark_suite.py` causes pre-commit `flake8` to evaluate the file's existing unresolved `C901` debt
+    - rather than weaken that gate or add new `noqa`s there, the kept path is a wrapper
+  - wrapper path now exists:
+    - `tools/run_benchmark_suite_with_two_layer_prototype.py`
+    - it runs `tools/run_benchmark_suite.py`, then emits:
+      - `two_layer_benchmark_prototype.json`
+      - `two_layer_benchmark_prototype.md`
+    - sidecar output is written into the resolved benchmark run dir, including `--resume-run-dir`
+    - validated on cached run `benchmarks/results/20260327T180340Z`:
+      - sidecar coverage `0.3514 -> 0.6562`
+      - sidecar bad ratio `0.1081 -> 0.1081`
+      - sidecar worst hotspot `a-ha - Take On Me`
+  - next step from here:
+    - use the wrapper on a real mixed pack run and compare its emitted sidecar against the current standalone analyzer output
 
 ## 2026-03-27 Broader strategy reset
 

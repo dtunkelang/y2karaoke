@@ -181,6 +181,20 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - recovered lines count as good matches
     - bad/warn/severe counts stay fixed
   - implication: the next step can stay benchmark-side, but it is now grounded in runner-compatible aggregate math rather than raw line recovery counts
+- Direct integration into `tools/run_benchmark_suite.py` was intentionally not kept:
+  - the file still carries large pre-existing `flake8` complexity debt
+  - modifying it causes pre-commit to re-evaluate those old `C901` failures
+  - rather than weaken that gate, the kept integration path is a wrapper
+- Benchmark-side wrapper now exists:
+  - `tools/run_benchmark_suite_with_two_layer_prototype.py`
+  - it runs the normal benchmark suite, then writes sidecars into the benchmark run dir:
+    - `two_layer_benchmark_prototype.json`
+    - `two_layer_benchmark_prototype.md`
+  - it also supports resumed runs by honoring `--resume-run-dir`
+  - validated on cached mixed pack `benchmarks/results/20260327T180340Z`:
+    - coverage `0.3514 -> 0.6562`
+    - bad ratio `0.1081 -> 0.1081`
+    - worst hotspot `a-ha - Take On Me`
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
