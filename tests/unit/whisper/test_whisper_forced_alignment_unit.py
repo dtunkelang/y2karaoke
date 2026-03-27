@@ -203,3 +203,80 @@ def test_align_lines_with_whisperx_accepts_two_line_repeated_hook(monkeypatch):
     assert forced_lines[1].start_time == 5.85
     assert metrics["forced_line_coverage"] == 1.0
     assert metrics["forced_word_coverage"] == 1.0
+
+
+def test_align_lines_with_whisperx_trace_includes_line_mapping_details(
+    monkeypatch, tmp_path
+):
+    lines = [
+        _line("I've", "been", "inclined"),
+        _line("To", "believe", "they", "never", "would"),
+    ]
+
+    class _WhisperX:
+        @staticmethod
+        def load_audio(_path):
+            return [0.0] * 32000
+
+        @staticmethod
+        def load_align_model(*, language_code, device):
+            assert language_code == "en"
+            assert device == "cpu"
+            return object(), {}
+
+        @staticmethod
+        def align(
+            _segs, _align_model, _metadata, _audio, *, device, return_char_alignments
+        ):
+            assert device == "cpu"
+            assert return_char_alignments is False
+            return {
+                "segments": [
+                    {
+                        "start": 12.7,
+                        "end": 14.1,
+                        "text": "I've been inclined",
+                        "words": [
+                            {"word": "I've", "start": 12.741, "end": 13.01},
+                            {"word": "been", "start": 13.02, "end": 13.31},
+                            {"word": "inclined", "start": 13.33, "end": 14.125},
+                        ],
+                    },
+                    {
+                        "start": 16.6,
+                        "end": 19.2,
+                        "text": "To believe they never would",
+                        "words": [
+                            {"word": "To", "start": 16.656, "end": 17.01},
+                            {"word": "believe", "start": 17.02, "end": 17.61},
+                            {"word": "they", "start": 17.62, "end": 17.95},
+                            {"word": "never", "start": 17.96, "end": 18.4},
+                            {"word": "would", "start": 18.41, "end": 19.183},
+                        ],
+                    },
+                ]
+            }
+
+    trace_path = tmp_path / "forced.json"
+    monkeypatch.setattr(wfa, "patch_torchaudio_for_whisperx", lambda: None)
+    monkeypatch.setitem(__import__("sys").modules, "whisperx", _WhisperX)
+    monkeypatch.setenv("Y2K_TRACE_WHISPERX_FORCED_JSON", str(trace_path))
+
+    forced = wfa.align_lines_with_whisperx(
+        lines,
+        "vocals.wav",
+        "en",
+        _Logger(),
+    )
+
+    assert forced is not None
+    trace = __import__("json").loads(trace_path.read_text(encoding="utf-8"))
+    assert trace["status"] == "accepted"
+    assert len(trace["requested_segments"]) == 2
+    assert trace["requested_segments"][0]["text"] == "I've been inclined"
+    assert len(trace["line_mappings"]) == 2
+    assert trace["line_mappings"][0]["line_index"] == 0
+    assert trace["line_mappings"][0]["line_text"] == "I've been inclined"
+    assert trace["line_mappings"][0]["match_count"] == 3
+    assert trace["line_mappings"][0]["mapped_words"][0]["text"] == "I've"
+    assert trace["line_mappings"][1]["segment_text"] == "To believe they never would"

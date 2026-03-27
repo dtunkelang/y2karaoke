@@ -195,22 +195,81 @@ def _tighten_leading_light_token_anchors(
         ends[idx] = max(start + 0.06, end)
 
 
-def _map_segment_words_to_line(
+def _serialize_words(words: Sequence[models.Word]) -> List[Dict[str, Any]]:
+    return [
+        {
+            "text": word.text,
+            "start": word.start_time,
+            "end": word.end_time,
+        }
+        for word in words
+    ]
+
+
+def _build_line_mapping_debug(
+    line: models.Line,
+    seg_words: Sequence[Tuple[float, float, str]],
+    match_idx: Dict[int, int],
+    mapped_words: Sequence[models.Word],
+    min_required: int,
+    fallback_reason: Optional[str] = None,
+) -> Dict[str, Any]:
+    return {
+        "line_text": line.text,
+        "line_tokens": [word.text for word in line.words],
+        "segment_words": [
+            {"start": start, "end": end, "text": text} for start, end, text in seg_words
+        ],
+        "normalized_line_tokens": [_norm_token(word.text) for word in line.words],
+        "match_index_by_line_token": {
+            str(target_idx): observed_idx
+            for target_idx, observed_idx in match_idx.items()
+        },
+        "match_count": len(match_idx),
+        "min_required_match_count": min_required,
+        "fallback_reason": fallback_reason,
+        "mapped_words": _serialize_words(mapped_words),
+    }
+
+
+def _map_segment_words_to_line_with_debug(
     line: models.Line,
     seg_words: Sequence[Tuple[float, float, str]],
     seg_start: float,
     seg_end: float,
-) -> List[models.Word]:
+) -> Tuple[List[models.Word], Dict[str, Any]]:
     if not line.words:
-        return []
+        return [], _build_line_mapping_debug(
+            line=line,
+            seg_words=seg_words,
+            match_idx={},
+            mapped_words=[],
+            min_required=0,
+            fallback_reason="empty_line",
+        )
     if not seg_words:
-        return _distribute_line_words(line, seg_start, seg_end)
+        mapped_words = _distribute_line_words(line, seg_start, seg_end)
+        return mapped_words, _build_line_mapping_debug(
+            line=line,
+            seg_words=[],
+            match_idx={},
+            mapped_words=mapped_words,
+            min_required=max(1, math.ceil(len(line.words) * 0.35)),
+            fallback_reason="empty_segment_words",
+        )
 
     match_idx = _find_monotonic_token_matches(line, seg_words)
-
     min_required = max(1, math.ceil(len(line.words) * 0.35))
     if len(match_idx) < min_required:
-        return _distribute_line_words(line, seg_start, seg_end)
+        mapped_words = _distribute_line_words(line, seg_start, seg_end)
+        return mapped_words, _build_line_mapping_debug(
+            line=line,
+            seg_words=seg_words,
+            match_idx=match_idx,
+            mapped_words=mapped_words,
+            min_required=min_required,
+            fallback_reason="insufficient_matches",
+        )
 
     norm_targets = [_norm_token(w.text) for w in line.words]
     starts: List[float] = []
@@ -227,7 +286,26 @@ def _map_segment_words_to_line(
         starts.append(s)
         ends.append(e)
     _tighten_leading_light_token_anchors(starts, ends, norm_targets)
-    return _build_words_from_anchors(line, starts, ends, seg_start, seg_end)
+    mapped_words = _build_words_from_anchors(line, starts, ends, seg_start, seg_end)
+    return mapped_words, _build_line_mapping_debug(
+        line=line,
+        seg_words=seg_words,
+        match_idx=match_idx,
+        mapped_words=mapped_words,
+        min_required=min_required,
+    )
+
+
+def _map_segment_words_to_line(
+    line: models.Line,
+    seg_words: Sequence[Tuple[float, float, str]],
+    seg_start: float,
+    seg_end: float,
+) -> List[models.Word]:
+    mapped_words, _debug = _map_segment_words_to_line_with_debug(
+        line, seg_words, seg_start, seg_end
+    )
+    return mapped_words
 
 
 def _count_line_overlaps(lines: List[models.Line]) -> int:
@@ -315,6 +393,7 @@ def align_lines_with_whisperx(  # noqa: C901
                     "text": line.text,
                 }
             )
+        trace["requested_segments"] = segs
         aligned = whisperx.align(
             segs,
             align_model,
@@ -339,6 +418,7 @@ def align_lines_with_whisperx(  # noqa: C901
     seg_by_idx = _index_aligned_segments(aligned_segments, non_empty)
 
     forced_lines: List[models.Line] = []
+    trace_line_mappings: List[Dict[str, Any]] = []
     timed_lines = 0
     total_words = 0
     timed_words = 0
@@ -363,7 +443,18 @@ def align_lines_with_whisperx(  # noqa: C901
             raw_words.append((float(ws), float(we), text))
         seg_start = float(seg.get("start", line.start_time))
         seg_end = float(seg.get("end", line.end_time))
-        mapped_words = _map_segment_words_to_line(line, raw_words, seg_start, seg_end)
+        mapped_words, line_mapping = _map_segment_words_to_line_with_debug(
+            line, raw_words, seg_start, seg_end
+        )
+        line_mapping.update(
+            {
+                "line_index": idx,
+                "segment_start": seg_start,
+                "segment_end": seg_end,
+                "segment_text": str(seg.get("text") or ""),
+            }
+        )
+        trace_line_mappings.append(line_mapping)
         if mapped_words:
             timed_lines += 1
             timed_words += len(mapped_words)
@@ -401,7 +492,13 @@ def align_lines_with_whisperx(  # noqa: C901
         "forced_line_overlaps": float(overlaps),
         "aligned_segments": aligned_segments,
     }
-    trace.update({"status": "accepted", "metrics": metrics})
+    trace.update(
+        {
+            "status": "accepted",
+            "metrics": metrics,
+            "line_mappings": trace_line_mappings,
+        }
+    )
     _maybe_write_whisperx_trace(trace)
     logger.info(
         "WhisperX forced alignment accepted: %.0f%% lines, %.0f%% words",
