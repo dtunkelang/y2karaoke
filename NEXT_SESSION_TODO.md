@@ -1040,6 +1040,19 @@ Most likely next inspection targets:
 - next concrete move:
   - try this guarded clipped-anchor policy in a benchmark-only comparability prototype
   - do not port it into production matching until the benchmark-only path confirms it improves coverage without inflating bad-ratio
+- exact guarded `Con Calma` read:
+  - guarded simulated coverage becomes `4/5`
+  - recovered lines:
+    - 1 `Con calma, yo quiero ver cómo ella lo menea`
+    - 4 `I like your poom-poom, girl (Sube, sube)`
+    - 5 `Con calma, yo quiero ver cómo ella lo menea`
+    - 9 `Ya vi que estás solita, acompáñame`
+  - remaining unrecovered lines are split cleanly:
+    - `anchor_outside_window`: 2, 3, 6, 7, 10, 11, 12
+    - `low_text_similarity`: line 8 only
+- implication:
+  - clipped-anchor policy is now a good candidate for the `low_text_similarity` half of the problem
+  - but `Con Calma` will still need a separate answer for the outside-window lines
 
 ## 2026-03-27 Broader strategy reset
 

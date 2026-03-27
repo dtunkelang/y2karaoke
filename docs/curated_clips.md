@@ -140,6 +140,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `line_words >= 6`
   - `anchor_words - line_words >= 15`
   - on the mixed kept pack, that still recovers `Con Calma` while dropping the `Take On Me` / `Without Me` spillover
+- On `Con Calma` itself, that guarded policy cleanly separates the remaining issues:
+  - clipped-anchor recovery handles most of the `low_text_similarity` cases
+  - the rest are still `anchor_outside_window`
+  - implication: if you adopt clipped-anchor comparability, treat it as one layer, not the whole fix
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
