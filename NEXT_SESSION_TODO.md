@@ -755,3 +755,35 @@ Most likely next inspection targets:
 - conclusion:
   - `Sweet Caroline` line 3 is not blocked in the current forced-fallback postpasses
   - the next real code target must be before or inside forced alignment acceptance, not another post-fallback heuristic
+
+## 2026-03-27 Transcription variant diagnostics
+
+- kept diagnostics addition:
+  - added [analyze_transcription_variants.py](/Users/dtunkelang/y2karaoke/tools/analyze_transcription_variants.py)
+  - added unit coverage in [test_analyze_transcription_variants.py](/Users/dtunkelang/y2karaoke/tests/unit/infrastructure/test_analyze_transcription_variants.py)
+- why:
+  - recent upstream probes were too ad hoc
+  - we needed a repeatable way to compare default `faster_whisper`, aggressive `faster_whisper`, and WhisperX fallback on the exact same clip before changing pipeline policy again
+- first useful findings:
+  - `Take On Me`:
+    - default `faster_whisper`: `0` segments / `0` words
+    - aggressive `faster_whisper`: `1` dominant segment / `14` words, covering `0.0-18.6`
+    - WhisperX fallback: no usable transcript
+    - conclusion: this is an upstream sparse-transcription case, but the obvious aggressive rescue is still too merged to trust
+  - `Sweet Caroline`:
+    - default `faster_whisper`: sparse and malformed (`2` segments / `8` words, long bad tail)
+    - aggressive `faster_whisper`: clean multi-segment transcript with exact lines like `I've been inclined`
+    - WhisperX fallback: one merged dominant segment
+    - conclusion: aggressive `faster_whisper` is materially better evidence here, but the first attempt to route it into the main pipeline still had no live metric gain
+  - `Con Calma`:
+    - default `faster_whisper`: near-garbage (`Subtitles by the Amara.org community`)
+    - aggressive `faster_whisper`: rich Spanish multi-segment transcript
+    - WhisperX fallback: long merged segment family
+    - conclusion: aggressive transcription may be the right upstream evidence source for bilingual / non-English sparse cases, but it still needs a better acceptance/use policy than the reverted retry branch
+- negative learning:
+  - two aggressive sparse-retry branches were reverted
+  - branch 1 accepted a dominant single segment and badly regressed `Take On Me`
+  - branch 2 rejected that shape correctly, but still produced no live benchmark improvement once the polluted `Take On Me` cache was cleaned
+- next best step:
+  - use the new analyzer first on candidate problem clips before changing transcription policy again
+  - if upstream work resumes, the cleaner direction is likely segment-aware reuse of aggressive `faster_whisper` evidence, not wholesale transcript replacement
