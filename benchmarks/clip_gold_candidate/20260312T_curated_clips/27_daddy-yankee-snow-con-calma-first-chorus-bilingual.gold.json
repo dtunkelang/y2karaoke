@@ -101,105 +101,105 @@
     {
       "line_index": 3,
       "text": "Es un asesina, cuando baila quiere que to' el mundo la vea",
-      "start": 6.3,
-      "end": 9.25,
+      "start": 6.2,
+      "end": 9.15,
       "words": [
         {
           "word_index": 1,
           "text": "Es",
-          "start": 6.3,
-          "end": 6.5
+          "start": 6.2,
+          "end": 6.4
         },
         {
           "word_index": 2,
           "text": "un",
-          "start": 6.5,
-          "end": 6.7
+          "start": 6.4,
+          "end": 6.6
         },
         {
           "word_index": 3,
           "text": "asesina,",
-          "start": 6.7,
-          "end": 7.1
+          "start": 6.6,
+          "end": 7.0
         },
         {
           "word_index": 4,
           "text": "cuando",
-          "start": 7.1,
-          "end": 7.4
+          "start": 7.0,
+          "end": 7.3
         },
         {
           "word_index": 5,
           "text": "baila",
-          "start": 7.4,
-          "end": 7.7
+          "start": 7.3,
+          "end": 7.6
         },
         {
           "word_index": 6,
           "text": "quiere",
-          "start": 7.7,
-          "end": 7.95
+          "start": 7.6,
+          "end": 7.85
         },
         {
           "word_index": 7,
           "text": "que",
-          "start": 7.95,
-          "end": 8.15
+          "start": 7.85,
+          "end": 8.05
         },
         {
           "word_index": 8,
           "text": "to'",
-          "start": 8.15,
-          "end": 8.3
+          "start": 8.05,
+          "end": 8.2
         },
         {
           "word_index": 9,
           "text": "el",
-          "start": 8.3,
-          "end": 8.45
+          "start": 8.2,
+          "end": 8.35
         },
         {
           "word_index": 10,
           "text": "mundo",
-          "start": 8.45,
-          "end": 8.65
+          "start": 8.35,
+          "end": 8.55
         },
         {
           "word_index": 11,
           "text": "la",
-          "start": 8.65,
-          "end": 8.85
+          "start": 8.55,
+          "end": 8.75
         },
         {
           "word_index": 12,
           "text": "vea",
-          "start": 8.85,
-          "end": 9.25
+          "start": 8.75,
+          "end": 9.15
         }
       ]
     },
     {
       "line_index": 4,
       "text": "I like your poom-poom, girl (Sube, sube)",
-      "start": 9.4,
+      "start": 9.6,
       "end": 10.8,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 9.4,
-          "end": 9.5
+          "start": 9.6,
+          "end": 9.7
         },
         {
           "word_index": 2,
           "text": "like",
-          "start": 9.5,
-          "end": 9.75
+          "start": 9.7,
+          "end": 9.85
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 9.75,
+          "start": 9.85,
           "end": 9.95
         },
         {
@@ -231,75 +231,75 @@
     {
       "line_index": 5,
       "text": "Con calma, yo quiero ver c\u00f3mo ella lo menea",
-      "start": 11.1,
-      "end": 14.55,
+      "start": 11.05,
+      "end": 14.5,
       "words": [
         {
           "word_index": 1,
           "text": "Con",
-          "start": 11.1,
-          "end": 11.45
+          "start": 11.05,
+          "end": 11.4
         },
         {
           "word_index": 2,
           "text": "calma,",
-          "start": 11.45,
-          "end": 12.1
+          "start": 11.4,
+          "end": 12.35
         },
         {
           "word_index": 3,
           "text": "yo",
-          "start": 12.1,
-          "end": 12.35
+          "start": 12.35,
+          "end": 12.6
         },
         {
           "word_index": 4,
           "text": "quiero",
-          "start": 12.35,
-          "end": 12.55
+          "start": 12.6,
+          "end": 12.8
         },
         {
           "word_index": 5,
           "text": "ver",
-          "start": 12.55,
-          "end": 12.8
-        },
-        {
-          "word_index": 6,
-          "text": "c\u00f3mo",
           "start": 12.8,
           "end": 13.05
         },
         {
+          "word_index": 6,
+          "text": "c\u00f3mo",
+          "start": 13.05,
+          "end": 13.3
+        },
+        {
           "word_index": 7,
           "text": "ella",
-          "start": 13.05,
-          "end": 13.4
+          "start": 13.3,
+          "end": 13.65
         },
         {
           "word_index": 8,
           "text": "lo",
-          "start": 13.4,
-          "end": 13.65
+          "start": 13.65,
+          "end": 13.9
         },
         {
           "word_index": 9,
           "text": "menea",
-          "start": 13.65,
-          "end": 14.55
+          "start": 13.9,
+          "end": 14.5
         }
       ]
     },
     {
       "line_index": 6,
       "text": "Mueve ese poom-poom, girl",
-      "start": 14.55,
-      "end": 15.95,
+      "start": 14.6,
+      "end": 16.05,
       "words": [
         {
           "word_index": 1,
           "text": "Mueve",
-          "start": 14.55,
+          "start": 14.6,
           "end": 14.75
         },
         {
@@ -312,307 +312,307 @@
           "word_index": 3,
           "text": "poom-poom,",
           "start": 14.85,
-          "end": 15.4
+          "end": 15.5
         },
         {
           "word_index": 4,
           "text": "girl",
-          "start": 15.4,
-          "end": 15.95
+          "start": 15.5,
+          "end": 16.05
         }
       ]
     },
     {
       "line_index": 7,
       "text": "Tiene adrenalina, en medio 'e la pista, vente, hazme lo que sea",
-      "start": 16.25,
-      "end": 19.4,
+      "start": 16.3,
+      "end": 19.65,
       "words": [
         {
           "word_index": 1,
           "text": "Tiene",
-          "start": 16.25,
-          "end": 16.55
+          "start": 16.3,
+          "end": 16.6
         },
         {
           "word_index": 2,
           "text": "adrenalina,",
-          "start": 16.55,
-          "end": 16.85
+          "start": 16.6,
+          "end": 17.1
         },
         {
           "word_index": 3,
           "text": "en",
-          "start": 16.85,
-          "end": 17.0
+          "start": 17.1,
+          "end": 17.25
         },
         {
           "word_index": 4,
           "text": "medio",
-          "start": 17.0,
-          "end": 17.3
+          "start": 17.25,
+          "end": 17.55
         },
         {
           "word_index": 5,
           "text": "'e",
-          "start": 17.3,
-          "end": 17.45
+          "start": 17.55,
+          "end": 17.7
         },
         {
           "word_index": 6,
           "text": "la",
-          "start": 17.45,
-          "end": 17.6
+          "start": 17.7,
+          "end": 17.85
         },
         {
           "word_index": 7,
           "text": "pista,",
-          "start": 17.6,
-          "end": 17.9
+          "start": 17.85,
+          "end": 18.15
         },
         {
           "word_index": 8,
           "text": "vente,",
-          "start": 17.9,
-          "end": 18.15
+          "start": 18.15,
+          "end": 18.4
         },
         {
           "word_index": 9,
           "text": "hazme",
-          "start": 18.15,
-          "end": 18.45
+          "start": 18.4,
+          "end": 18.7
         },
         {
           "word_index": 10,
           "text": "lo",
-          "start": 18.45,
-          "end": 18.6
+          "start": 18.7,
+          "end": 18.85
         },
         {
           "word_index": 11,
           "text": "que",
-          "start": 18.6,
-          "end": 18.8
+          "start": 18.85,
+          "end": 19.05
         },
         {
           "word_index": 12,
           "text": "sea",
-          "start": 18.8,
-          "end": 19.4
+          "start": 19.05,
+          "end": 19.65
         }
       ]
     },
     {
       "line_index": 8,
       "text": "I like your poom-poom, girl (\u00a1Hey!)",
-      "start": 19.7,
-      "end": 21.3,
+      "start": 19.65,
+      "end": 21.75,
       "words": [
         {
           "word_index": 1,
           "text": "I",
-          "start": 19.7,
-          "end": 19.8
+          "start": 19.65,
+          "end": 19.75
         },
         {
           "word_index": 2,
           "text": "like",
-          "start": 19.8,
-          "end": 19.95
+          "start": 19.75,
+          "end": 19.9
         },
         {
           "word_index": 3,
           "text": "your",
-          "start": 19.95,
-          "end": 20.15
+          "start": 19.9,
+          "end": 20.1
         },
         {
           "word_index": 4,
           "text": "poom-poom,",
-          "start": 20.15,
-          "end": 20.55
+          "start": 20.1,
+          "end": 20.5
         },
         {
           "word_index": 5,
           "text": "girl",
-          "start": 20.55,
-          "end": 20.95
+          "start": 20.5,
+          "end": 20.9
         },
         {
           "word_index": 6,
           "text": "(\u00a1Hey!)",
-          "start": 21.05,
-          "end": 21.3
+          "start": 21.2,
+          "end": 21.75
         }
       ]
     },
     {
       "line_index": 9,
       "text": "Ya vi que est\u00e1s solita, acomp\u00e1\u00f1ame",
-      "start": 21.65,
-      "end": 24.0,
+      "start": 21.8,
+      "end": 24.15,
       "words": [
         {
           "word_index": 1,
           "text": "Ya",
-          "start": 21.65,
-          "end": 21.85
+          "start": 21.8,
+          "end": 22.0
         },
         {
           "word_index": 2,
           "text": "vi",
-          "start": 21.85,
-          "end": 22.15
+          "start": 22.0,
+          "end": 22.3
         },
         {
           "word_index": 3,
           "text": "que",
-          "start": 22.15,
-          "end": 22.5
+          "start": 22.3,
+          "end": 22.65
         },
         {
           "word_index": 4,
           "text": "est\u00e1s",
-          "start": 22.5,
-          "end": 22.8
+          "start": 22.65,
+          "end": 22.95
         },
         {
           "word_index": 5,
           "text": "solita,",
-          "start": 22.8,
-          "end": 23.2
+          "start": 22.95,
+          "end": 23.35
         },
         {
           "word_index": 6,
           "text": "acomp\u00e1\u00f1ame",
-          "start": 23.2,
-          "end": 24.0
+          "start": 23.35,
+          "end": 24.15
         }
       ]
     },
     {
       "line_index": 10,
       "text": "La noche es de nosotros, t\u00fa lo sabe' (You know)",
-      "start": 24.5,
-      "end": 26.85,
+      "start": 24.35,
+      "end": 26.9,
       "words": [
         {
           "word_index": 1,
           "text": "La",
-          "start": 24.5,
-          "end": 24.7
+          "start": 24.35,
+          "end": 24.55
         },
         {
           "word_index": 2,
           "text": "noche",
-          "start": 24.7,
-          "end": 24.95
+          "start": 24.55,
+          "end": 24.8
         },
         {
           "word_index": 3,
           "text": "es",
-          "start": 24.95,
-          "end": 25.15
+          "start": 24.8,
+          "end": 25.0
         },
         {
           "word_index": 4,
           "text": "de",
-          "start": 25.15,
-          "end": 25.4
+          "start": 25.0,
+          "end": 25.25
         },
         {
           "word_index": 5,
           "text": "nosotros,",
-          "start": 25.4,
-          "end": 25.65
+          "start": 25.25,
+          "end": 25.5
         },
         {
           "word_index": 6,
           "text": "t\u00fa",
-          "start": 25.65,
-          "end": 25.9
+          "start": 25.5,
+          "end": 25.75
         },
         {
           "word_index": 7,
           "text": "lo",
-          "start": 25.9,
-          "end": 26.15
+          "start": 25.75,
+          "end": 26.0
         },
         {
           "word_index": 8,
           "text": "sabe'",
-          "start": 26.15,
-          "end": 26.35
+          "start": 26.0,
+          "end": 26.55
         },
         {
           "word_index": 9,
           "text": "(You",
-          "start": 26.35,
-          "end": 26.6
+          "start": 26.55,
+          "end": 26.75
         },
         {
           "word_index": 10,
           "text": "know)",
-          "start": 26.6,
-          "end": 26.85
+          "start": 26.75,
+          "end": 26.9
         }
       ]
     },
     {
       "line_index": 11,
       "text": "Que ganas me dan-dan-dan",
-      "start": 26.85,
-      "end": 28.4,
+      "start": 27.0,
+      "end": 28.75,
       "words": [
         {
           "word_index": 1,
           "text": "Que",
-          "start": 26.85,
-          "end": 27.2
+          "start": 27.0,
+          "end": 27.35
         },
         {
           "word_index": 2,
           "text": "ganas",
-          "start": 27.2,
-          "end": 27.5
+          "start": 27.35,
+          "end": 27.65
         },
         {
           "word_index": 3,
           "text": "me",
-          "start": 27.5,
-          "end": 27.8
+          "start": 27.65,
+          "end": 27.95
         },
         {
           "word_index": 4,
           "text": "dan-dan-dan",
-          "start": 27.8,
-          "end": 28.4
+          "start": 27.95,
+          "end": 28.75
         }
       ]
     },
     {
       "line_index": 12,
       "text": "De guayarte, ma...",
-      "start": 28.4,
-      "end": 30.05,
+      "start": 28.75,
+      "end": 30.0,
       "words": [
         {
           "word_index": 1,
           "text": "De",
-          "start": 28.4,
-          "end": 28.8
+          "start": 28.75,
+          "end": 29.05
         },
         {
           "word_index": 2,
           "text": "guayarte,",
-          "start": 28.8,
-          "end": 29.75
+          "start": 29.05,
+          "end": 29.7
         },
         {
           "word_index": 3,
           "text": "ma...",
-          "start": 29.75,
-          "end": 30.05
+          "start": 29.7,
+          "end": 30.0
         }
       ]
     }
