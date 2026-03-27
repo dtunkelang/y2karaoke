@@ -915,3 +915,39 @@ Most likely next inspection targets:
 - next best step:
   - rerank the remaining broad misses from `20260327T155602Z`
   - likely next targets are `Con Calma`, `Taste`, or `Take On Me`, depending on whether we want tractable code-side gains or upstream-analysis work
+
+## 2026-03-27 Stayin' Alive held-tail repair
+
+- kept production change:
+  - added a narrow final-line held-tail extension in [whisper_forced_tail_repairs.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_forced_tail_repairs.py)
+  - wired it through the forced post-finalize path in [whisper_integration_forced_fallback.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_forced_fallback.py)
+  - it only fires for the last forced-aligned line when:
+    - baseline duration is long
+    - end shortfall is very large
+    - start is already close to baseline
+    - vocal activity continues through the tail with no silence
+- key live finding:
+  - `Stayin' Alive` line 2 is a real held-vocal family, not a gold issue
+  - from forced end `8.85` to clip end `16.0`, audio features show:
+    - vocal activity `1.0`
+    - no silence
+    - `vocal_end` effectively at clip end
+  - the discriminating upstream signal was not just active tail audio; it was the huge final-line `pre_whisper_end - forced_end` shortfall:
+    - `Stayin' Alive`: about `+6.20s`
+    - controls like `Take On Me` and `Total Eclipse` were far smaller
+- kept results:
+  - focused guardrail canary: `benchmarks/results/20260327T164610Z`
+    - `Stayin' Alive`: `0.1374 / 0.6253 -> 0.1374 / 0.1827`
+    - `Take On Me`: unchanged
+    - `Total Eclipse of the Heart`: unchanged
+  - broad cached canary: `benchmarks/results/20260327T165543Z`
+    - only material song movement was `Stayin' Alive`
+    - `Stayin' Alive`: `0.1374 / 0.6253 -> 0.1374 / 0.1827`
+    - aggregate end mean improved: `0.240 -> 0.203`
+- negative learning:
+  - broad sustained-duration rollback on a single severe collapse was the wrong axis and regressed `Stayin' Alive` badly to `1.145 / 1.147`
+  - a final-line held-tail repair needs activity and tail-shortfall gating, not source-duration rollback
+- next best step:
+  - rerank from `20260327T165543Z`
+  - `Take On Me` remains the largest miss, but it is still the contamination / zero-support family
+  - `Con Calma` is likely the next tractable code-side target

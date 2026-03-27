@@ -5,6 +5,11 @@ from __future__ import annotations
 from typing import Any, List
 
 from ... import models
+from ...audio_analysis import (
+    _check_for_silence_in_range,
+    _check_vocal_activity_in_range,
+)
+from ..alignment import timing_models
 
 
 def _forced_tail_target_end(
@@ -106,6 +111,149 @@ def extend_low_score_forced_line_tails_from_source(
             min_gap_sec=min_gap_sec,
             min_last_word_duration_sec=min_last_word_duration_sec,
             max_last_word_duration_sec=max_last_word_duration_sec,
+        )
+        if target_end is None:
+            continue
+        repaired[idx] = models.Line(
+            words=[
+                models.Word(
+                    text=word.text,
+                    start_time=word.start_time,
+                    end_time=(
+                        target_end
+                        if word_idx == len(forced_line.words) - 1
+                        else word.end_time
+                    ),
+                    singer=word.singer,
+                )
+                for word_idx, word in enumerate(forced_line.words)
+            ],
+            singer=forced_line.singer,
+        )
+        extended += 1
+    return repaired, extended
+
+
+def _final_held_tail_target_end(
+    *,
+    baseline_end: float,
+    forced_end: float,
+    vocal_end: float,
+    min_extension_sec: float,
+) -> float | None:
+    target_end = min(baseline_end, vocal_end)
+    if target_end <= forced_end + min_extension_sec:
+        return None
+    return target_end
+
+
+def _is_final_held_tail_candidate(
+    *,
+    idx: int,
+    line_count: int,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    audio_features: timing_models.AudioFeatures | None,
+    min_word_count: int,
+    max_word_count: int,
+    min_baseline_duration_sec: float,
+    min_end_shortfall_sec: float,
+    max_end_shortfall_sec: float,
+    max_start_delta_sec: float,
+    max_duration_ratio: float,
+    min_tail_activity: float,
+    silence_min_duration: float,
+    min_extension_sec: float,
+) -> bool:
+    if idx != line_count - 1 or audio_features is None:
+        return False
+    if not baseline_line.words or not forced_line.words:
+        return False
+    word_count = len(forced_line.words)
+    if word_count < min_word_count or word_count > max_word_count:
+        return False
+    baseline_duration = baseline_line.end_time - baseline_line.start_time
+    if baseline_duration < min_baseline_duration_sec:
+        return False
+    forced_duration = forced_line.end_time - forced_line.start_time
+    if (
+        forced_duration <= 0.0
+        or forced_duration > baseline_duration * max_duration_ratio
+    ):
+        return False
+    end_shortfall = baseline_line.end_time - forced_line.end_time
+    if end_shortfall < min_end_shortfall_sec or end_shortfall > max_end_shortfall_sec:
+        return False
+    if abs(forced_line.start_time - baseline_line.start_time) > max_start_delta_sec:
+        return False
+    target_end = _final_held_tail_target_end(
+        baseline_end=baseline_line.end_time,
+        forced_end=forced_line.end_time,
+        vocal_end=audio_features.vocal_end,
+        min_extension_sec=min_extension_sec,
+    )
+    if target_end is None:
+        return False
+    activity = _check_vocal_activity_in_range(
+        forced_line.end_time, target_end, audio_features
+    )
+    if activity < min_tail_activity:
+        return False
+    if _check_for_silence_in_range(
+        forced_line.end_time,
+        target_end,
+        audio_features,
+        min_silence_duration=silence_min_duration,
+    ):
+        return False
+    return True
+
+
+def extend_final_held_tail_lines_from_activity(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    audio_features: timing_models.AudioFeatures | None,
+    *,
+    min_word_count: int = 5,
+    max_word_count: int = 7,
+    min_baseline_duration_sec: float = 6.0,
+    min_end_shortfall_sec: float = 2.5,
+    max_end_shortfall_sec: float = 8.0,
+    max_start_delta_sec: float = 0.35,
+    max_duration_ratio: float = 0.5,
+    min_tail_activity: float = 0.9,
+    silence_min_duration: float = 0.35,
+    min_extension_sec: float = 0.5,
+) -> tuple[List[models.Line], int]:
+    repaired = list(forced_lines)
+    extended = 0
+    for idx, (baseline_line, forced_line) in enumerate(
+        zip(baseline_lines, forced_lines)
+    ):
+        if not _is_final_held_tail_candidate(
+            idx=idx,
+            line_count=len(forced_lines),
+            baseline_line=baseline_line,
+            forced_line=forced_line,
+            audio_features=audio_features,
+            min_word_count=min_word_count,
+            max_word_count=max_word_count,
+            min_baseline_duration_sec=min_baseline_duration_sec,
+            min_end_shortfall_sec=min_end_shortfall_sec,
+            max_end_shortfall_sec=max_end_shortfall_sec,
+            max_start_delta_sec=max_start_delta_sec,
+            max_duration_ratio=max_duration_ratio,
+            min_tail_activity=min_tail_activity,
+            silence_min_duration=silence_min_duration,
+            min_extension_sec=min_extension_sec,
+        ):
+            continue
+        assert audio_features is not None
+        target_end = _final_held_tail_target_end(
+            baseline_end=baseline_line.end_time,
+            forced_end=forced_line.end_time,
+            vocal_end=audio_features.vocal_end,
+            min_extension_sec=min_extension_sec,
         )
         if target_end is None:
             continue

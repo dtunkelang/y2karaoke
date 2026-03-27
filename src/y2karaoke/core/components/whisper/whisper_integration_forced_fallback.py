@@ -17,6 +17,7 @@ from .whisper_forced_prefix_repairs import (
 )
 from .whisper_forced_tail_repairs import (
     extend_low_score_forced_line_tails_from_source as _extend_low_score_forced_line_tails_from_source,  # noqa: E501
+    extend_final_held_tail_lines_from_activity as _extend_final_held_tail_lines_from_activity,  # noqa: E501
 )
 from .whisper_forced_sparse_followup_repairs import (
     restore_sparse_forced_followup_lines_from_source as _restore_sparse_forced_followup_lines_from_source,  # noqa: E501
@@ -851,6 +852,7 @@ def _apply_forced_post_finalize_repairs(
     forced_segments: List[timing_models.TranscriptionSegment],
     transcription: List[timing_models.TranscriptionSegment] | None,
     whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None,
     vocals_path: str,
     language: str | None,
     detected_lang: str | None,
@@ -895,6 +897,23 @@ def _apply_forced_post_finalize_repairs(
     _capture_forced_trace_snapshot(
         trace_snapshots,
         stage="after_extend_low_score_tails",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+
+    forced_lines, extended_held_tails = _extend_final_held_tail_lines_from_activity(
+        baseline_lines,
+        forced_lines,
+        audio_features,
+    )
+    if extended_held_tails:
+        logger.info(
+            "Extended %d final held-tail forced line(s) from vocal activity",
+            extended_held_tails,
+        )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_extend_final_held_tails",
         lines=forced_lines,
         line_range=trace_line_range,
     )
@@ -1096,6 +1115,7 @@ def attempt_whisperx_forced_alignment(
         forced_segments=forced_segments,
         transcription=transcription,
         whisper_words=whisper_words,
+        audio_features=audio_features,
         vocals_path=vocals_path,
         language=language,
         detected_lang=detected_lang,
