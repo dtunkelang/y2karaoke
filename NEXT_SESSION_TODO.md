@@ -1180,6 +1180,24 @@ Most likely next inspection targets:
       - the contamination family is real and mostly previous-line end loss
       - `Take On Me` is the stronger version of that family, not a generic held-tail case
       - next useful code work should target earlier previous-line end retention on the mapped/assembly path, not another next-line-start fallback
+  - new diagnostics-only runtime switch:
+    - `Y2K_WHISPER_ENABLE_SPARSE_FORCED_FALLBACK=0`
+    - added specifically so sparse/falsetto clips can be inspected on the mapped DTW path without carrying a local code fork
+  - traced mapped-path rerun on `Take On Me` with sparse forced fallback disabled:
+    - run dir: `benchmarks/results/20260327T233011Z`
+    - trace file: `/tmp/take_on_me_mapped_trace.json`
+    - result is much worse than the kept forced path:
+      - `0.1257 / 0.2781 -> 0.870 / 1.028`
+    - so the sparse forced fallback still looks necessary as default behavior
+    - but the trace is finally usable and shows the main bad mover:
+      - line 2 `Take me on`
+      - initial mapped window: `4.22-8.22`
+      - `postpass_extend_trailing`: `9.86-12.34`
+      - later passes partially pull it back, but not enough
+    - practical implication:
+      - the contamination family is not only a previous-line truncation story
+      - on the raw mapped path, `postpass_extend_trailing` is also over-trusting the next repeated phrase on `Take On Me`
+      - next code experiment should target that exact repeated trailing-extension step with contamination-aware guards, not another generic fallback toggle
 
 ## 2026-03-27 Broader strategy reset
 

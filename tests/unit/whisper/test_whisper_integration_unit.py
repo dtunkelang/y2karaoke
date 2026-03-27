@@ -14,6 +14,11 @@ from y2karaoke.core.components.alignment.timing_models import (
 wi_any = cast(Any, wi)
 
 
+def _record_call(calls: list[str], name: str, result: Any) -> Any:
+    calls.append(name)
+    return result
+
+
 def test_whisper_lang_to_epitran():
     assert wi_any._whisper_lang_to_epitran("en") == "eng-Latn"
     assert wi_any._whisper_lang_to_epitran("fr") == "fra-Latn"
@@ -35,7 +40,8 @@ def test_assess_lrc_quality():
         lines, whisper_words, "eng-Latn", tolerance=1.5
     )
     assert quality == 0.5
-    # assessments is List[Tuple[int, float, float]] (line_idx, lrc_time, best_whisper_time)
+    # assessments is List[Tuple[int, float, float]]
+    # (line_idx, lrc_time, best_whisper_time)
     assert assessments[0][0] == 0
     assert assessments[1][0] == 1
 
@@ -87,7 +93,7 @@ def test_trim_whisper_transcription_skips_when_match_far_from_tail():
     assert len(trimmed_words) == len(words)
 
 
-def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match():
+def test_trim_whisper_transcription_skips_longer_repeated_line_tail_match():
     segments = [
         TranscriptionSegment(start=0, end=2, text="guess whos back", words=[]),
         TranscriptionSegment(start=2, end=4, text="back again", words=[]),
@@ -115,7 +121,7 @@ def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match():
     assert len(trimmed_words) == len(words)
 
 
-def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match_with_longer_repeated_lines():
+def test_trim_whisper_transcription_skips_ambiguous_repetitive_tail_match():
     segments = [
         TranscriptionSegment(
             start=0, end=3, text="guess whos back back again", words=[]
@@ -367,6 +373,74 @@ def test_maybe_force_sparse_weak_alignment_skips_when_phonetic_support_is_good(
     assert result is None
 
 
+def test_prepare_alignment_inputs_skips_sparse_forced_fallback_when_disabled(
+    monkeypatch,
+):
+    lines = [Line(words=[Word(text="x", start_time=1.0, end_time=1.2)])]
+    forced_calls: list[tuple[str, bool]] = []
+
+    monkeypatch.setattr(wialign, "ensure_local_lex_lookup", lambda: None)
+    monkeypatch.setattr(
+        wialign,
+        "_transcribe_and_trim_alignment_inputs",
+        lambda **_kwargs: (
+            [object()],
+            [TranscriptionWord(text="x", start=1.0, end=1.2, probability=1.0)],
+            "en",
+            "large",
+            None,
+        ),
+    )
+    monkeypatch.setattr(
+        wialign,
+        "_attempt_forced_alignment_for_reason",
+        lambda **kwargs: forced_calls.append((kwargs["reason"], kwargs["enabled"])),
+    )
+
+    prepared, early_result = wialign._prepare_alignment_inputs(
+        lines=lines,
+        vocals_path="vocals.wav",
+        language="en",
+        model_size="large",
+        aggressive=False,
+        temperature=0.0,
+        audio_features=None,
+        lenient_vocal_activity_threshold=0.0,
+        low_word_confidence_threshold=0.0,
+        transcribe_vocals_fn=lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("unused")
+        ),
+        extract_audio_features_fn=lambda *_a, **_k: None,
+        dedupe_whisper_segments_fn=lambda x: x,
+        trim_whisper_transcription_by_lyrics_fn=lambda *_a, **_k: (_ for _ in ()).throw(
+            AssertionError("unused")
+        ),
+        fill_vocal_activity_gaps_fn=lambda words, *_a, **_k: (words, None),
+        dedupe_whisper_words_fn=lambda words: words,
+        clone_lines_for_fallback_fn=lambda src: src,
+        filter_low_confidence_whisper_words_fn=lambda words, _threshold: words,
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda lines, *_a, **_k: (lines, 0),
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+        config=wialign._WhisperMappingDecisionConfig(
+            sparse_word_threshold=80,
+            sparse_segment_threshold=4,
+        ),
+        runtime_config=WhisperRuntimeConfig(sparse_forced_fallback=False),
+        logger=type(
+            "Logger",
+            (),
+            {"warning": lambda *_a, **_k: None, "info": lambda *_a, **_k: None},
+        )(),
+    )
+
+    assert early_result is None
+    assert prepared is not None
+    assert ("sparse Whisper transcript", False) in forced_calls
+
+
 def test_maybe_force_sparse_weak_alignment_finalizes_accepted_forced_lines(monkeypatch):
     lines = [Line(words=[Word(text="x", start_time=1.0, end_time=1.2)])]
     forced_lines = [Line(words=[Word(text="x", start_time=1.1, end_time=1.4)])]
@@ -397,18 +471,15 @@ def test_maybe_force_sparse_weak_alignment_finalizes_accepted_forced_lines(monke
         restore_implausibly_short_lines_fn=lambda *_a, **_k: (forced_lines, 0),
         whisper_words=None,
         transcription=None,
-        normalize_line_word_timings_fn=lambda input_lines: (
-            calls.append("normalize"),
-            input_lines,
-        )[1],
-        enforce_monotonic_line_starts_fn=lambda input_lines: (
-            calls.append("monotonic"),
-            input_lines,
-        )[1],
-        enforce_non_overlapping_lines_fn=lambda input_lines: (
-            calls.append("non_overlap"),
-            finalized_lines,
-        )[1],
+        normalize_line_word_timings_fn=lambda input_lines: _record_call(
+            calls, "normalize", input_lines
+        ),
+        enforce_monotonic_line_starts_fn=lambda input_lines: _record_call(
+            calls, "monotonic", input_lines
+        ),
+        enforce_non_overlapping_lines_fn=lambda input_lines: _record_call(
+            calls, "non_overlap", finalized_lines
+        ),
         trace_snapshots=[],
         trace_path="",
         logger=type(

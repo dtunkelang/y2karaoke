@@ -27,6 +27,7 @@ def _env_flag(name: str, default: bool = False) -> bool:
 class WhisperRuntimeConfig:
     profile: WhisperProfile = "default"
     tail_shortfall_forced_fallback: bool = False
+    sparse_forced_fallback: bool = True
     low_support_onset_reanchor: bool = False
     repeat_cadence_reanchor: bool = False
     restored_run_onset_shift: bool = True
@@ -39,6 +40,7 @@ def load_whisper_runtime_config(
     *,
     profile: Optional[str] = None,
     tail_shortfall_forced_fallback: Optional[bool] = None,
+    sparse_forced_fallback: Optional[bool] = None,
     low_support_onset_reanchor: Optional[bool] = None,
     repeat_cadence_reanchor: Optional[bool] = None,
     restored_run_onset_shift: Optional[bool] = None,
@@ -54,6 +56,11 @@ def load_whisper_runtime_config(
             _env_flag("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK")
             if tail_shortfall_forced_fallback is None
             else tail_shortfall_forced_fallback
+        ),
+        sparse_forced_fallback=(
+            _env_flag("Y2K_WHISPER_ENABLE_SPARSE_FORCED_FALLBACK", default=True)
+            if sparse_forced_fallback is None
+            else sparse_forced_fallback
         ),
         low_support_onset_reanchor=(
             _env_flag("Y2K_WHISPER_ENABLE_LOW_SUPPORT_ONSET_REANCHOR")

@@ -10,6 +10,7 @@ def test_load_whisper_runtime_config_defaults(monkeypatch):
     monkeypatch.delenv(
         "Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", raising=False
     )
+    monkeypatch.delenv("Y2K_WHISPER_ENABLE_SPARSE_FORCED_FALLBACK", raising=False)
     monkeypatch.delenv("Y2K_WHISPER_ENABLE_LOW_SUPPORT_ONSET_REANCHOR", raising=False)
     monkeypatch.delenv("Y2K_WHISPER_ENABLE_REPEAT_CADENCE_REANCHOR", raising=False)
     monkeypatch.delenv("Y2K_WHISPER_ENABLE_RESTORED_RUN_ONSET_SHIFT", raising=False)
@@ -20,6 +21,7 @@ def test_load_whisper_runtime_config_defaults(monkeypatch):
 def test_load_whisper_runtime_config_reads_env(monkeypatch):
     monkeypatch.setenv("Y2K_WHISPER_PROFILE", "safe")
     monkeypatch.setenv("Y2K_WHISPER_ENABLE_TAIL_SHORTFALL_FORCED_FALLBACK", "1")
+    monkeypatch.setenv("Y2K_WHISPER_ENABLE_SPARSE_FORCED_FALLBACK", "0")
     monkeypatch.setenv("Y2K_WHISPER_ENABLE_LOW_SUPPORT_ONSET_REANCHOR", "1")
     monkeypatch.setenv("Y2K_WHISPER_ENABLE_REPEAT_CADENCE_REANCHOR", "1")
     monkeypatch.setenv("Y2K_WHISPER_ENABLE_RESTORED_RUN_ONSET_SHIFT", "1")
@@ -30,6 +32,7 @@ def test_load_whisper_runtime_config_reads_env(monkeypatch):
     assert load_whisper_runtime_config() == WhisperRuntimeConfig(
         profile="safe",
         tail_shortfall_forced_fallback=True,
+        sparse_forced_fallback=False,
         low_support_onset_reanchor=True,
         repeat_cadence_reanchor=True,
         restored_run_onset_shift=True,
@@ -56,10 +59,12 @@ def test_load_whisper_runtime_config_explicit_overrides_take_precedence(monkeypa
     config = load_whisper_runtime_config(
         profile="aggressive",
         tail_shortfall_forced_fallback=False,
+        sparse_forced_fallback=False,
     )
 
     assert config.profile == "aggressive"
     assert not config.tail_shortfall_forced_fallback
+    assert not config.sparse_forced_fallback
 
 
 def test_normalize_whisper_profile_falls_back_to_default():

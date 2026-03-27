@@ -217,6 +217,23 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the contamination family is mostly previous-line end loss, not next-line delay
     - `Take On Me` is the stronger contamination case and remains the best target in that family
+- A diagnostics-only sparse-forced-fallback switch now exists:
+  - `Y2K_WHISPER_ENABLE_SPARSE_FORCED_FALLBACK=0`
+  - this is not intended as a production default change
+  - it exists so sparse clips can be inspected on the raw mapped DTW path when forced fallback would otherwise hide the stage behavior
+- Using that switch on `Take On Me` produced the first usable mapped-stage trace:
+  - run dir: `benchmarks/results/20260327T233011Z`
+  - trace: `/tmp/take_on_me_mapped_trace.json`
+  - outcome is much worse than the kept forced path:
+    - gold start/end means move from about `0.126 / 0.278` to `0.870 / 1.028`
+  - so the sparse forced fallback is still justified as the shipped default
+  - but the mapped trace changes the diagnosis in an important way:
+    - line 2 `Take me on` is badly damaged by `postpass_extend_trailing`
+    - it jumps from `4.22-8.22` to `9.86-12.34` before later passes partially recover it
+  - implication:
+    - `Take On Me` is not only about previous-line truncation
+    - the mapped contamination family also includes repeated-phrase overextension on the next line
+    - the next code-side experiment should target contamination-aware guards on trailing-phrase extension rather than another broad fallback toggle
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

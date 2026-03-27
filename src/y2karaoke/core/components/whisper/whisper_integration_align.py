@@ -21,7 +21,7 @@ from .whisper_integration_align_trace import (
     parse_trace_line_range as _parse_trace_line_range,
 )
 from .whisper_split_refrain_restore import (
-    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
+    restore_split_short_refrains_to_matching_segments,
 )
 from .whisper_integration_shift_guard import (
     should_apply_baseline_constraint as _should_apply_baseline_constraint,
@@ -79,6 +79,9 @@ _extend_unsupported_long_lines_before_weak_opening = (
 _choose_pre_i_said_extension_end = _heuristics._choose_pre_i_said_extension_end
 _extend_misaligned_lines_before_i_said = (
     _heuristics._extend_misaligned_lines_before_i_said
+)
+_restore_split_short_refrains_to_matching_segments = (
+    restore_split_short_refrains_to_matching_segments
 )
 _reanchor_unsupported_i_said_lines_to_later_onset = (
     _experimental.reanchor_unsupported_i_said_lines_to_later_onset
@@ -257,7 +260,9 @@ def _attempt_forced_alignment_for_reason(
         used_model=used_model,
         reason=reason,
         align_lines_with_whisperx_fn=align_lines_with_whisperx,
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=whisper_words,
         transcription=transcription,
@@ -477,7 +482,9 @@ def _prepare_alignment_inputs(
         logger=logger,
         used_model=used_model,
         reason="early Whisper transcript tail shortfall",
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=all_words,
         transcription=transcription,
@@ -491,9 +498,13 @@ def _prepare_alignment_inputs(
     if forced_result is not None:
         return None, forced_result
 
-    sparse_whisper_output = bool(all_words) and (
-        len(all_words) < config.sparse_word_threshold
-        or len(transcription) <= config.sparse_segment_threshold
+    sparse_whisper_output = (
+        runtime_config.sparse_forced_fallback
+        and bool(all_words)
+        and (
+            len(all_words) < config.sparse_word_threshold
+            or len(transcription) <= config.sparse_segment_threshold
+        )
     )
     forced_result = _attempt_forced_alignment_for_reason(
         enabled=sparse_whisper_output,
@@ -505,7 +516,9 @@ def _prepare_alignment_inputs(
         logger=logger,
         used_model=used_model,
         reason="sparse Whisper transcript",
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=all_words,
         transcription=transcription,
@@ -568,7 +581,10 @@ def _build_lrc_assignments(
     )
 
     logger.debug(
-        "DTW-phonetic: Preparing phoneme sequences for %d lyrics words and %d Whisper words...",
+        (
+            "DTW-phonetic: Preparing phoneme sequences for %d lyrics words "
+            "and %d Whisper words..."
+        ),
         len(lrc_words),
         len(all_words),
     )
@@ -653,7 +669,10 @@ def _finalize_alignment_result(
         return repaired_lines, corrections, metrics
 
     logger.warning(
-        "Rolling back Whisper map: implausibly short multi-word lines worsened (%d -> %d)",
+        (
+            "Rolling back Whisper map: implausibly short multi-word lines "
+            "worsened (%d -> %d)"
+        ),
         short_before,
         short_after,
     )
@@ -778,12 +797,18 @@ def _run_initial_mapping_and_postpasses(
         interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
         refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
         shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
-        extend_line_to_trailing_whisper_matches_fn=extend_line_to_trailing_whisper_matches_fn,
+        extend_line_to_trailing_whisper_matches_fn=(
+            extend_line_to_trailing_whisper_matches_fn
+        ),
         pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
         retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
         snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
-        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        pull_lines_forward_for_continuous_vocals_fn=(
+            pull_lines_forward_for_continuous_vocals_fn
+        ),
+        enforce_monotonic_line_starts_whisper_fn=(
+            enforce_monotonic_line_starts_whisper_fn
+        ),
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
         capture_trace_snapshot_fn=_capture_trace_snapshot,
         trace_snapshots=trace_snapshots,
@@ -847,7 +872,9 @@ def _maybe_force_low_coverage_alignment(
         used_model=used_model,
         reason="low DTW mapping coverage",
         align_lines_with_whisperx_fn=align_lines_with_whisperx,
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         transcription=transcription,
         audio_features=audio_features,
@@ -912,7 +939,9 @@ def _maybe_force_sparse_weak_alignment(
         used_model=used_model,
         reason="sparse Whisper transcript with weak phonetic support",
         align_lines_with_whisperx_fn=align_lines_with_whisperx,
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=whisper_words,
         transcription=transcription,
@@ -1008,7 +1037,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         dedupe_whisper_words_fn=dedupe_whisper_words_fn,
         clone_lines_for_fallback_fn=clone_lines_for_fallback_fn,
         filter_low_confidence_whisper_words_fn=filter_low_confidence_whisper_words_fn,
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
@@ -1044,12 +1075,20 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         transcription=transcription,
         extract_lrc_words_all_fn=extract_lrc_words_all_fn,
         build_phoneme_tokens_from_lrc_words_fn=build_phoneme_tokens_from_lrc_words_fn,
-        build_phoneme_tokens_from_whisper_words_fn=build_phoneme_tokens_from_whisper_words_fn,
+        build_phoneme_tokens_from_whisper_words_fn=(
+            build_phoneme_tokens_from_whisper_words_fn
+        ),
         build_syllable_tokens_from_phonemes_fn=build_syllable_tokens_from_phonemes_fn,
-        build_segment_text_overlap_assignments_fn=build_segment_text_overlap_assignments_fn,
+        build_segment_text_overlap_assignments_fn=(
+            build_segment_text_overlap_assignments_fn
+        ),
         build_phoneme_dtw_path_fn=build_phoneme_dtw_path_fn,
-        build_word_assignments_from_phoneme_path_fn=build_word_assignments_from_phoneme_path_fn,
-        build_block_segmented_syllable_assignments_fn=build_block_segmented_syllable_assignments_fn,
+        build_word_assignments_from_phoneme_path_fn=(
+            build_word_assignments_from_phoneme_path_fn
+        ),
+        build_block_segmented_syllable_assignments_fn=(
+            build_block_segmented_syllable_assignments_fn
+        ),
         min_segment_overlap_coverage=min_segment_overlap_coverage,
         epitran_lang=epitran_lang,
         logger=logger,
@@ -1081,12 +1120,18 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         interpolate_unmatched_lines_fn=interpolate_unmatched_lines_fn,
         refine_unmatched_lines_with_onsets_fn=refine_unmatched_lines_with_onsets_fn,
         shift_repeated_lines_to_next_whisper_fn=shift_repeated_lines_to_next_whisper_fn,
-        extend_line_to_trailing_whisper_matches_fn=extend_line_to_trailing_whisper_matches_fn,
+        extend_line_to_trailing_whisper_matches_fn=(
+            extend_line_to_trailing_whisper_matches_fn
+        ),
         pull_late_lines_to_matching_segments_fn=pull_late_lines_to_matching_segments_fn,
         retime_short_interjection_lines_fn=retime_short_interjection_lines_fn,
         snap_first_word_to_whisper_onset_fn=snap_first_word_to_whisper_onset_fn,
-        pull_lines_forward_for_continuous_vocals_fn=pull_lines_forward_for_continuous_vocals_fn,
-        enforce_monotonic_line_starts_whisper_fn=enforce_monotonic_line_starts_whisper_fn,
+        pull_lines_forward_for_continuous_vocals_fn=(
+            pull_lines_forward_for_continuous_vocals_fn
+        ),
+        enforce_monotonic_line_starts_whisper_fn=(
+            enforce_monotonic_line_starts_whisper_fn
+        ),
         resolve_line_overlaps_fn=resolve_line_overlaps_fn,
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
@@ -1109,7 +1154,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         language=language,
         detected_lang=detected_lang,
         used_model=used_model,
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         normalize_line_word_timings_fn=normalize_line_word_timings_fn,
         enforce_monotonic_line_starts_fn=enforce_monotonic_line_starts_fn,
@@ -1133,7 +1180,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         whisper_word_count_before_filter=before_low_conf_filter,
         whisper_segment_count=len(transcription),
         lrc_word_count=len(lrc_words),
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         whisper_words=all_words,
         transcription=transcription,
@@ -1188,7 +1237,11 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
     )
     if restored_split_refrains:
         corrections.append(
-            f"Restored {restored_split_refrains} split short refrain line(s) to matching Whisper segments"
+            (
+                "Restored "
+                f"{restored_split_refrains} split short refrain line(s) "
+                "to matching Whisper segments"
+            )
         )
         _capture_trace_snapshot(
             trace_snapshots,
@@ -1232,7 +1285,9 @@ def align_lrc_text_to_whisper_timings_impl(  # noqa: C901
         corrections=corrections,
         metrics=metrics,
         mapped_count=mapped_count,
-        should_rollback_short_line_degradation_fn=should_rollback_short_line_degradation_fn,
+        should_rollback_short_line_degradation_fn=(
+            should_rollback_short_line_degradation_fn
+        ),
         restore_implausibly_short_lines_fn=restore_implausibly_short_lines_fn,
         logger=logger,
     )
