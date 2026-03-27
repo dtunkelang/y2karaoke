@@ -117,6 +117,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - some late lines had real earlier Whisper support, but rollback/correction behavior still left them pinned to later baseline starts
   - a narrow earlier-Whisper reanchor for lines with in-order prefix support improved `Con Calma` again without regressing the `Houdini|Without Me|I Gotta Feeling` canary
   - once a clip reaches that stage, inspect post-map and correction-pass traces before tuning seed helpers again
+- `Con Calma` later exposed a third failure mode after the obvious start fixes landed:
+  - gold start/end metrics became decent while DTW / agreement coverage stayed poor
+  - the practical signal was `dtw_line_coverage = 0.667` with `gold_start_mean_abs_sec = 0.2242`
+  - implication: stop assuming the next gain is another boundary retime; the remaining issue is likely in mapping / coverage policy
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

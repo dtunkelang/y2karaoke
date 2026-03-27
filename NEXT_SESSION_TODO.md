@@ -1,6 +1,6 @@
 # Next Session TODO
 
-Last updated: 2026-03-26
+Last updated: 2026-03-27
 
 Use this file as a session handoff, not as a second backlog.
 
@@ -951,3 +951,51 @@ Most likely next inspection targets:
   - rerank from `20260327T165543Z`
   - `Take On Me` remains the largest miss, but it is still the contamination / zero-support family
   - `Con Calma` is likely the next tractable code-side target
+
+## 2026-03-27 Con Calma current blocker
+
+- latest confirmed live baseline:
+  - proper focused rerank on `Con Calma|Sweet Caroline`: `benchmarks/results/20260327T193726Z`
+  - `Con Calma`: `0.2242 / 0.2238`
+  - `Sweet Caroline`: `0.1832 / 0.2234`
+- important correction to the current mental model:
+  - `Con Calma` is no longer mainly a late boundary problem
+  - line boundaries are mostly healthy now
+  - the clip still scores poorly because internal DTW / agreement quality remains weak:
+    - `dtw_line_coverage = 0.667`
+    - `dtw_word_coverage = 0.72`
+    - `agreement_coverage_ratio = 0.0`
+- traced line-level finding:
+  - `Ya vi que estás solita, acompáñame` looked like an obvious reanchor candidate because the local Whisper window contains an earlier exact phrase starting at `21.5`
+  - traced path:
+    - `after_map_lrc_words_to_whisper`: `25.34-27.92`
+    - `postpass_interpolate_unmatched`: `31.449-34.029`
+    - `after_restore_weak_evidence_large_start_shifts`: `22.458-24.403`
+  - a narrow near-threshold earlier-Whisper reanchor branch was built and fully quality-gated
+  - focused live rerun stayed exactly flat, so that branch was reverted
+- conclusion:
+  - the apparent local earlier phrase is not the active live lever
+  - the remaining `Con Calma` miss is deeper than another start-shift / boundary heuristic
+  - the next useful target is why DTW / agreement coverage stays weak even when the gold metrics are already decent
+
+## 2026-03-27 Broader strategy reset
+
+- the recent narrow-heuristic loop has mostly exhausted the obvious local repairs
+- the best remaining paths are larger and riskier than another song-specific postpass:
+  1. DTW / mapping strategy work
+     - focus first on clips like `Con Calma` where `gold_*` metrics are decent but `dtw_*` coverage is still poor
+     - inspect why matched lines are being skipped (`anchor_outside_window`, `low_text_similarity`) even after useful local repairs
+     - likely targets: segment text normalization, bilingual token aliasing, and matching-window policy rather than line retiming
+  2. Upstream evidence policy work
+     - keep using alternate-transcript analyzers as diagnostics, but stop doing transcript replacement
+     - the next viable production version would be advisory / side-channel evidence only
+     - strongest known example is still `Sweet Caroline`, not `Take On Me`
+  3. Family-level acceptance policies
+     - repeated-line start drift, contamination gaps, and held tails all produced real wins when treated as families
+     - the next architecture step should be family classifiers feeding guarded policies, not more one-off helpers
+  4. Backend bakeoff / alternate alignment source
+     - if local policy work stalls again, compare the hard clips against at least one alternate upstream ASR/alignment backend
+     - use diagnostics first; do not integrate blindly
+- recommended next direction:
+  - prioritize DTW/mapping diagnostics for `Con Calma`
+  - only return to local heuristics if that work reveals one concrete stage or matcher that is still making a reversible mistake
