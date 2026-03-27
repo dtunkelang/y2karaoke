@@ -196,6 +196,16 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - coverage `0.3514 -> 0.6562`
     - bad ratio `0.1081 -> 0.1081`
     - worst hotspot `a-ha - Take On Me`
+  - broader cached canary `benchmarks/results/20260327T165543Z` strengthens the same read:
+    - coverage `0.4211 -> 0.7292`
+    - bad ratio `0.0702 -> 0.0702`
+    - recovered songs:
+      - `Con Calma` `0/5 -> 8/9`
+      - `I Gotta Feeling` `0/3 -> 3/4`
+    - worst hotspot still `a-ha - Take On Me`
+  - implication:
+    - the benchmark-only comparability idea is broader than just `Con Calma`
+    - but it still does not solve the contamination / zero-support family, which keeps `Take On Me` as the clearest remaining hotspot
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

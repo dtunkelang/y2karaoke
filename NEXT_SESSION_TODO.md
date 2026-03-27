@@ -1155,6 +1155,19 @@ Most likely next inspection targets:
       - sidecar worst hotspot `a-ha - Take On Me`
   - next step from here:
     - use the wrapper on a real mixed pack run and compare its emitted sidecar against the current standalone analyzer output
+  - broader cached canary validation on `benchmarks/results/20260327T165543Z`:
+    - baseline `agreement_coverage_ratio_total = 0.4211`
+    - prototype `agreement_coverage_ratio_total = 0.7292`
+    - baseline `agreement_bad_ratio_total = 0.0702`
+    - prototype `agreement_bad_ratio_total = 0.0702`
+    - recovered songs:
+      - `Con Calma` `0/5 -> 8/9`
+      - `I Gotta Feeling` `0/3 -> 3/4`
+    - worst prototype hotspot still: `Take On Me`
+  - current strategic read after the broader pack:
+    - the two-layer benchmark-only policy is broader than just `Con Calma`
+    - but it still does not touch the contamination/zero-support `Take On Me` family
+    - that makes `Take On Me` the clearest remaining hotspot even under improved comparability
 
 ## 2026-03-27 Broader strategy reset
 
