@@ -35,13 +35,24 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class _ContinuousVocalsRefinementConfig:
     enable_silence_short_line_refinement: bool
+    enable_shift_long_activity_gaps: bool
+    enable_extend_active_gaps: bool
 
 
 def _default_continuous_vocals_refinement_config() -> _ContinuousVocalsRefinementConfig:
     env_flag = os.getenv("Y2K_WHISPER_SILENCE_REFINEMENT", "1").strip().lower()
+    shift_long_gaps = (
+        os.getenv("Y2K_WHISPER_CONTINUOUS_SHIFT_LONG_GAPS", "1").strip().lower()
+    )
+    extend_active_gaps = (
+        os.getenv("Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS", "1").strip().lower()
+    )
     return _ContinuousVocalsRefinementConfig(
         enable_silence_short_line_refinement=env_flag
         not in {"0", "false", "off", "no"},
+        enable_shift_long_activity_gaps=shift_long_gaps
+        not in {"0", "false", "off", "no"},
+        enable_extend_active_gaps=extend_active_gaps not in {"0", "false", "off", "no"},
     )
 
 
@@ -437,12 +448,14 @@ def _pull_lines_forward_for_continuous_vocals(
     before_long_count, before_max_gap = _long_gap_stats(lines)
     before_inv_count, before_inv_drop = _ordering_inversion_stats(lines)
 
-    fixes = _shift_lines_across_long_activity_gaps(
-        lines, audio_features, max_gap, onset_times
-    )
-    fixes += _extend_line_ends_across_active_gaps(lines, audio_features)
-
     config = _default_continuous_vocals_refinement_config()
+    fixes = 0
+    if config.enable_shift_long_activity_gaps:
+        fixes += _shift_lines_across_long_activity_gaps(
+            lines, audio_features, max_gap, onset_times
+        )
+    if config.enable_extend_active_gaps:
+        fixes += _extend_line_ends_across_active_gaps(lines, audio_features)
     if not (
         enable_silence_short_line_refinement
         and config.enable_silence_short_line_refinement
@@ -472,7 +485,10 @@ def _pull_lines_forward_for_continuous_vocals(
         before_max_gap + 8.0, 20.0
     ):
         logger.debug(
-            "Reverting continuous-vocals refinement: long gaps worsened (%d→%d, %.2fs→%.2fs)",
+            (
+                "Reverting continuous-vocals refinement: long gaps worsened "
+                "(%d→%d, %.2fs→%.2fs)"
+            ),
             before_long_count,
             after_long_count,
             before_max_gap,
@@ -483,7 +499,10 @@ def _pull_lines_forward_for_continuous_vocals(
         before_inv_drop + 0.75, 1.5
     ):
         logger.debug(
-            "Reverting continuous-vocals refinement: ordering inversions worsened (%d→%d, %.2fs→%.2fs)",
+            (
+                "Reverting continuous-vocals refinement: ordering inversions "
+                "worsened (%d→%d, %.2fs→%.2fs)"
+            ),
             before_inv_count,
             after_inv_count,
             before_inv_drop,

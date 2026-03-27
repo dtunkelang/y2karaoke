@@ -94,7 +94,8 @@ def test_enforce_non_overlapping_lines_shifts_and_scales():
         Line(words=[Word(text="two", start_time=11.0, end_time=15.0)]),
         Line(words=[Word(text="three", start_time=14.0, end_time=15.0)]),
     ]
-    # Line 2 starts at 14. Line 1 ends at 15. Line 1 must be scaled to fit between 12.1 and 13.9.
+    # Line 2 starts at 14. Line 1 ends at 15.
+    # Line 1 must be scaled to fit between 12.1 and 13.9.
     adjusted = wa._enforce_non_overlapping_lines(lines, min_gap=0.1)
     assert adjusted[1].end_time <= adjusted[2].start_time - 0.1
 
@@ -465,8 +466,45 @@ def test_pull_lines_forward_for_continuous_vocals_respects_env_disable(monkeypat
 
 def test_default_continuous_vocals_refinement_config_reads_env(monkeypatch):
     monkeypatch.setenv("Y2K_WHISPER_SILENCE_REFINEMENT", "off")
+    monkeypatch.setenv("Y2K_WHISPER_CONTINUOUS_SHIFT_LONG_GAPS", "0")
+    monkeypatch.setenv("Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS", "off")
     cfg = war._default_continuous_vocals_refinement_config()
     assert cfg.enable_silence_short_line_refinement is False
+    assert cfg.enable_shift_long_activity_gaps is False
+    assert cfg.enable_extend_active_gaps is False
+
+
+def test_pull_lines_forward_for_continuous_vocals_can_disable_long_gap_shift(
+    monkeypatch,
+):
+    lines = [
+        Line(words=[Word(text="one", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="two", start_time=20.0, end_time=21.0)]),
+    ]
+
+    class MockAF:
+        def __init__(self):
+            self.onset_times = np.array([12.0, 15.0, 18.0])
+            self.silence_regions = []
+
+    af = MockAF()
+    monkeypatch.setenv("Y2K_WHISPER_CONTINUOUS_SHIFT_LONG_GAPS", "0")
+
+    import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
+
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.8,
+        check_for_silence_in_range_fn=lambda *args, **kw: False,
+    ):
+        pulled, count = wa._pull_lines_forward_for_continuous_vocals(
+            lines,
+            af,
+            max_gap=4.0,
+            enable_silence_short_line_refinement=False,
+        )
+
+    assert count >= 0
+    assert pulled[1].start_time == lines[1].start_time
 
 
 def test_pull_lines_forward_for_continuous_vocals_reverts_when_long_gaps_worsen(
@@ -554,7 +592,10 @@ def test_fill_vocal_activity_gaps():
     from unittest.mock import patch
 
     with patch(
-        "y2karaoke.core.components.whisper.whisper_alignment_refinement._check_vocal_activity_in_range",
+        (
+            "y2karaoke.core.components.whisper.whisper_alignment_refinement."
+            "_check_vocal_activity_in_range"
+        ),
         return_value=0.8,
     ):
         filled_words, filled_segs = wa._fill_vocal_activity_gaps(

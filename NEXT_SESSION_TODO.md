@@ -1198,6 +1198,17 @@ Most likely next inspection targets:
       - the contamination family is not only a previous-line truncation story
       - on the raw mapped path, `postpass_extend_trailing` is also over-trusting the next repeated phrase on `Take On Me`
       - next code experiment should target that exact repeated trailing-extension step with contamination-aware guards, not another generic fallback toggle
+  - deeper continuous-vocals isolation on `Take On Me`:
+    - added diagnostics-only subpass switches in `whisper_alignment_refinement.py`:
+      - `Y2K_WHISPER_CONTINUOUS_SHIFT_LONG_GAPS=0`
+      - `Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS=0`
+    - traced run with only long-gap shifting disabled:
+      - run dir: `benchmarks/results/20260327T233810Z`
+      - result stays very bad: `0.921 / 1.113`
+    - implication:
+      - long-gap shifting is not the lone bad actor
+      - `postpass_extend_trailing`, active-gap extension, and baseline restoration are still coupled on `Take On Me`
+      - next probe should isolate `Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS=0` or a combination run, not ship a mapped-path guard yet
 
 ## 2026-03-27 Broader strategy reset
 

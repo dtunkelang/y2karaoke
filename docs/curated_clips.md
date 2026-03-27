@@ -234,6 +234,19 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - `Take On Me` is not only about previous-line truncation
     - the mapped contamination family also includes repeated-phrase overextension on the next line
     - the next code-side experiment should target contamination-aware guards on trailing-phrase extension rather than another broad fallback toggle
+- A second diagnostics-only split now exists inside continuous-vocals refinement:
+  - `Y2K_WHISPER_CONTINUOUS_SHIFT_LONG_GAPS=0`
+  - `Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS=0`
+  - these are for isolating subpasses, not for a production default change
+- Isolating only long-gap shifting on `Take On Me` did not solve the mapped failure:
+  - run dir: `benchmarks/results/20260327T233810Z`
+  - result remains very poor: about `0.921 / 1.113`
+  - trace implication:
+    - line 2 no longer gets pulled early by long-gap shifting
+    - but the combination of repeated trailing extension, later restore logic, and active-gap extension still leaves the mapped layout badly wrong
+  - implication:
+    - the mapped `Take On Me` family is not attributable to a single continuous-vocals subpass
+    - it is still a multi-stage interaction problem, so the next probe should isolate active-gap extension rather than shipping a guard based on this run
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
