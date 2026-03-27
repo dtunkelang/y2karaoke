@@ -96,6 +96,8 @@ def test_maybe_write_forced_advisory_trace_writes_payload(
     tmp_path, monkeypatch
 ) -> None:
     trace_path = tmp_path / "advisory.json"
+    vocals_path = tmp_path / "vocals.wav"
+    vocals_path.write_bytes(b"")
     monkeypatch.setenv("Y2K_TRACE_FORCED_ADVISORY_JSON", str(trace_path))
     current_segments = [
         TranscriptionSegment(start=8.72, end=25.18, text="The night", words=[])
@@ -119,7 +121,7 @@ def test_maybe_write_forced_advisory_trace_writes_payload(
         lines=[_line("I've been inclined", 12.74, 14.12)],
         current_segments=current_segments,
         current_words=current_words,
-        vocals_path="vocals.wav",
+        vocals_path=str(vocals_path),
         language="en",
         model_size="large",
         logger=_Logger(),
