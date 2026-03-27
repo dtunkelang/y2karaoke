@@ -1,5 +1,6 @@
 """Shift-guard helpers for baseline constraint decisions."""
 
+import os
 from typing import List, Tuple
 
 from ... import models
@@ -35,6 +36,8 @@ def should_apply_baseline_constraint(
         shifts.append(mapped.start_time - baseline.start_time)
 
     median_shift = _median(shifts)
+    if os.getenv("Y2K_WHISPER_DISABLE_BASELINE_CONSTRAINT", "").strip() == "1":
+        return False, median_shift
     if (
         matched_ratio >= 0.55
         and line_coverage >= 0.8

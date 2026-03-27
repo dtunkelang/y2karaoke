@@ -247,6 +247,21 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the mapped `Take On Me` family is not attributable to a single continuous-vocals subpass
     - it is still a multi-stage interaction problem, so the next probe should isolate active-gap extension rather than shipping a guard based on this run
+- That next isolation is now done:
+  - `Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS=0`
+  - run dir: `benchmarks/results/20260327T234002Z`
+  - result is unchanged from the original forced-off mapped baseline
+  - implication: active-gap extension is not the main mover on `Take On Me`
+- Baseline constraint was also isolated directly:
+  - `Y2K_WHISPER_DISABLE_BASELINE_CONSTRAINT=1`
+  - run dir: `benchmarks/results/20260327T234136Z`
+  - result gets worse, not better: about `1.056 / 1.302`
+  - trace implication:
+    - line 2 remains at the too-early continuous-vocals position `5.387-7.867`
+    - baseline constraint is currently a net repair
+  - implication:
+    - the main mapped-path error is earlier than baseline restoration
+    - `postpass_extend_trailing` remains the first stage that makes the layout clearly wrong
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

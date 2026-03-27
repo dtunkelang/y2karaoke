@@ -1209,6 +1209,22 @@ Most likely next inspection targets:
       - long-gap shifting is not the lone bad actor
       - `postpass_extend_trailing`, active-gap extension, and baseline restoration are still coupled on `Take On Me`
       - next probe should isolate `Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS=0` or a combination run, not ship a mapped-path guard yet
+  - follow-up isolations completed:
+    - `Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS=0`
+      - run dir: `benchmarks/results/20260327T234002Z`
+      - no change vs the original mapped forced-off baseline (`0.870 / 1.028`)
+      - implication: active-gap extension is not the main mover
+    - `Y2K_WHISPER_DISABLE_BASELINE_CONSTRAINT=1`
+      - run dir: `benchmarks/results/20260327T234136Z`
+      - result is worse: `1.056 / 1.302`
+      - implication: baseline constraint is helping `Take On Me`, not hurting it
+      - trace confirms line 2 stays at the too-early continuous-vocals position `5.387-7.867` when baseline constraint is removed
+  - current best `Take On Me` read:
+    - the main mapped-path culprit is still earlier than baseline restoration
+    - `postpass_extend_trailing` creates the bad repeated-phrase jump
+    - long-gap continuous-vocals pull partially repairs that jump
+    - baseline constraint then partially repairs it again
+    - so the next meaningful target is the trailing-extension acceptance itself, not continuous-vocals or baseline gating
 
 ## 2026-03-27 Broader strategy reset
 

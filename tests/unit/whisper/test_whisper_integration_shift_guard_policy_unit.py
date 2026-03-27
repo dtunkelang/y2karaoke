@@ -32,3 +32,19 @@ def test_should_apply_baseline_constraint_true_when_shift_is_too_large():
     )
     assert apply is True
     assert median_shift == 20.0
+
+
+def test_should_apply_baseline_constraint_respects_env_disable(monkeypatch):
+    mapped = [_line(10.0), _line(20.0), _line(30.0)]
+    baseline = [_line(7.0), _line(17.0), _line(27.0)]
+    monkeypatch.setenv("Y2K_WHISPER_DISABLE_BASELINE_CONSTRAINT", "1")
+
+    apply, median_shift = should_apply_baseline_constraint(
+        mapped,
+        baseline,
+        matched_ratio=0.1,
+        line_coverage=0.1,
+    )
+
+    assert apply is False
+    assert median_shift == 3.0
