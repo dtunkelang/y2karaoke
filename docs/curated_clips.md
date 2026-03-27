@@ -166,6 +166,7 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - the current best benchmark-only candidate is still `line_words >= 6`, `anchor_surplus >= 15`, `anchor_words >= 20`
   - implication: use that exact setting for the first real comparability-policy prototype, not a looser version
 - The first additive benchmark-side prototype now exists in `tools/analyze_two_layer_benchmark_prototype.py`:
+  - it is now directly runnable from repo root without extra `PYTHONPATH` setup
   - on mixed kept pack `benchmarks/results/20260327T180340Z`
     - baseline `agreement_coverage_ratio_total = 0.3514`
     - prototype `agreement_coverage_ratio_total = 0.6562`

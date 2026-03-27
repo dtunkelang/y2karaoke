@@ -1124,6 +1124,7 @@ Most likely next inspection targets:
   - port exactly this guarded two-layer policy into a benchmark-runner-only prototype
   - measure aggregate `agreement_coverage_ratio_total`, `agreement_bad_ratio_total`, and hotspot ordering against the current baseline
   - first additive prototype is now available in `tools/analyze_two_layer_benchmark_prototype.py`
+    - now directly runnable from repo root without manual `PYTHONPATH` setup
   - on mixed kept pack `benchmarks/results/20260327T180340Z` with the selected guard:
     - baseline `agreement_coverage_ratio_total = 0.3514`
     - prototype `agreement_coverage_ratio_total = 0.6562`
