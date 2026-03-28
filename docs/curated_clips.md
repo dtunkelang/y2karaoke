@@ -499,6 +499,18 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - read:
     - the merged-segment subphrase path is now a real architecture lever for the alternating-hook mapped family
     - this is stronger than any remaining onset-only long-gap idea
+- `Take On Me` line 4 is now better understood too:
+  - forced-off trace `benchmarks/results/20260328T035902Z` shows its tail loss happens at the initial baseline constraint
+  - later correction passes do not move it at all
+  - a narrow full-line baseline restore was tested and reverted:
+    - it made forced-off `Take On Me` worse (`0.866 / 0.991` in `benchmarks/results/20260328T040136Z`)
+    - line-level shape looked nicer, but word-level timing got much worse
+  - a new diagnostic simulator, `tools/simulate_final_tail_last_word_extension.py`, shows why:
+    - the real cached Whisper segment ends at `18.6`
+    - there is no local Whisper tail evidence for extending `In a day or two` toward the gold end at `22.05`
+  - implication:
+    - line 4 is not another merged-subphrase recovery candidate
+    - do not spend the next branch on a local Whisper-tail extension there
 
 ## Process Learnings
 

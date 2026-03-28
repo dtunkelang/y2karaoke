@@ -1468,6 +1468,20 @@ Most likely next inspection targets:
   - implication:
     - merged-segment subphrase repair is now a real keepable architecture gain, not only a simulator result
     - it helps the mapped `Take On Me` family without reopening the `Clocks` forced-duration rollback family
+  - checked the next obvious follow-up on line 4 (`In a day or two`)
+  - traced forced-off line 4 in `benchmarks/results/20260328T035902Z`:
+    - the shortening happens immediately at `after_initial_baseline_constraint`
+    - every later repair stage leaves line 4 unchanged
+  - tested a narrow final-line baseline restore locally and reverted it:
+    - forced-off `Take On Me` regressed to `0.866 / 0.991` in `benchmarks/results/20260328T040136Z`
+    - line 4 end looked better, but the full-line baseline word timings made word-start error much worse
+  - added `tools/simulate_final_tail_last_word_extension.py`
+  - key negative result:
+    - the real cached Whisper segment for `Take On Me` ends at `18.6`
+    - so there is no local Whisper tail evidence for extending line 4 toward gold `22.05`
+  - implication:
+    - line 4 is not another merged-subphrase recovery candidate
+    - if it moves again, it needs a different source of evidence than local Whisper tail words
 
 ## 2026-03-27 Broader strategy reset
 
