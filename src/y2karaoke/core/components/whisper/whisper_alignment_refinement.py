@@ -36,6 +36,14 @@ _CONTINUOUS_VOCALS_TRACE_CALL_COUNT = 0
 _LAST_LONG_GAP_SHIFTED_INDICES: set[int] = set()
 
 
+def _maybe_write_long_gap_shift_trace(rows: list[dict[str, Any]]) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_LONG_GAP_SHIFT_JSON", "").strip()
+    if not trace_path:
+        return
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump({"rows": rows}, fh, indent=2)
+
+
 def _maybe_write_active_gap_trace(rows: list[dict]) -> None:
     trace_path = os.environ.get("Y2K_TRACE_ACTIVE_GAP_EXTENSION_JSON", "").strip()
     if not trace_path:
@@ -282,14 +290,28 @@ def _shift_lines_across_long_activity_gaps(
     _LAST_LONG_GAP_SHIFTED_INDICES = set()
     fixes = 0
     prev_shift: Optional[float] = None
+    trace_rows: list[dict[str, Any]] = []
     for idx in range(1, len(lines)):
         prev_line = lines[idx - 1]
         line = lines[idx]
+        row = {
+            "line_index": idx + 1,
+            "prev_text": prev_line.text,
+            "text": line.text,
+            "prev_end": round(prev_line.end_time, 3),
+            "start": round(line.start_time, 3),
+            "end": round(line.end_time, 3),
+        }
         if not prev_line.words or not line.words:
+            row["decision"] = "skip_missing_words"
+            trace_rows.append(row)
             prev_shift = None
             continue
         gap = line.start_time - prev_line.end_time
+        row["gap"] = round(gap, 3)
         if gap <= max_gap:
+            row["decision"] = "skip_gap_within_max"
+            trace_rows.append(row)
             prev_shift = None
             continue
         if (
@@ -297,34 +319,53 @@ def _shift_lines_across_long_activity_gaps(
             and prev_shift <= -2.0
             and _token_overlap(prev_line.text, line.text) < 0.5
         ):
+            row["decision"] = "skip_after_nonmatching_large_shift"
+            row["prev_shift"] = round(prev_shift, 3)
+            trace_rows.append(row)
             prev_shift = None
             continue
         activity = _check_vocal_activity_in_range(
             prev_line.end_time, line.start_time, audio_features
         )
+        row["activity"] = round(float(activity), 3)
         has_silence = _check_for_silence_in_range(
             prev_line.end_time,
             line.start_time,
             audio_features,
             min_silence_duration=0.5,
         )
+        row["has_silence"] = bool(has_silence)
         if activity <= 0.6 or has_silence:
+            row["decision"] = "skip_low_activity_or_silence"
+            trace_rows.append(row)
             continue
         candidate_onsets = onset_times[
             (onset_times >= prev_line.end_time) & (onset_times <= line.start_time)
         ]
+        row["candidate_onsets"] = [round(float(onset), 3) for onset in candidate_onsets]
         if len(candidate_onsets) == 0:
+            row["decision"] = "skip_no_candidate_onsets"
+            trace_rows.append(row)
             prev_shift = None
             continue
         new_start = max(float(candidate_onsets[0]), prev_line.end_time + 0.05)
         shift = new_start - line.start_time
+        row["chosen_onset"] = round(new_start, 3)
+        row["shift"] = round(shift, 3)
         if shift > -0.3:
+            row["decision"] = "skip_small_shift"
+            trace_rows.append(row)
             prev_shift = None
             continue
         lines[idx] = _shift_line_words(line, shift)
         _LAST_LONG_GAP_SHIFTED_INDICES.add(idx)
         prev_shift = shift
         fixes += 1
+        row["decision"] = "shift"
+        row["new_start"] = round(lines[idx].start_time, 3)
+        row["new_end"] = round(lines[idx].end_time, 3)
+        trace_rows.append(row)
+    _maybe_write_long_gap_shift_trace(trace_rows)
     return fixes
 
 

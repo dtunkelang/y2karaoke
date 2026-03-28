@@ -42,3 +42,38 @@ def test_pull_lines_forward_for_continuous_vocals_writes_stage_trace(
     assert payload["rows"][1]["stage"] == "after_shift_long_activity_gaps"
     assert payload["rows"][2]["call_index"] == call_index
     assert payload["rows"][2]["stage"] == "after_extend_active_gaps"
+
+
+def test_shift_lines_across_long_activity_gaps_writes_decision_trace(
+    tmp_path, monkeypatch
+) -> None:
+    trace_path = tmp_path / "long_gap_shift_trace.json"
+    monkeypatch.setenv("Y2K_TRACE_LONG_GAP_SHIFT_JSON", str(trace_path))
+    lines = [
+        Line(words=[Word(text="one", start_time=10.0, end_time=11.0)]),
+        Line(words=[Word(text="two", start_time=20.0, end_time=21.0)]),
+    ]
+    audio_features = AudioFeatures(
+        onset_times=np.array([12.0, 15.0, 18.0], dtype=float),
+        silence_regions=[],
+        vocal_start=0.0,
+        vocal_end=30.0,
+        duration=30.0,
+        energy_envelope=np.array([], dtype=float),
+        energy_times=np.array([], dtype=float),
+    )
+
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.8,
+        check_for_silence_in_range_fn=lambda *args, **kw: False,
+    ):
+        war._pull_lines_forward_for_continuous_vocals(
+            lines, audio_features, enable_silence_short_line_refinement=False
+        )
+
+    payload = json.loads(trace_path.read_text())
+    row = payload["rows"][0]
+    assert row["line_index"] == 2
+    assert row["decision"] == "shift"
+    assert row["candidate_onsets"] == [12.0, 15.0, 18.0]
+    assert row["chosen_onset"] == 12.0
