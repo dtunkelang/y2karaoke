@@ -12,14 +12,10 @@ from .whisper_mapping_post_text import (
     _soft_token_match,
     _soft_token_overlap_ratio,
 )
-from .whisper_mapping_post_question_duration import (
-    _enforce_min_duration_for_short_question_lines as _enforce_min_duration_for_short_question_lines_impl,
-)
 from . import whisper_mapping_post_repetition_cadence as _cadence_helpers
+from . import whisper_mapping_post_question_duration as _question_duration_helpers
 from . import whisper_mapping_post_tail_extension as _tail_extension_helpers
-from .whisper_split_refrain_restore import (
-    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,
-)
+from . import whisper_split_refrain_restore as _split_refrain_restore_helpers
 
 
 def _realign_repetitive_runs_to_matching_segments(  # noqa: C901
@@ -180,7 +176,10 @@ def _retime_split_short_refrains_to_matching_segments(
     min_late_shift: float = 0.8,
     max_late_shift: float = 3.0,
 ) -> List[models.Line]:
-    adjusted, _restored = _restore_split_short_refrains_to_matching_segments(
+    restore_split_short_refrains = (
+        _split_refrain_restore_helpers.restore_split_short_refrains_to_matching_segments
+    )
+    adjusted, _restored = restore_split_short_refrains(
         lines,
         segments,
         min_gap=min_gap,
@@ -352,7 +351,7 @@ def _enforce_min_duration_for_short_question_lines(
     min_duration: float = 1.0,
     min_gap: float = 0.05,
 ) -> List[models.Line]:
-    return _enforce_min_duration_for_short_question_lines_impl(
+    return _question_duration_helpers._enforce_min_duration_for_short_question_lines(
         lines,
         min_duration=min_duration,
         min_gap=min_gap,
@@ -422,7 +421,9 @@ def _extend_line_to_trailing_whisper_matches(
         all_words,
         normalize_match_token_fn=_normalize_match_token,
         soft_token_match_fn=_soft_token_match,
-        smooth_adjacent_duplicate_line_cadence_fn=_smooth_adjacent_duplicate_line_cadence,
+        smooth_adjacent_duplicate_line_cadence_fn=(
+            _smooth_adjacent_duplicate_line_cadence
+        ),
         rebalance_short_question_pairs_fn=_rebalance_short_question_pairs,
         min_extension=min_extension,
         min_gap=min_gap,
