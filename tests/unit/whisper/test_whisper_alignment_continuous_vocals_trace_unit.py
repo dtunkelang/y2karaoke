@@ -34,7 +34,11 @@ def test_pull_lines_forward_for_continuous_vocals_writes_stage_trace(
         war._pull_lines_forward_for_continuous_vocals(lines, audio_features)
 
     payload = json.loads(trace_path.read_text())
-    assert payload["rows"][0]["call_index"] == 1
+    call_index = payload["rows"][0]["call_index"]
+    assert isinstance(call_index, int)
+    assert call_index >= 1
     assert payload["rows"][0]["stage"] == "before"
+    assert payload["rows"][1]["call_index"] == call_index
     assert payload["rows"][1]["stage"] == "after_shift_long_activity_gaps"
+    assert payload["rows"][2]["call_index"] == call_index
     assert payload["rows"][2]["stage"] == "after_extend_active_gaps"

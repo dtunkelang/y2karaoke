@@ -374,6 +374,30 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - a static active-gap shape guard is not enough
     - if a future fix uses this stage, it will need cross-stage state from the preceding tail-extension choice
+- Diagnostics-only traces now exist for:
+  - baseline constraint decisions via `Y2K_TRACE_BASELINE_CONSTRAINT_JSON`
+  - continuous-vocals subpass snapshots via `Y2K_TRACE_CONTINUOUS_VOCALS_JSON`
+- On the clean forced-off `Take On Me` baseline in `benchmarks/results/20260328T012205Z`:
+  - `postpass_extend_trailing` first makes line 2 late: `9.86-12.34`
+  - the first `postpass_pull_continuous_vocals` call then collapses lines 2-4 during `after_shift_long_activity_gaps` to:
+    - line 2 `5.387-7.867`
+    - line 3 `8.011-11.171`
+    - line 4 `11.308-14.808`
+  - `after_extend_active_gaps` does nothing on that baseline
+  - the second continuous-vocals call is also a no-op
+  - baseline constraint only nudges line 2 later to `6.451-8.931`
+- That means the clean-baseline mover is the first `_shift_lines_across_long_activity_gaps()` call, not active-gap extension.
+- A narrow compact-handoff guard in `_shift_lines_across_long_activity_gaps()` was then tested and reverted:
+  - forced-off `Take On Me` got worse in `benchmarks/results/20260328T012630Z` from about `0.870 / 1.028` to `0.921 / 1.113`
+  - the normal mixed control pack in `benchmarks/results/20260328T012657Z` stayed unchanged:
+    - `Take On Me` `0.1257 / 0.2781`
+    - `Stayin' Alive` `0.1374 / 0.1827`
+    - `Total Eclipse of the Heart` `0.1697 / 0.2465`
+    - `Royals` `0.2093 / 0.1278`
+  - implication:
+    - the culprit stage is now known more precisely
+    - but a static tight-handoff guard is still the wrong abstraction
+    - the next credible fix needs a repeated-hook / sequence-level policy for that first long-gap-shift pass
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

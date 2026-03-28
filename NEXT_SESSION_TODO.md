@@ -1341,6 +1341,32 @@ Most likely next inspection targets:
     - conclusion:
       - this active-gap guard is not an effective paired-stage fix
       - if the eventual fix involves continuous-vocals growth at all, it will need tighter runtime state from the earlier tail-extension choice rather than a static shape gate
+  - added diagnostics-only traces for:
+    - baseline constraint decisions via `Y2K_TRACE_BASELINE_CONSTRAINT_JSON`
+    - continuous-vocals subpass snapshots via `Y2K_TRACE_CONTINUOUS_VOCALS_JSON`
+  - clean forced-off `Take On Me` baseline traces in `benchmarks/results/20260328T012205Z` show:
+    - `postpass_extend_trailing` creates late line 2 `9.86-12.34`
+    - first `postpass_pull_continuous_vocals` call then collapses lines 2-4 at `after_shift_long_activity_gaps` to:
+      - line 2 `5.387-7.867`
+      - line 3 `8.011-11.171`
+      - line 4 `11.308-14.808`
+    - `after_extend_active_gaps` is unchanged
+    - second continuous-vocals call is a no-op
+    - baseline constraint only nudges line 2 later to `6.451-8.931`
+  - implication:
+    - the clean-baseline mover is the first `_shift_lines_across_long_activity_gaps()` call
+    - active-gap extension and baseline constraint are not the primary cause on the current baseline
+  - tested one narrow compact-handoff guard in `_shift_lines_across_long_activity_gaps()`:
+    - forced-off `Take On Me` got worse in `benchmarks/results/20260328T012630Z`:
+      - `0.870 / 1.028 -> 0.921 / 1.113`
+    - normal mixed control pack in `benchmarks/results/20260328T012657Z` stayed unchanged:
+      - `Take On Me` `0.1257 / 0.2781`
+      - `Stayin' Alive` `0.1374 / 0.1827`
+      - `Total Eclipse of the Heart` `0.1697 / 0.2465`
+      - `Royals` `0.2093 / 0.1278`
+    - conclusion:
+      - the collapse is happening in long-gap shifting, but a static tight-handoff guard is still the wrong fix
+      - the next viable path is a more explicit repeated-hook / sequence-level policy for that first long-gap shift call
 
 ## 2026-03-27 Broader strategy reset
 
