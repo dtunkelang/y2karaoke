@@ -2,6 +2,7 @@
 
 import os
 import logging
+import json
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Set
@@ -30,6 +31,14 @@ _check_vocal_activity_in_range = audio_analysis._check_vocal_activity_in_range
 _check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 
 logger = logging.getLogger(__name__)
+
+
+def _maybe_write_active_gap_trace(rows: list[dict]) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_ACTIVE_GAP_EXTENSION_JSON", "").strip()
+    if not trace_path:
+        return
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump({"rows": rows}, fh, indent=2)
 
 
 @dataclass(frozen=True)
@@ -262,6 +271,7 @@ def _extend_line_ends_across_active_gaps(
 ) -> int:
     """Extend prior line ends when a gap has sustained vocal activity and no silence."""
     fixes = 0
+    trace_rows: list[dict] = []
     for idx in range(1, len(lines)):
         prev_line = lines[idx - 1]
         next_line = lines[idx]
@@ -273,7 +283,18 @@ def _extend_line_ends_across_active_gaps(
         activity = _check_vocal_activity_in_range(
             prev_line.end_time, next_line.start_time, audio_features
         )
+        row = {
+            "line_index": idx,
+            "prev_text": prev_line.text,
+            "next_text": next_line.text,
+            "prev_end": round(prev_line.end_time, 3),
+            "next_start": round(next_line.start_time, 3),
+            "gap": round(gap, 3),
+            "activity": round(float(activity), 3),
+        }
         if activity < activity_threshold:
+            row["decision"] = "skip_low_activity"
+            trace_rows.append(row)
             continue
         has_silence = _check_for_silence_in_range(
             prev_line.end_time,
@@ -282,20 +303,33 @@ def _extend_line_ends_across_active_gaps(
             min_silence_duration=silence_min_duration,
         )
         if has_silence:
+            row["decision"] = "skip_silence"
+            trace_rows.append(row)
             continue
 
         extension = min(gap - 0.05, max_extension)
         if extension < min_extension:
+            row["decision"] = "skip_small_extension"
+            trace_rows.append(row)
             continue
         target_end = prev_line.end_time + extension
         target_end = min(target_end, next_line.start_time - 0.05)
         stretched = _rebuild_line_with_target_end(prev_line, target_end)
         if stretched is None:
+            row["decision"] = "skip_rebuild_failed"
+            trace_rows.append(row)
             continue
         if stretched.end_time <= prev_line.end_time + min_extension:
+            row["decision"] = "skip_insufficient_growth"
+            trace_rows.append(row)
             continue
         lines[idx - 1] = stretched
+        row["decision"] = "extend"
+        row["target_end"] = round(target_end, 3)
+        row["new_end"] = round(stretched.end_time, 3)
         fixes += 1
+        trace_rows.append(row)
+    _maybe_write_active_gap_trace(trace_rows)
     return fixes
 
 

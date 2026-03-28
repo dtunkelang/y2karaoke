@@ -357,6 +357,13 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - the harmful interaction is right-end growth across active gaps
     - not long-gap start shifting
     - the next code-side probe, if taken, should target `_extend_line_ends_across_active_gaps()` specifically
+- A diagnostics-only trace now exists for active-gap right extension:
+  - env: `Y2K_TRACE_ACTIVE_GAP_EXTENSION_JSON`
+  - on the current bad forced-off `Take On Me` baseline, that trace is empty
+  - implication:
+    - active-gap extension is not part of the current shipped bad layout
+    - it only becomes relevant after the earlier tail-extension choice is improved
+    - so the eventual fix is likely a paired cross-stage policy, not an isolated active-gap change
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

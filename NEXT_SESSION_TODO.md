@@ -1322,6 +1322,15 @@ Most likely next inspection targets:
       - the harmful interaction is specifically right-end growth across active gaps
       - not leftward pull or onset shifting
       - any future production fix should target `_extend_line_ends_across_active_gaps()`, not `_shift_lines_across_long_activity_gaps()`
+  - added diagnostics-only trace support for active-gap right extension:
+    - env: `Y2K_TRACE_ACTIVE_GAP_EXTENSION_JSON`
+    - file: `whisper_alignment_refinement.py`
+  - traced the current bad forced-off `Take On Me` baseline with that hook:
+    - trace rows are empty
+    - implication:
+      - active-gap extension is not part of the currently shipped bad baseline
+      - it only becomes a problem after tail extension is corrected earlier
+      - so the next real fix will likely need a paired change across both stages, not an isolated active-gap tweak
 
 ## 2026-03-27 Broader strategy reset
 
