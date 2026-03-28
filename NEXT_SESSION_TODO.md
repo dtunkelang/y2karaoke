@@ -1577,6 +1577,13 @@ Most likely next inspection targets:
   - implication:
     - `Say My Name` is a useful negative control
     - the `Hotline Bling` family needs actual line-1 / line-3 lexical overlap, not just a short hook followed by two more lines
+  - added `tools/analyze_aggregate_segment_merges.py`
+  - real cache split result:
+    - `Hotline Bling`: aggregate Whisper merges lines 1+2, but vocals Whisper already splits them correctly
+    - `Say My Name`: no such merge; aggregate and vocals both keep the same boundary structure
+  - implication:
+    - the strongest current `Hotline Bling` lever is upstream segment evidence, not another late boundary heuristic
+    - if I touch production here, the best candidate is a guarded advisory use of vocals segment boundaries when aggregate merges adjacent gold-like lines
 
 ## 2026-03-27 Broader strategy reset
 

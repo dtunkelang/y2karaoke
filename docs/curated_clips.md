@@ -611,6 +611,15 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - read:
     - this is not a second `Hotline Bling` family hit
     - the boundary-compression family needs real line-1 / line-3 lexical overlap, not just any three-line hook window
+- `tools/analyze_aggregate_segment_merges.py` makes the upstream difference explicit:
+  - `Hotline Bling`:
+    - aggregate Whisper merges lines 1+2 into one segment
+    - vocals Whisper already splits lines 1 and 2 correctly
+  - `Say My Name`:
+    - no equivalent aggregate-only merge appears
+  - read:
+    - `Hotline Bling` now looks like an upstream aggregate-segmentation problem that later mapping preserves
+    - the most promising future fix is a guarded advisory use of vocals segment boundaries, not another late line-boundary heuristic
 
 ## Process Learnings
 
