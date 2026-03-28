@@ -1683,8 +1683,18 @@ Most likely next inspection targets:
       - `Hotline Bling`: none
       - `Please Please Please`: none
       - `Say My Name`: none
+  - added `tools/analyze_pre_whisper_retained_lines.py`
+    - this flags lines whose final timing still matches `pre_whisper_*` while materially missing gold
+    - current live read:
+      - `Clocks`: exactly one retained-upstream miss
+        - line 2 `You are`
+        - `pre_whisper 10.156-16.045`
+        - final `10.080-15.970`
+        - gold `8.300-13.950`
+      - `Hotline Bling`: none
 - current read:
   - this is a real second family after the `Take On Me` alternating-hook work
   - it is a forced-fallback adjacent-boundary compression family, not a DTW/mapping family
   - `Clocks` is now clearly separate again:
     - it is a sustained-repair outlier, not a neighbor of the `Hotline Bling` exact-boundary family
+    - and the remaining `Clocks` miss is already present in the pre-whisper baseline, so another local forced-fallback tweak is unlikely to be the right next fix

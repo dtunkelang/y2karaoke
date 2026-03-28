@@ -690,10 +690,20 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - `Hotline Bling`: none
     - `Please Please Please`: none
     - `Say My Name`: none
+- timing-report diagnostic:
+  - `tools/analyze_pre_whisper_retained_lines.py`
+  - this shows whether a miss is already present in `pre_whisper_*` and survives to the final timing unchanged
+  - current live read:
+    - `Clocks`: line 2 is a retained-upstream miss
+      - pre-whisper `10.156-16.045`
+      - final `10.080-15.970`
+      - gold `8.300-13.950`
+    - `Hotline Bling`: no retained-upstream miss
 - implication:
   - this is now a real second production family beside `Take On Me`
   - it belongs to forced-fallback adjacent-boundary compression, not the alternating-hook mapped family
   - `Clocks` is now cleanly separated as the sustained-repair outlier family
+  - and the remaining `Clocks` miss is upstream of local forced-fallback repair, not a simple exact-vs-shifted sustained restore choice
 
 ## Process Learnings
 
