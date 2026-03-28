@@ -294,6 +294,22 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - even the repeated-short-hook weak-evidence restore is not the active live lever
     - the remaining `Take On Me` mapped-path error is still being set earlier or elsewhere than this restore stage
+- A new trailing-extension candidate analyzer now reproduces the real live word source:
+  - tool: `tools/analyze_trailing_extension_candidates.py`
+  - true word source for this case is the cached vocals transcription:
+    - `~/.cache/karaoke/NaQ083rNUwc/trimmed_from_50.00s_for_22.00s_(Vocals)_htdemucs_ft_whisper_large_auto.json`
+  - on `Take On Me` line 2 `Take me on`, the later candidate wins because soft token matching allows:
+    - `take -> take`
+    - `me -> me`
+    - `on -> gone`
+  - so `postpass_extend_trailing` is not just choosing the later phrase; it is being misled by a short-token substring false positive
+  - a direct production patch to forbid short substring matches in that helper was tested and reverted:
+    - run dir: `benchmarks/results/20260328T000700Z`
+    - result got slightly worse: about `0.961 / 1.195`
+    - line 2 end over-extended to about `11.9`
+  - implication:
+    - the root cause inside trailing extension is now known
+    - but the correct fix still needs an additional end-selection guard, not just stricter token matching
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

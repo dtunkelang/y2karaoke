@@ -1257,6 +1257,21 @@ Most likely next inspection targets:
     - implication:
       - even the narrower repeated-short-hook weak-evidence restore is not the active live lever
       - the remaining `Take On Me` mapped-path issue is still earlier or elsewhere than this restore policy
+  - added `tools/analyze_trailing_extension_candidates.py` and traced the real `postpass_extend_trailing` candidate ranking
+    - using the true cached vocals transcription at:
+      - `~/.cache/karaoke/NaQ083rNUwc/trimmed_from_50.00s_for_22.00s_(Vocals)_htdemucs_ft_whisper_large_auto.json`
+    - line 2 `Take me on` gets a spurious later “best” candidate because soft token matching allows:
+      - `take -> take`
+      - `me -> me`
+      - `on -> gone`
+    - that later candidate wins because it extends to `15.5`, beating the correct early phrase ending near `9.7`
+    - attempted production patch to forbid short-token substring matches in tail extension was reverted:
+      - run dir: `benchmarks/results/20260328T000700Z`
+      - result got slightly worse: `0.870 / 1.028 -> 0.961 / 1.195`
+      - line 2 end over-extended to `11.9`
+    - implication:
+      - the root cause inside trailing extension is now identified
+      - but the correct fix needs more than just forbidding short substring matches; it also needs an end-selection guard
 
 ## 2026-03-27 Broader strategy reset
 
