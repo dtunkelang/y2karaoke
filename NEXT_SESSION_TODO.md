@@ -1724,3 +1724,15 @@ Most likely next inspection targets:
     - `Clocks` is not actually a mapped/segment-assignment case
     - the live log shows accepted WhisperX forced alignment with only one retained transcription preview segment: `Confusion never stops`
     - so the next code-side probe should target accepted forced-transcription handling, not DTW mapper stages
+  - latest correction:
+    - added `tools/analyze_forced_trace_baseline_carryover.py`
+    - this flags repeated short unsupported lines whose accepted forced fallback final timing still matches the internal `baseline_lines` snapshot
+    - current live read on `/tmp/clocks_forced_trace_new.json`:
+      - line 2 `You are`
+      - internal baseline `10.156-16.045`
+      - final forced `10.077-15.966`
+      - accepted transcription overlap `0.0`
+    - implication:
+      - the attempted repeated-short-line source restore was a dead end and was reverted
+      - accepted forced fallback does not have an earlier source for `Clocks` line 2; its own baseline is already late
+      - the next real `Clocks` path has to move earlier than accepted forced fallback baseline construction, not add another post-finalize forced repair

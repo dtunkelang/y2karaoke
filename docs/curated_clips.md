@@ -725,6 +725,18 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - and the remaining `Clocks` miss is upstream of local forced-fallback repair, not a simple exact-vs-shifted sustained restore choice
   - more specifically, the live log shows `Clocks` is accepted WhisperX forced alignment, not a hidden mapped-path case
   - so the remaining `Clocks` issue belongs to the accepted forced-transcription family, not the mapper / segment-assignment family
+- baseline-carryover diagnostic:
+  - `tools/analyze_forced_trace_baseline_carryover.py`
+  - this flags repeated short unsupported lines whose final forced timing still matches the internal `baseline_lines` snapshot
+  - current live read on `/tmp/clocks_forced_trace_new.json`:
+    - line 2 `You are`
+    - internal baseline `10.156-16.045`
+    - final forced `10.077-15.966`
+    - transcription overlap `0.0`
+  - implication:
+    - the attempted repeated-short-line source restore was a no-op and was reverted
+    - accepted forced fallback does not have an earlier source available for this line family
+    - the next `Clocks` fix, if any, has to happen earlier than accepted forced fallback baseline construction
 
 ## Process Learnings
 
