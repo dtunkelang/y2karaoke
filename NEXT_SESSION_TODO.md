@@ -1537,6 +1537,13 @@ Most likely next inspection targets:
   - implication:
     - `Take On Me` now has keepable narrow repairs on all four lines
     - the remaining work should probably move from this clip back to family generalization or other hotspots
+  - added `tools/analyze_alternating_hook_family.py`
+  - current curated-gold result:
+    - only one adjacent alternating 3-word hook pair exists in the pack
+    - `33_a-ha-take-on-me-first-chorus.gold.json` line 1/2
+  - implication:
+    - the current alternating-hook repairs should still be treated as a very narrow family
+    - do not broaden them further without either another curated example or a wider search outside the current pack
 
 ## 2026-03-27 Broader strategy reset
 
