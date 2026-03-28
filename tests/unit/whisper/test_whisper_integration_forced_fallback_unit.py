@@ -536,19 +536,19 @@ def test_post_normalize_sparse_repairs_restore_two_word_lines_from_source():
 def test_attempt_whisperx_forced_alignment_restores_sparse_durations_post_normalize():
     baseline_lines = [
         _dur_line(0.99, 4.21, "Take on me"),
-        _dur_line(6.51, 9.73, "Take me on"),
+        _dur_multi_line(6.51, 9.73, ["Take", "me", "on", "right", "now"]),
         _dur_line(12.03, 15.25, "I'll be gone"),
         _dur_line(17.56, 21.42, "In a day or two"),
     ]
     raw_forced_lines = [
         _dur_line(1.12, 4.15, "Take on me"),
-        _dur_line(6.48, 9.7, "Take me on"),
+        _dur_multi_line(6.48, 9.7, ["Take", "me", "on", "right", "now"]),
         _dur_line(11.72, 14.94, "I'll be gone"),
         _dur_line(17.19, 21.05, "In a day or two"),
     ]
     normalized_lines = [
         _dur_line(1.12, 4.15, "Take on me"),
-        _dur_line(6.48, 7.02, "Take me on"),
+        _dur_multi_line(6.48, 7.02, ["Take", "me", "on", "right", "now"]),
         _dur_line(11.72, 14.23, "I'll be gone"),
         _dur_line(17.19, 17.73, "In a day or two"),
     ]
