@@ -677,6 +677,27 @@ songs:
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 20
   notes: Low-energy conversational opening verse clip for subtle onset and phrasing timing.
+- artist: Lorde
+  title: Royals
+  clip_id: chorus-parenthetical-bleed
+  clip_tags:
+  - stress
+  - backing-echo
+  - repeated-hook
+  - comparability
+  - chorus
+  audio_start_sec: 44.0
+  clip_duration_sec: 10.0
+  youtube_id: ncgsL1GCFms
+  youtube_url: https://www.youtube.com/watch?v=ncgsL1GCFms
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 20
+  notes: Chorus hook clip with parenthetical backing-vocal bleed between repeated Royals lines.
+  lyrics: |
+    And we'll never be royals (Royals)
+    It don't run in our blood
+    That kind of luxe just ain't for us
 
 - title: Everybody Wants to Rule the World
   artist: Tears for Fears
