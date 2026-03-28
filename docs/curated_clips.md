@@ -323,6 +323,15 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - keep this as a diagnostic lens for tail-extension candidate quality
     - but do not treat simple candidate reordering as sufficient; the next safe probe needs a stronger end-selection policy
+- A second tail-extension simulator now compares the current chosen end against a guarded policy:
+  - tool: `tools/simulate_trailing_extension_end_guards.py`
+  - on the real cached `Take On Me` trace:
+    - line 2 flips from the bad late phrase to the early local `Take me on` phrase
+    - line 3 stays unchanged
+    - line 4 has no candidate
+  - implication:
+    - this looks more isolated than the earlier broad ranking attempt
+    - the next production probe should target final end selection inside `postpass_extend_trailing`, not broad token-match strictness
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

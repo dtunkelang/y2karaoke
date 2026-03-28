@@ -1285,6 +1285,14 @@ Most likely next inspection targets:
       - candidate scoring is still the right diagnostic direction
       - but the first ranking policy was too weak to control the live extension step safely
       - next probe should score the final chosen end more directly instead of only reordering matched-count ties
+  - added `tools/simulate_trailing_extension_end_guards.py` to compare the current tail-extension choice against a guarded end-selection policy
+    - on the real cached `Take On Me` trace:
+      - line 2 flips from the current bad late end to the early local phrase
+      - line 3 stays unchanged
+      - line 4 has no candidate at all
+    - implication:
+      - the guard family now looks isolated to the repeated-short-hook false-positive case
+      - next code probe can focus on final end selection inside `postpass_extend_trailing`, not broad token-match tightening
 
 ## 2026-03-27 Broader strategy reset
 
