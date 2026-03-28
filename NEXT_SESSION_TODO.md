@@ -1313,6 +1313,15 @@ Most likely next inspection targets:
       - the late tail-extension choice was real
       - but fixing it inside `postpass_extend_trailing` alone is not sufficient
       - the next correct probe has to account for interaction with `postpass_pull_continuous_vocals`
+  - added `tools/analyze_continuous_vocals_handoff.py` to compare `postpass_extend_trailing` against `postpass_pull_continuous_vocals`
+    - on the reverted `Take On Me` probe trace:
+      - line 2 grows right by `+2.50s`
+      - line 3 grows right by `+1.95s`
+      - starts do not move at all
+    - implication:
+      - the harmful interaction is specifically right-end growth across active gaps
+      - not leftward pull or onset shifting
+      - any future production fix should target `_extend_line_ends_across_active_gaps()`, not `_shift_lines_across_long_activity_gaps()`
 
 ## 2026-03-27 Broader strategy reset
 

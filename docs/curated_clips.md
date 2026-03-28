@@ -347,6 +347,16 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - `Take On Me` is now clearly a multi-stage interaction, not a single tail-extension bug
     - the next safe probe must consider the coupling between tail extension and continuous-vocals expansion
+- A follow-up handoff analyzer now makes that coupling more concrete:
+  - tool: `tools/analyze_continuous_vocals_handoff.py`
+  - on the reverted `Take On Me` probe trace:
+    - line 2 grows right by `+2.50s`
+    - line 3 grows right by `+1.95s`
+    - starts do not move
+  - implication:
+    - the harmful interaction is right-end growth across active gaps
+    - not long-gap start shifting
+    - the next code-side probe, if taken, should target `_extend_line_ends_across_active_gaps()` specifically
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
