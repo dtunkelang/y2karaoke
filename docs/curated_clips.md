@@ -484,6 +484,21 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - and its start is clamped near baseline while its end is allowed to follow the local phrase window
   - `Take me on` simulates to `6.45-10.25`
   - that is the first merged-segment path that looks plausibly ship-worthy enough to test in production
+- That selective merged-segment repair is now kept in production:
+  - implementation lives in `whisper_integration_align_corrections.py`
+  - it runs after weak-evidence restore and before the adjacent late-shift cleanup
+  - it only targets the middle alternating 3-word hook line, using:
+    - exact normalized phrase matching inside `all_words`
+    - baseline-clamped starts
+    - phrase-window-informed end recovery
+  - forced-off mapped `Take On Me` improved in `benchmarks/results/20260328T034813Z`:
+    - `0.780 / 1.001 -> 0.777 / 0.963`
+  - shipped-path rerun in `benchmarks/results/20260328T035014Z` stayed effectively stable:
+    - `Take On Me` `0.1257 / 0.2781 -> 0.1359 / 0.2834`
+    - `Clocks` unchanged at `0.5000 / 0.6065`
+  - read:
+    - the merged-segment subphrase path is now a real architecture lever for the alternating-hook mapped family
+    - this is stronger than any remaining onset-only long-gap idea
 
 ## Process Learnings
 

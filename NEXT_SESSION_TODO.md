@@ -1457,6 +1457,17 @@ Most likely next inspection targets:
   - implication:
     - the next production probe should be a baseline-aware selective subphrase repair for the middle alternating hook line inside merged segments
     - this is now a stronger candidate than another long-gap or weak-evidence tweak
+  - kept that production probe in `src/y2karaoke/core/components/whisper/whisper_integration_align_corrections.py`
+  - added focused coverage in `tests/unit/whisper/test_whisper_integration_align_corrections_unit.py`
+  - forced-off mapped `Take On Me` improved again in `benchmarks/results/20260328T034813Z`:
+    - `0.780 / 1.001 -> 0.777 / 0.963`
+  - shipped-path control rerun in `benchmarks/results/20260328T035014Z`:
+    - `Take On Me` moved only slightly `0.1257 / 0.2781 -> 0.1359 / 0.2834`
+    - line timings were structurally unchanged; the delta was only tiny word-level jitter
+    - `Clocks` stayed fixed at `0.5000 / 0.6065`
+  - implication:
+    - merged-segment subphrase repair is now a real keepable architecture gain, not only a simulator result
+    - it helps the mapped `Take On Me` family without reopening the `Clocks` forced-duration rollback family
 
 ## 2026-03-27 Broader strategy reset
 

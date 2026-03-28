@@ -6,17 +6,7 @@ from typing import Any, Callable, List, Optional
 
 from ... import models
 from ..alignment import timing_models
-from .whisper_integration_align_experimental import (
-    reanchor_late_compact_repetitive_tail_lines_to_later_onsets as _reanchor_late_compact_tail,
-    reanchor_late_supported_lines_to_earlier_whisper as _reanchor_late_supported_lines_to_earlier_whisper,
-    reanchor_light_leading_lines_to_content_words as _reanchor_light_leading_lines_to_content_words,
-    reanchor_low_support_lines_to_later_onset as _reanchor_low_support_lines_to_later_onset,
-    reanchor_repeated_cadence_lines as _reanchor_repeated_cadence_lines,
-    reanchor_truncated_followup_lines_from_phonetic_variants as _reanchor_truncated_followup_lines_from_phonetic_variants,
-    rebalance_short_followup_boundaries_from_whisper as _rebalance_short_followup_boundaries_from_whisper,
-    reanchor_unsupported_i_said_lines_to_later_onset as _reanchor_unsupported_i_said_lines_to_later_onset,
-    shift_restored_low_support_runs_to_onset as _shift_restored_low_support_runs_to_onset,
-)
+from . import whisper_integration_align_experimental as _align_experimental
 from .whisper_integration_align_heuristics import (
     _extend_misaligned_lines_before_i_said,
     _extend_unsupported_i_said_tails,
@@ -24,22 +14,60 @@ from .whisper_integration_align_heuristics import (
     _extend_unsupported_parenthetical_tails,
     _extend_unsupported_weak_opening_lines,
     _line_set_end,
+    _retime_line_to_window,
     _reanchor_unsupported_interjection_lines_to_onsets,
     _restore_consistently_late_runs_from_baseline,
     _restore_late_enumeration_lines_from_baseline,
     _restore_zero_support_parenthetical_late_start_expansions,
 )
+from .whisper_mapping_post_text import (
+    _normalize_match_token,
+    _soft_token_overlap_ratio,
+)
 from .whisper_integration_align_trace import (
     capture_trace_snapshot as _capture_trace_snapshot,
 )
 from .whisper_integration_finalize import _restore_pairwise_inversions_from_source
-from .whisper_integration_stages import _shift_weak_opening_lines_past_phrase_carryover
-from .whisper_integration_weak_evidence import (
-    restore_adjacent_near_threshold_late_shifts as _restore_adjacent_near_threshold_late_shifts,
-    restore_weak_evidence_large_start_shifts as _restore_weak_evidence_large_start_shifts,
-    restore_unsupported_early_duplicate_shifts as _restore_unsupported_early_duplicate_shifts,
+from .whisper_integration_stages import (
+    _shift_weak_opening_lines_past_phrase_carryover,
 )
+from . import whisper_integration_weak_evidence as _weak_evidence
 from .whisper_runtime_config import WhisperRuntimeConfig
+
+_reanchor_late_compact_tail = (
+    _align_experimental.reanchor_late_compact_repetitive_tail_lines_to_later_onsets
+)
+_reanchor_late_supported_lines_to_earlier_whisper = (
+    _align_experimental.reanchor_late_supported_lines_to_earlier_whisper
+)
+_reanchor_light_leading_lines_to_content_words = (
+    _align_experimental.reanchor_light_leading_lines_to_content_words
+)
+_reanchor_low_support_lines_to_later_onset = (
+    _align_experimental.reanchor_low_support_lines_to_later_onset
+)
+_reanchor_repeated_cadence_lines = _align_experimental.reanchor_repeated_cadence_lines
+_reanchor_truncated_followup_lines_from_phonetic_variants = (
+    _align_experimental.reanchor_truncated_followup_lines_from_phonetic_variants
+)
+_rebalance_short_followup_boundaries_from_whisper = (
+    _align_experimental.rebalance_short_followup_boundaries_from_whisper
+)
+_reanchor_unsupported_i_said_lines_to_later_onset = (
+    _align_experimental.reanchor_unsupported_i_said_lines_to_later_onset
+)
+_shift_restored_low_support_runs_to_onset = (
+    _align_experimental.shift_restored_low_support_runs_to_onset
+)
+_restore_adjacent_near_threshold_late_shifts = (
+    _weak_evidence.restore_adjacent_near_threshold_late_shifts
+)
+_restore_weak_evidence_large_start_shifts = (
+    _weak_evidence.restore_weak_evidence_large_start_shifts
+)
+_restore_unsupported_early_duplicate_shifts = (
+    _weak_evidence.restore_unsupported_early_duplicate_shifts
+)
 
 
 def _capture_stage_lines(
@@ -64,6 +92,154 @@ def _append_correction_if_any(
 ) -> None:
     if count:
         corrections.append(message.format(count=count))
+
+
+def _normalized_line_tokens(line: models.Line) -> list[str]:
+    return [
+        token for word in line.words if (token := _normalize_match_token(word.text))
+    ]
+
+
+def _is_alternating_three_word_hook_pair(
+    prev_tokens: list[str], cur_tokens: list[str]
+) -> bool:
+    return (
+        len(prev_tokens) == 3
+        and len(cur_tokens) == 3
+        and prev_tokens[0] == cur_tokens[0]
+        and prev_tokens[1] == cur_tokens[2]
+        and prev_tokens[2] == cur_tokens[1]
+        and prev_tokens[1] != prev_tokens[2]
+    )
+
+
+def _find_exact_phrase_window(
+    whisper_words: List[timing_models.TranscriptionWord],
+    tokens: list[str],
+) -> tuple[float, float] | None:
+    filtered_words = [
+        (token, word)
+        for word in whisper_words
+        if word.text != "[VOCAL]"
+        if (token := _normalize_match_token(word.text))
+    ]
+    token_count = len(tokens)
+    if token_count == 0 or len(filtered_words) < token_count:
+        return None
+    for idx in range(0, len(filtered_words) - token_count + 1):
+        window_tokens = [filtered_words[idx + off][0] for off in range(token_count)]
+        if window_tokens != tokens:
+            continue
+        return (
+            float(filtered_words[idx][1].start),
+            float(filtered_words[idx + token_count - 1][1].end),
+        )
+    return None
+
+
+def _alternating_middle_hook_has_shape(
+    *,
+    prev_base: models.Line,
+    base: models.Line,
+    mapped: models.Line,
+    next_line: models.Line,
+    min_baseline_duration_sec: float,
+    max_start_delta_sec: float,
+    max_next_overlap_ratio: float,
+) -> bool:
+    if not prev_base.words or not base.words or not mapped.words or not next_line.words:
+        return False
+    prev_tokens = _normalized_line_tokens(prev_base)
+    cur_tokens = _normalized_line_tokens(base)
+    next_tokens = _normalized_line_tokens(next_line)
+    if not _is_alternating_three_word_hook_pair(prev_tokens, cur_tokens):
+        return False
+    if _soft_token_overlap_ratio(cur_tokens, next_tokens) > max_next_overlap_ratio:
+        return False
+    baseline_duration = base.end_time - base.start_time
+    mapped_duration = mapped.end_time - mapped.start_time
+    if baseline_duration < min_baseline_duration_sec or mapped_duration <= 0.0:
+        return False
+    if mapped_duration >= baseline_duration * 0.85:
+        return False
+    return abs(mapped.start_time - base.start_time) <= max_start_delta_sec
+
+
+def _compute_alternating_middle_hook_target_window(
+    *,
+    base: models.Line,
+    mapped: models.Line,
+    next_line: models.Line,
+    phrase_window: tuple[float, float] | None,
+    max_early_pull_sec: float,
+    min_end_gain_sec: float,
+) -> tuple[float, float] | None:
+    if phrase_window is None:
+        return None
+    window_start, window_end = phrase_window
+    if window_end <= mapped.end_time + min_end_gain_sec:
+        return None
+    if window_start >= mapped.start_time:
+        return None
+    target_start = max(mapped.start_time, base.start_time - max_early_pull_sec)
+    baseline_duration = base.end_time - base.start_time
+    target_end = max(target_start + baseline_duration, window_end)
+    target_end = min(target_end, next_line.start_time - 0.05)
+    if target_end <= mapped.end_time + min_end_gain_sec:
+        return None
+    return target_start, target_end
+
+
+def _restore_alternating_middle_hook_from_phrase_window(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    max_early_pull_sec: float = 0.4,
+    min_baseline_duration_sec: float = 3.0,
+    max_start_delta_sec: float = 0.6,
+    min_end_gain_sec: float = 0.6,
+    max_next_overlap_ratio: float = 0.34,
+) -> tuple[List[models.Line], int]:
+    repaired = list(mapped_lines)
+    restored = 0
+    limit = min(len(mapped_lines), len(baseline_lines))
+    for idx in range(1, limit - 1):
+        prev_base = baseline_lines[idx - 1]
+        base = baseline_lines[idx]
+        mapped = repaired[idx]
+        next_line = repaired[idx + 1]
+        if not _alternating_middle_hook_has_shape(
+            prev_base=prev_base,
+            base=base,
+            mapped=mapped,
+            next_line=next_line,
+            min_baseline_duration_sec=min_baseline_duration_sec,
+            max_start_delta_sec=max_start_delta_sec,
+            max_next_overlap_ratio=max_next_overlap_ratio,
+        ):
+            continue
+        target_window = _compute_alternating_middle_hook_target_window(
+            base=base,
+            mapped=mapped,
+            next_line=next_line,
+            phrase_window=_find_exact_phrase_window(
+                whisper_words,
+                _normalized_line_tokens(base),
+            ),
+            max_early_pull_sec=max_early_pull_sec,
+            min_end_gain_sec=min_end_gain_sec,
+        )
+        if target_window is None:
+            continue
+        target_start, target_end = target_window
+        repaired[idx] = _retime_line_to_window(
+            mapped,
+            window_start=target_start,
+            window_end=target_end,
+        )
+        restored += 1
+    return repaired, restored
 
 
 def _apply_baseline_constraint_and_snap(
@@ -91,7 +267,8 @@ def _apply_baseline_constraint_and_snap(
         )
     else:
         corrections.append(
-            "Skipped baseline start constraint due to strong global Whisper shift evidence"
+            "Skipped baseline start constraint due to strong global Whisper "
+            "shift evidence"
         )
 
     try:
@@ -146,6 +323,25 @@ def _apply_baseline_restore_shift_passes(
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
         stage="after_restore_weak_evidence_large_start_shifts",
+    )
+
+    mapped_lines, restored_alternating_hooks = (
+        _restore_alternating_middle_hook_from_phrase_window(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_alternating_hooks,
+        "Restored {count} alternating middle hook line(s) from phrase windows",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_alternating_middle_hook_from_phrase_window",
     )
 
     mapped_lines, restored_adjacent_late = _restore_adjacent_near_threshold_late_shifts(
@@ -258,7 +454,8 @@ def _apply_baseline_restore_cleanup_passes(
     _append_correction_if_any(
         corrections,
         restored_zero_support_late,
-        "Restored {count} zero-support parenthetical late expanded line(s) to baseline starts",
+        "Restored {count} zero-support parenthetical late expanded "
+        "line(s) to baseline starts",
     )
     _capture_stage_lines(
         mapped_lines=mapped_lines,
@@ -415,7 +612,8 @@ def _apply_audio_reanchor_corrections(
     _append_correction_if_any(
         corrections,
         short_followup_rebalances,
-        "Rebalanced {count} short followup line boundary/boundaries from Whisper support",
+        "Rebalanced {count} short followup line boundary/boundaries "
+        "from Whisper support",
     )
     _capture_stage_lines(
         mapped_lines=mapped_lines,
@@ -553,7 +751,8 @@ def _apply_audio_extension_corrections(
     _append_correction_if_any(
         corrections,
         pre_i_said_extensions,
-        "Extended {count} lexically mismatched line(s) before unsupported 'I said' lines",
+        "Extended {count} lexically mismatched line(s) before "
+        "unsupported 'I said' lines",
     )
     _capture_stage_lines(
         mapped_lines=mapped_lines,
