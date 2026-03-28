@@ -398,6 +398,20 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - the culprit stage is now known more precisely
     - but a static tight-handoff guard is still the wrong abstraction
     - the next credible fix needs a repeated-hook / sequence-level policy for that first long-gap-shift pass
+- A paired sequence-level policy was then tried and kept:
+  - after a large repeated-hook shift in `_shift_lines_across_long_activity_gaps()`, stop the nonmatching cascade
+  - in the same continuous-vocals call, skip active-gap end growth on that shifted line and its immediate follower
+- Results:
+  - forced-off `Take On Me` improved in `benchmarks/results/20260328T013645Z` from about `0.870 / 1.028` to `0.780 / 1.001`
+  - normal shipped-path control pack in `benchmarks/results/20260328T013718Z` stayed unchanged:
+    - `Take On Me` `0.1257 / 0.2781`
+    - `Stayin' Alive` `0.1374 / 0.1827`
+    - `Total Eclipse of the Heart` `0.1697 / 0.2465`
+    - `Royals` `0.2093 / 0.1278`
+  - broader cached canary `benchmarks/results/20260328T013956Z` completed `OK`
+- Takeaway:
+  - the first keepable `Take On Me` mapped-path gain came from a paired sequence policy across continuous-vocals subpasses
+  - this is stronger evidence for carrying local stage state than for adding more static shape gates
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

@@ -1367,6 +1367,20 @@ Most likely next inspection targets:
     - conclusion:
       - the collapse is happening in long-gap shifting, but a static tight-handoff guard is still the wrong fix
       - the next viable path is a more explicit repeated-hook / sequence-level policy for that first long-gap shift call
+  - kept a paired sequence-level refinement in continuous-vocals postpasses:
+    - first `_shift_lines_across_long_activity_gaps()` now stops the nonmatching cascade after a large repeated-hook shift
+    - `_extend_line_ends_across_active_gaps()` skips growth on that shifted line and its immediate follower
+  - focused forced-off `Take On Me` improved in `benchmarks/results/20260328T013645Z`:
+    - `0.870 / 1.028 -> 0.780 / 1.001`
+  - normal shipped-path control pack in `benchmarks/results/20260328T013718Z` stayed unchanged:
+    - `Take On Me` `0.1257 / 0.2781`
+    - `Stayin' Alive` `0.1374 / 0.1827`
+    - `Total Eclipse of the Heart` `0.1697 / 0.2465`
+    - `Royals` `0.2093 / 0.1278`
+  - broader cached canary `benchmarks/results/20260328T013956Z` passed cleanly
+  - implication:
+    - the first keepable `Take On Me` mapped-path gain came from a paired sequence policy, not a one-stage guard
+    - this still looks diagnostic-first today, but it is the clearest architectural breakthrough in the contamination family so far
 
 ## 2026-03-27 Broader strategy reset
 

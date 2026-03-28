@@ -33,6 +33,7 @@ _check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 logger = logging.getLogger(__name__)
 
 _CONTINUOUS_VOCALS_TRACE_CALL_COUNT = 0
+_LAST_LONG_GAP_SHIFTED_INDICES: set[int] = set()
 
 
 def _maybe_write_active_gap_trace(rows: list[dict]) -> None:
@@ -277,14 +278,26 @@ def _first_onset_after(onset_times, *, start: float, window: float) -> Optional[
 def _shift_lines_across_long_activity_gaps(
     lines: List[Line], audio_features: AudioFeatures, max_gap: float, onset_times
 ) -> int:
+    global _LAST_LONG_GAP_SHIFTED_INDICES
+    _LAST_LONG_GAP_SHIFTED_INDICES = set()
     fixes = 0
+    prev_shift: Optional[float] = None
     for idx in range(1, len(lines)):
         prev_line = lines[idx - 1]
         line = lines[idx]
         if not prev_line.words or not line.words:
+            prev_shift = None
             continue
         gap = line.start_time - prev_line.end_time
         if gap <= max_gap:
+            prev_shift = None
+            continue
+        if (
+            prev_shift is not None
+            and prev_shift <= -2.0
+            and _token_overlap(prev_line.text, line.text) < 0.5
+        ):
+            prev_shift = None
             continue
         activity = _check_vocal_activity_in_range(
             prev_line.end_time, line.start_time, audio_features
@@ -301,12 +314,16 @@ def _shift_lines_across_long_activity_gaps(
             (onset_times >= prev_line.end_time) & (onset_times <= line.start_time)
         ]
         if len(candidate_onsets) == 0:
+            prev_shift = None
             continue
         new_start = max(float(candidate_onsets[0]), prev_line.end_time + 0.05)
         shift = new_start - line.start_time
         if shift > -0.3:
+            prev_shift = None
             continue
         lines[idx] = _shift_line_words(line, shift)
+        _LAST_LONG_GAP_SHIFTED_INDICES.add(idx)
+        prev_shift = shift
         fixes += 1
     return fixes
 
@@ -328,6 +345,10 @@ def _extend_line_ends_across_active_gaps(
         prev_line = lines[idx - 1]
         next_line = lines[idx]
         if not prev_line.words or not next_line.words:
+            continue
+        if (idx - 1) in _LAST_LONG_GAP_SHIFTED_INDICES or (
+            idx - 2
+        ) in _LAST_LONG_GAP_SHIFTED_INDICES:
             continue
         gap = next_line.start_time - prev_line.end_time
         if gap < min_gap:

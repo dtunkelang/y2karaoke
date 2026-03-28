@@ -507,6 +507,128 @@ def test_pull_lines_forward_for_continuous_vocals_can_disable_long_gap_shift(
     assert pulled[1].start_time == lines[1].start_time
 
 
+def test_shift_lines_across_long_activity_gaps_stops_nonmatching_cascade():
+    lines = [
+        Line(
+            words=[
+                Word(text="Take", start_time=1.0, end_time=2.3),
+                Word(text="on", start_time=2.3, end_time=3.2),
+                Word(text="me", start_time=3.2, end_time=4.5),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Take", start_time=9.86, end_time=10.6),
+                Word(text="me", start_time=10.6, end_time=11.2),
+                Word(text="on", start_time=11.2, end_time=12.34),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I'll", start_time=12.34, end_time=13.2),
+                Word(text="be", start_time=13.2, end_time=14.0),
+                Word(text="gone", start_time=14.0, end_time=15.5),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="In", start_time=17.5, end_time=18.1),
+                Word(text="a", start_time=18.1, end_time=18.5),
+                Word(text="day", start_time=18.5, end_time=19.4),
+                Word(text="or", start_time=19.4, end_time=19.8),
+                Word(text="two", start_time=19.8, end_time=21.0),
+            ]
+        ),
+    ]
+
+    class MockAF:
+        def __init__(self):
+            self.onset_times = np.array([5.387, 8.011, 11.308], dtype=float)
+            self.silence_regions = []
+
+    af = MockAF()
+
+    import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
+
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setenv("Y2K_WHISPER_CONTINUOUS_EXTEND_ACTIVE_GAPS", "0")
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.8,
+        check_for_silence_in_range_fn=lambda *args, **kw: False,
+    ):
+        pulled, count = wa._pull_lines_forward_for_continuous_vocals(
+            lines, af, max_gap=4.0, enable_silence_short_line_refinement=False
+        )
+    monkeypatch.undo()
+
+    assert count == 1
+    assert pulled[1].start_time == pytest.approx(5.387)
+    assert pulled[1].end_time == pytest.approx(7.867)
+    assert pulled[2].start_time == pytest.approx(12.34)
+    assert pulled[2].end_time == pytest.approx(15.5)
+    assert pulled[3].start_time == pytest.approx(17.5)
+
+
+def test_pull_lines_forward_for_continuous_vocals_skips_growth_after_large_shift():
+    lines = [
+        Line(
+            words=[
+                Word(text="Take", start_time=1.0, end_time=2.3),
+                Word(text="on", start_time=2.3, end_time=3.2),
+                Word(text="me", start_time=3.2, end_time=4.5),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="Take", start_time=9.86, end_time=10.6),
+                Word(text="me", start_time=10.6, end_time=11.2),
+                Word(text="on", start_time=11.2, end_time=12.34),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="I'll", start_time=12.34, end_time=13.2),
+                Word(text="be", start_time=13.2, end_time=14.0),
+                Word(text="gone", start_time=14.0, end_time=15.5),
+            ]
+        ),
+        Line(
+            words=[
+                Word(text="In", start_time=17.5, end_time=18.1),
+                Word(text="a", start_time=18.1, end_time=18.5),
+                Word(text="day", start_time=18.5, end_time=19.4),
+                Word(text="or", start_time=19.4, end_time=19.8),
+                Word(text="two", start_time=19.8, end_time=21.0),
+            ]
+        ),
+    ]
+
+    class MockAF:
+        def __init__(self):
+            self.onset_times = np.array([5.387, 8.011, 11.308], dtype=float)
+            self.silence_regions = []
+
+    af = MockAF()
+
+    import y2karaoke.core.components.whisper.whisper_alignment_refinement as war
+
+    with war.use_alignment_refinement_hooks(
+        check_vocal_activity_in_range_fn=lambda *args: 0.8,
+        check_for_silence_in_range_fn=lambda *args, **kw: False,
+    ):
+        pulled, count = wa._pull_lines_forward_for_continuous_vocals(
+            lines, af, max_gap=4.0, enable_silence_short_line_refinement=False
+        )
+
+    assert count == 1
+    assert pulled[1].start_time == pytest.approx(5.387)
+    assert pulled[1].end_time == pytest.approx(7.867)
+    assert pulled[2].start_time == pytest.approx(12.34)
+    assert pulled[2].end_time == pytest.approx(15.5)
+    assert pulled[3].start_time == pytest.approx(17.5)
+    assert pulled[3].end_time == pytest.approx(21.0)
+
+
 def test_pull_lines_forward_for_continuous_vocals_reverts_when_long_gaps_worsen(
     monkeypatch,
 ):
