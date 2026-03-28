@@ -1666,6 +1666,13 @@ Most likely next inspection targets:
   - forced trace metadata now records:
     - `transcription_segment_preview`
     - `forced_segment_preview`
+  - added `tools/analyze_forced_trace_exact_segment_boundaries.py`
+    - this analyzer works on forced trace JSON, not timing reports
+    - on `/tmp/hotline_forced_trace8.json` it finds exactly one candidate:
+      - stage `after_post_finalize_refrain_repairs`
+      - line 2 / line 3
+      - tail shortfall `0.57s`
+      - next early start `0.55s`
 - current read:
   - this is a real second family after the `Take On Me` alternating-hook work
   - it is a forced-fallback adjacent-boundary compression family, not a DTW/mapping family

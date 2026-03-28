@@ -674,6 +674,13 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `Please Please Please` stayed exact
   - 5-song control pack stayed stable:
     - run: `benchmarks/results/20260328T220557Z`
+- trace-side diagnostic:
+  - `tools/analyze_forced_trace_exact_segment_boundaries.py`
+  - on `/tmp/hotline_forced_trace8.json`, it isolates exactly one candidate:
+    - stage `after_post_finalize_refrain_repairs`
+    - line 2 / line 3
+    - tail shortfall `0.57s`
+    - next early start `0.55s`
 - implication:
   - this is now a real second production family beside `Take On Me`
   - it belongs to forced-fallback adjacent-boundary compression, not the alternating-hook mapped family
