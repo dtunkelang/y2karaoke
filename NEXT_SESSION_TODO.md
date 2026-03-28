@@ -1442,6 +1442,14 @@ Most likely next inspection targets:
     - the next clean timing path is likely phrase-window anchoring inside merged segments
     - not raw segment-start anchoring
     - this is the timing analogue of the clipped-anchor comparability work that helped `Con Calma`
+  - added `tools/simulate_segment_subphrase_pull.py`
+  - immediate negative result:
+    - a naive phrase-window pull is still wrong for `Take On Me`
+    - it drags line 1 to `0.64-4.94`
+    - then line 2 is forced to `4.99-8.79`
+  - implication:
+    - merged-segment subphrase windows are real evidence
+    - but they need a selective / family-aware hook, not a blanket replacement for segment-start pull
 
 ## 2026-03-27 Broader strategy reset
 

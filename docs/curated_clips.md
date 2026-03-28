@@ -475,6 +475,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - `Take me on` local phrase window `4.22-9.7`
     - `I'll be gone` local phrase window `12.34-15.5`
   - so a phrase-window anchor inside merged segments is now a plausible next architecture step
+- A direct phrase-window pull is still too blunt:
+  - if you simply replace merged-segment starts with local phrase-window starts, `Take On Me` line 1 also moves earlier
+  - that then forces line 2 early as well (`4.99-8.79`)
+  - so the useful version of this idea has to be selective, likely targeting the alternating-hook line rather than the whole merged segment family
 
 ## Process Learnings
 
