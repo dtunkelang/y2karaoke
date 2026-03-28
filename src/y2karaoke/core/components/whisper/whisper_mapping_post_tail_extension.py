@@ -2,10 +2,34 @@
 
 from __future__ import annotations
 
+import json
+import os
 from typing import Callable, List, Tuple
+from typing import Any
 
 from ... import models
 from ..alignment import timing_models
+from .whisper_integration_align_trace import parse_trace_line_range
+
+
+def _first_anchor_shift_seconds(
+    matched_pairs: List[Tuple[int, timing_models.TranscriptionWord]],
+    *,
+    line_start: float,
+) -> float:
+    if not matched_pairs:
+        return 0.0
+    return matched_pairs[0][1].start - line_start
+
+
+def _maybe_write_tail_extension_trace(
+    rows: list[dict[str, Any]],
+) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_TAIL_EXTENSION_JSON", "").strip()
+    if not trace_path:
+        return
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump({"lines": rows}, fh, indent=2)
 
 
 def _extend_line_to_trailing_whisper_matches(  # noqa: C901
@@ -26,9 +50,12 @@ def _extend_line_to_trailing_whisper_matches(  # noqa: C901
         return mapped_lines
 
     adjusted = list(mapped_lines)
+    trace_rows: list[dict[str, Any]] = []
+    trace_line_range = parse_trace_line_range()
     for idx, line in enumerate(adjusted):
         if not line.words:
             continue
+        line_index = idx + 1
 
         token_pairs = [
             (word_idx, normalize_match_token_fn(w.text))
@@ -55,6 +82,7 @@ def _extend_line_to_trailing_whisper_matches(  # noqa: C901
         best_end = line.end_time
         best_match_count = 0
         best_pairs: List[Tuple[int, timing_models.TranscriptionWord]] = []
+        candidate_rows: list[dict[str, Any]] = []
         for start_i in range(len(candidates)):
             wi = start_i
             matched = 0
@@ -82,6 +110,31 @@ def _extend_line_to_trailing_whisper_matches(  # noqa: C901
             min_required = max(2, int(len(token_pairs) * 0.66))
             if matched < min_required:
                 continue
+            first_anchor_shift = _first_anchor_shift_seconds(
+                matched_pairs, line_start=line.start_time
+            )
+            candidate_rows.append(
+                {
+                    "start_i": start_i,
+                    "start_word": {
+                        "text": candidates[start_i].text,
+                        "start": round(candidates[start_i].start, 3),
+                        "end": round(candidates[start_i].end, 3),
+                    },
+                    "matched_count": matched,
+                    "last_end": round(last_end, 3),
+                    "first_anchor_shift": round(first_anchor_shift, 3),
+                    "matched_pairs": [
+                        {
+                            "line_word_index": word_idx,
+                            "candidate_text": ww.text,
+                            "candidate_start": round(ww.start, 3),
+                            "candidate_end": round(ww.end, 3),
+                        }
+                        for word_idx, ww in matched_pairs
+                    ],
+                }
+            )
             if (matched > best_match_count) or (
                 matched == best_match_count and last_end > best_end
             ):
@@ -187,6 +240,25 @@ def _extend_line_to_trailing_whisper_matches(  # noqa: C901
             )
 
         adjusted[idx] = models.Line(words=new_words, singer=line.singer)
+        if (
+            trace_line_range is not None
+            and trace_line_range[0] <= line_index <= trace_line_range[1]
+        ):
+            trace_rows.append(
+                {
+                    "line_index": line_index,
+                    "text": line.text,
+                    "line_start": round(line.start_time, 3),
+                    "line_end": round(line.end_time, 3),
+                    "next_start": (
+                        None if next_start == float("inf") else round(next_start, 3)
+                    ),
+                    "chosen_end": round(target_end, 3),
+                    "candidate_count": len(candidate_rows),
+                    "candidates": candidate_rows,
+                }
+            )
 
     adjusted = smooth_adjacent_duplicate_line_cadence_fn(adjusted)
+    _maybe_write_tail_extension_trace(trace_rows)
     return rebalance_short_question_pairs_fn(adjusted)

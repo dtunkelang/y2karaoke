@@ -1293,6 +1293,26 @@ Most likely next inspection targets:
     - implication:
       - the guard family now looks isolated to the repeated-short-hook false-positive case
       - next code probe can focus on final end selection inside `postpass_extend_trailing`, not broad token-match tightening
+  - added diagnostics-only runtime trace support for `postpass_extend_trailing`:
+    - env: `Y2K_TRACE_TAIL_EXTENSION_JSON`
+    - file: `whisper_mapping_post_tail_extension.py`
+    - this captures the real runtime candidate set from `all_words`, which the report-window approximation was missing
+  - traced forced-off `Take On Me` with that new hook:
+    - `line 2` current candidate set really does contain:
+      - early local phrase ending near `9.7`
+      - late false-positive phrase ending at `15.5`
+    - the stock helper prefers the late phrase because it only breaks tied match counts by later end
+  - attempted a narrow production tie-break to prefer near-anchor candidates on tied match counts, then reverted it
+    - run dir: `benchmarks/results/20260328T002856Z`
+    - outcome got worse again: `0.870 / 1.028 -> 0.961 / 1.195`
+    - traced failure shape:
+      - `postpass_extend_trailing` now keeps line 2 at `4.22-9.72`
+      - but `postpass_pull_continuous_vocals` then overgrows line 2 to `4.22-12.22`
+      - later baseline constraints compress lines 3-4
+    - implication:
+      - the late tail-extension choice was real
+      - but fixing it inside `postpass_extend_trailing` alone is not sufficient
+      - the next correct probe has to account for interaction with `postpass_pull_continuous_vocals`
 
 ## 2026-03-27 Broader strategy reset
 

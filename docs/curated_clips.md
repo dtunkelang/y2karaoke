@@ -332,6 +332,21 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - this looks more isolated than the earlier broad ranking attempt
     - the next production probe should target final end selection inside `postpass_extend_trailing`, not broad token-match strictness
+- A diagnostics-only runtime trace now exists for the actual tail-extension helper:
+  - env: `Y2K_TRACE_TAIL_EXTENSION_JSON`
+  - this captures the real `all_words` candidate set used by `postpass_extend_trailing`
+  - on forced-off `Take On Me`, it confirmed the live helper really does see both:
+    - the early local phrase ending near `9.7`
+    - the late false-positive phrase ending at `15.5`
+- A narrow production tie-break based on near-anchor candidates was tested and reverted:
+  - run dir: `benchmarks/results/20260328T002856Z`
+  - result got worse again: about `0.961 / 1.195`
+  - traced reason:
+    - `postpass_extend_trailing` stayed early as intended
+    - but `postpass_pull_continuous_vocals` then overgrew line 2 and squeezed lines 3-4
+  - implication:
+    - `Take On Me` is now clearly a multi-stage interaction, not a single tail-extension bug
+    - the next safe probe must consider the coupling between tail extension and continuous-vocals expansion
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
