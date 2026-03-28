@@ -1544,6 +1544,14 @@ Most likely next inspection targets:
   - implication:
     - the current alternating-hook repairs should still be treated as a very narrow family
     - do not broaden them further without either another curated example or a wider search outside the current pack
+  - added `tools/analyze_alternating_hook_lyrics_hits.py`
+  - broader cached-lyrics result across `benchmarks/results/**/*clip_lyrics.txt`:
+    - `226` hits total
+    - but every hit is still just `Take on me` / `Take me on`
+    - no second song family appears in local cached clip lyrics
+  - implication:
+    - local corpus evidence is now exhausted for this family
+    - the next useful step is either one new curated clip with the same adjacent alternating-hook shape, or a much larger external corpus scan
 
 ## 2026-03-27 Broader strategy reset
 

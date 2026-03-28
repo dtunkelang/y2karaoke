@@ -581,6 +581,15 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - the alternating-hook repairs are now well-validated on `Take On Me`
     - but they are not yet a demonstrated broad family in the current curated pack
     - any wider rollout should wait for another real clip or a bigger corpus scan
+- Cached-lyrics scope check:
+  - `tools/analyze_alternating_hook_lyrics_hits.py` now scans cached `benchmarks/results/**/*clip_lyrics.txt`
+  - current result is still single-song:
+    - `226` hits total
+    - all are the same adjacent pair `Take on me` / `Take me on`
+    - all belong to reruns of the `Take On Me` clip
+  - read:
+    - there is no second local song example for this family in the current workspace
+    - the next meaningful generalization step needs either another curated clip or a larger outside corpus
 
 ## Process Learnings
 
