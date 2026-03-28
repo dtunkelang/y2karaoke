@@ -197,7 +197,7 @@ def test_load_lyrics_file_uncensors_plain_text_and_lrc(tmp_path: Path):
     assert synced_lines == ["This shit hurts", "What the fuck is that"]
 
 
-def test_distribute_word_timing_extends_long_line_with_trailing_parenthetical_interjection():
+def test_distribute_word_timing_extends_with_trailing_parenthetical_interjection():
     line = _line_with_words(
         ["Will", "never", "let", "you", "go", "this", "time", "(ooh)"]
     )
@@ -367,7 +367,7 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_two_line_repeated_ho
     assert lines[1].end_time > 14.8
 
 
-def test_anchor_plain_text_lines_to_audio_window_rebalances_two_line_repeated_hook_when_onset_detection_is_weak(
+def test_anchor_plain_text_lines_to_audio_window_rebalances_two_line_hook(
     monkeypatch,
 ):
     lines = lh._create_lines_from_plain_text(
@@ -387,6 +387,31 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_two_line_repeated_ho
     assert lines[0].end_time < 6.4
     assert 5.0 < lines[1].start_time < 6.9
     assert lines[1].end_time > 14.8
+
+
+def test_anchor_plain_text_lines_to_audio_window_rebalances_three_line_intro(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "You are",
+            "You are",
+            "Confusion that never stops",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.859,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 32.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(0.859, abs=0.05)
+    assert 6.3 < lines[0].end_time < 6.7
+    assert 9.0 < lines[1].start_time < 9.2
+    assert 14.0 < lines[1].end_time < 14.3
+    assert lines[2].start_time > 29.1
+    assert lines[2].end_time > 31.6
 
 
 def test_anchor_plain_text_lines_to_audio_window_rebalances_mixed_density_chorus_clip(
@@ -477,7 +502,7 @@ def test_detect_offset_with_issues_tracks_large_delta(monkeypatch):
         lambda _: 15.0,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(1.0, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav", line_timings, lyrics_offset=None, issues=issues
@@ -494,7 +519,7 @@ def test_detect_offset_with_issues_scales_auto_offset(monkeypatch):
         lambda _: 2.0,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(1.0, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -514,7 +539,7 @@ def test_detect_offset_with_issues_skips_scaling_outside_window(monkeypatch):
         lambda _: 2.0,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(1.0, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -538,7 +563,7 @@ def test_detect_offset_with_issues_scales_large_negative_offset_when_enabled(
         lambda _: -0.62,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(1.0, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -563,7 +588,7 @@ def test_detect_offset_with_issues_does_not_scale_large_negative_offset_by_defau
         lambda _: -0.62,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(1.0, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -585,7 +610,7 @@ def test_detect_offset_with_issues_can_skip_moderate_negative_offset(monkeypatch
         lambda _: 5.43,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(6.22, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -607,7 +632,7 @@ def test_detect_offset_with_issues_skips_negative_offset_up_to_guard_threshold(
         lambda _: 0.67,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(1.67, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -629,7 +654,7 @@ def test_detect_offset_with_issues_skips_scaled_large_negative_offset_under_guar
         lambda _: 0.05,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(1.67, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -655,7 +680,7 @@ def test_detect_offset_with_issues_skips_disagreement_scaled_negative_offset_up_
         lambda _: 2.16,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(4.38, "Line")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -681,7 +706,7 @@ def test_detect_offset_with_issues_uses_second_line_after_long_interjection_gap(
         lambda _: 27.98,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [
         (13.42, "Yeah"),
         (26.95, "I've been tryna call"),
@@ -707,7 +732,7 @@ def test_detect_offset_with_issues_keeps_suspicious_positive_offset_blocked_by_d
         lambda _: 8.45,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(4.10, "I can breathe for the first time")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",
@@ -728,7 +753,7 @@ def test_detect_offset_with_issues_can_allow_suspicious_positive_offset(
         lambda _: 8.45,
     )
 
-    issues = []
+    issues: list[str] = []
     line_timings = [(4.10, "I can breathe for the first time")]
     updated, offset = lw._detect_offset_with_issues(
         "vocals.wav",

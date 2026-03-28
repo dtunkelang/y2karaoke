@@ -127,6 +127,10 @@ def adjust_repetitive_compact_layout(
         return line_weights, gap_weights
     if len(lines) == 2:
         return _adjust_two_line_repetitive_layout(lines, line_weights, gap_weights)
+    if len(lines) == 3:
+        return _adjust_three_line_repeated_short_intro_layout(
+            lines, line_weights, gap_weights, normalize_text_fn=normalize_text_fn
+        )
     if len(lines) < 4:
         return line_weights, gap_weights
     return _adjust_dominant_repetition_layout(
@@ -191,3 +195,30 @@ def _adjust_dominant_repetition_layout(
             line_weights[-1] = max(1.0, line_weights[-1] * 0.34)
             gap_weights[last_dominant_idx] = min(gap_weights[last_dominant_idx], 0.15)
     return line_weights, gap_weights
+
+
+def _adjust_three_line_repeated_short_intro_layout(
+    lines: List[Line],
+    line_weights: List[float],
+    gap_weights: List[float],
+    *,
+    normalize_text_fn: Callable[[str], str],
+) -> tuple[List[float], List[float]]:
+    first_text = normalize_text_fn(lines[0].text)
+    second_text = normalize_text_fn(lines[1].text)
+    third_text = normalize_text_fn(lines[2].text)
+    if not first_text or first_text != second_text or third_text == first_text:
+        return line_weights, gap_weights
+    if len(lines[0].words) > 2 or len(lines[1].words) > 2:
+        return line_weights, gap_weights
+    if len(lines[2].words) < 4:
+        return line_weights, gap_weights
+
+    adjusted_line_weights = list(line_weights)
+    adjusted_gap_weights = list(gap_weights)
+    adjusted_line_weights[0] = max(2.4, adjusted_line_weights[0])
+    adjusted_line_weights[1] = max(2.2, adjusted_line_weights[1])
+    adjusted_line_weights[2] = min(adjusted_line_weights[2], 1.1)
+    adjusted_gap_weights[0] = max(adjusted_gap_weights[0], 0.6)
+    adjusted_gap_weights[1] = max(adjusted_gap_weights[1], 6.1)
+    return adjusted_line_weights, adjusted_gap_weights

@@ -1736,3 +1736,19 @@ Most likely next inspection targets:
       - the attempted repeated-short-line source restore was a dead end and was reverted
       - accepted forced fallback does not have an earlier source for `Clocks` line 2; its own baseline is already late
       - the next real `Clocks` path has to move earlier than accepted forced fallback baseline construction, not add another post-finalize forced repair
+  - kept upstream win:
+    - `Clocks` line 2 was finally improved by moving earlier than Whisper entirely
+    - added a narrow 3-line repeated-short plain-text layout rule in `lyrics_clip_layout_helpers.py`
+    - this targets clips where:
+      - line 1 and line 2 are the same short phrase
+      - line 3 is a longer distinct line
+      - plain-text anchoring was previously falling through to the generic repetitive-compact layout
+    - kept run:
+      - `benchmarks/results/20260328T232836Z`
+      - `gold_start_abs_mean_weighted 0.500 -> 0.394`
+      - `gold_end_abs_mean 0.607 -> 0.272`
+      - line 2 moved to `9.09-14.15`
+    - 4-song control pack stayed flat:
+      - `benchmarks/results/20260328T232941Z`
+      - `Take On Me`, `Hotline Bling`, `Please Please Please`, `Say My Name` unchanged at aggregate level
+    - next best `Clocks` step, if worth it, is to see whether line 1 can be lengthened slightly without pushing line 2 late again
