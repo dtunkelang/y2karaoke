@@ -458,6 +458,9 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   This is faster than guessing which postpass is to blame.
 - If a focused canary improves cleanly, commit and push before widening the benchmark set. That keeps the next step recoverable when iteration budget is tight.
 - Do not drop difficult clips just because they are difficult. Keep them if they reflect real production failures, but add companion clips when a single clip is too underdetermined to tune against safely.
+- For repeated-hook mapped failures like `Take On Me`, inspect the long-gap candidate set as windows, not just starts:
+  - multiple later onsets can be safe against the next line and still differ materially in end quality
+  - if several candidate windows are safe, the right next rule is sequence-level line-pair selection, not a per-line onset tweak
 
 ## Process Learnings
 

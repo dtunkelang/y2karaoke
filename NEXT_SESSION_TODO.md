@@ -1410,6 +1410,13 @@ Most likely next inspection targets:
   - implication:
     - the first keepable `Take On Me` mapped-path gain came from a paired sequence policy, not a one-stage guard
     - this still looks diagnostic-first today, but it is the clearest architectural breakthrough in the contamination family so far
+  - added `tools/analyze_long_gap_shift_candidates.py` and `tools/simulate_long_gap_shift_windows.py`
+  - current long-gap read on the kept mapped trace:
+    - line 2 `Take me on`: chosen onset `5.387`, but several later onsets up through `8.266` are still safe against the next gold line
+    - line 3 `I'll be gone`: later onsets up through `12.144` are also still safe
+  - implication:
+    - the next keepable `Take On Me` rule cannot be onset-only
+    - it needs sequence-level start+end selection across lines 2 and 3 together
 
 ## 2026-03-27 Broader strategy reset
 
