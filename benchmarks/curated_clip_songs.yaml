@@ -804,3 +804,25 @@ songs:
     You are
     You are
     Confusion that never stops
+
+- title: Hotline Bling
+  artist: Drake
+  clip_id: cell-phone-variant
+  clip_tags:
+  - stress
+  - hook-variant
+  - repeated-hook
+  - backing-echo
+  youtube_url: https://www.youtube.com/watch?v=zt6aRKpf9T4
+  youtube_id: zt6aRKpf9T4
+  audio_start_sec: 12
+  clip_duration_sec: 11
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Adjacent hook-variant block around call me / cell phone for shared-token non-duplicate sequence stress.
+  slug: drake-hotline-bling-cell-phone-variant
+  lyrics: |
+    You used to call me on my cell phone
+    Late night when you need my love
+    Call me on my cell phone
