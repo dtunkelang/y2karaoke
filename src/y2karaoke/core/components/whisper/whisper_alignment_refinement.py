@@ -33,6 +33,7 @@ _check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 logger = logging.getLogger(__name__)
 
 _CONTINUOUS_VOCALS_TRACE_CALL_COUNT = 0
+_CURRENT_CONTINUOUS_VOCALS_CALL_INDEX = 0
 _LAST_LONG_GAP_SHIFTED_INDICES: set[int] = set()
 
 
@@ -40,8 +41,16 @@ def _maybe_write_long_gap_shift_trace(rows: list[dict[str, Any]]) -> None:
     trace_path = os.environ.get("Y2K_TRACE_LONG_GAP_SHIFT_JSON", "").strip()
     if not trace_path:
         return
+    existing_rows: list[dict[str, Any]] = []
+    if os.path.exists(trace_path):
+        try:
+            with open(trace_path, "r", encoding="utf-8") as fh:
+                payload = json.load(fh)
+            existing_rows = list(payload.get("rows", []))
+        except (OSError, json.JSONDecodeError, AttributeError):
+            existing_rows = []
     with open(trace_path, "w", encoding="utf-8") as fh:
-        json.dump({"rows": rows}, fh, indent=2)
+        json.dump({"rows": existing_rows + rows}, fh, indent=2)
 
 
 def _maybe_write_active_gap_trace(rows: list[dict]) -> None:
@@ -295,6 +304,7 @@ def _shift_lines_across_long_activity_gaps(
         prev_line = lines[idx - 1]
         line = lines[idx]
         row = {
+            "call_index": _CURRENT_CONTINUOUS_VOCALS_CALL_INDEX,
             "line_index": idx + 1,
             "prev_text": prev_line.text,
             "text": line.text,
@@ -595,9 +605,10 @@ def _pull_lines_forward_for_continuous_vocals(
     original_lines = _clone_lines(lines)
     before_long_count, before_max_gap = _long_gap_stats(lines)
     before_inv_count, before_inv_drop = _ordering_inversion_stats(lines)
-    global _CONTINUOUS_VOCALS_TRACE_CALL_COUNT
+    global _CONTINUOUS_VOCALS_TRACE_CALL_COUNT, _CURRENT_CONTINUOUS_VOCALS_CALL_INDEX
     _CONTINUOUS_VOCALS_TRACE_CALL_COUNT += 1
     call_index = _CONTINUOUS_VOCALS_TRACE_CALL_COUNT
+    _CURRENT_CONTINUOUS_VOCALS_CALL_INDEX = call_index
     stage_rows: list[dict[str, Any]] = []
     _capture_continuous_vocals_stage(
         stage_rows, call_index=call_index, stage="before", lines=lines

@@ -73,6 +73,8 @@ def test_shift_lines_across_long_activity_gaps_writes_decision_trace(
 
     payload = json.loads(trace_path.read_text())
     row = payload["rows"][0]
+    assert isinstance(row["call_index"], int)
+    assert row["call_index"] >= 1
     assert row["line_index"] == 2
     assert row["decision"] == "shift"
     assert row["candidate_onsets"] == [12.0, 15.0, 18.0]
