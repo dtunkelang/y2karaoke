@@ -1595,6 +1595,20 @@ Most likely next inspection targets:
   - implication:
     - aggregate-only merge is not sufficient by itself
     - the harmful `Hotline Bling` case needs an additional discriminator beyond “aggressive merged two adjacent lines that vocals split”
+  - added `tools/analyze_merge_reuse_pressure.py`
+  - new separator between harmful and healthy cases:
+    - `Hotline Bling`:
+      - line 1 and line 3 reuse overlap `0.667`
+      - aggregate segment gap `0.0s`
+      - middle line 2 ends `0.88s` early
+      - line 3 starts `1.36s` early
+    - `Please Please Please`:
+      - line 1 and line 3 reuse overlap `0.5`
+      - aggregate segment gap `3.7s`
+      - middle line and line 3 are effectively exact
+  - implication:
+    - the current best `Hotline Bling` discriminator is not just merge + reuse
+    - it is merge + immediate reused phrase in the next segment with near-zero segment gap
 
 ## 2026-03-27 Broader strategy reset
 

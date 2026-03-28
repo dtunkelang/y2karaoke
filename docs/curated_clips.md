@@ -628,6 +628,22 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - read:
     - aggregate-only merge is a real structural clue, but not enough by itself
     - any future production hook needs a second discriminator that separates `Hotline Bling` from healthy controls like `Please Please Please`
+- `tools/analyze_merge_reuse_pressure.py` provides that next discriminator:
+  - `Hotline Bling`:
+    - merged first aggregate segment
+    - line 1 / line 3 reuse overlap `0.667`
+    - next aggregate segment starts immediately (`0.0s` gap)
+    - live damage is real: line 2 ends `0.88s` early and line 3 starts `1.36s` early
+  - `Please Please Please`:
+    - same merged-first-segment clue
+    - line 1 / line 3 reuse overlap `0.5`
+    - but the next aggregate segment starts `3.7s` later
+    - live timings stay exact
+  - read:
+    - the harmful `Hotline Bling` shape is now best described as:
+      - adjacent-line aggregate merge
+      - plus immediate reused phrase pressure in the very next segment
+    - that is a better future production hook than a generic vocals-boundary override
 
 ## Process Learnings
 
