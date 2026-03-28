@@ -439,6 +439,18 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - do not treat all repeated-hook companions as one family
     - `Clocks` is now a forced-duration-rollback control, not a mapped contamination control
+- `Take On Me` is now constrained more tightly than before:
+  - a diagnostic-only onset analyzer now exists:
+    - `tools/analyze_long_gap_shift_candidates.py`
+  - on the kept mapped trace, the first long-gap shift picks the earliest onset, but the gold-nearest candidate is much later:
+    - line 2 `Take me on`: chosen `5.387`, gold-nearest `6.803`
+    - line 3 `I'll be gone`: chosen `8.011`, gold-nearest `12.144`
+  - the failed later-onset branch in `benchmarks/results/20260328T015630Z` explains why onset-only changes are still wrong:
+    - line 2 moved to `6.45-11.43`
+    - the start was less wrong, but the end overgrew badly
+  - implication:
+    - the next `Take On Me` probe has to score onset and target end together
+    - do not spend another branch on onset-only selection
 - When a live clip still looks wrong after a plausible fix, compare:
   - the helper-generated seed on the real cached clip audio
   - the accepted forced-alignment output

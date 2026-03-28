@@ -17,6 +17,21 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - The main reference doc is `docs/tech_debt_backlog.md`.
 - The main structure doc is `ARCHITECTURE.md`.
 - The active work is quality iteration on curated short clips, not further broad architecture cleanup.
+- Latest diagnostic learning:
+  - `Take On Me` line 2 is now pinned to a joint start+end selection problem inside the first long-gap shift call
+  - new analyzer: [tools/analyze_long_gap_shift_candidates.py](/Users/dtunkelang/y2karaoke/tools/analyze_long_gap_shift_candidates.py)
+  - on the kept mapped trace:
+    - line 2 chosen onset: `5.387`
+    - gold-nearest candidate onset: `6.803`
+    - line 3 chosen onset: `8.011`
+    - gold-nearest candidate onset: `12.144`
+  - the earlier failed later-onset branch confirms why onset-only logic is insufficient:
+    - `benchmarks/results/20260328T015630Z`
+    - line 2 moved to `6.45-11.43`
+    - end got overgrown even though the start moved in the right direction
+  - implication:
+    - the next credible `Take On Me` fix has to score onset and target end together for repeated short hooks
+    - do not retry another onset-only selector
 - Latest kept quality win:
   - `Clocks` is now a separate forced-alignment family, not a `Take On Me` mapped-path sibling
   - focused single-song win in `benchmarks/results/20260328T_clocks_trace3`:
