@@ -24,6 +24,7 @@ def restore_sparse_support_line_durations_from_source(
     min_baseline_duration_sec: float = 3.0,
     max_baseline_words: int = 5,
     max_duration_ratio: float = 0.7,
+    min_effective_word_count: int = 5,
 ) -> tuple[List[models.Line], int]:
     populated_lines = [line for line in forced_lines if line.words]
     if not populated_lines:
@@ -39,6 +40,12 @@ def restore_sparse_support_line_durations_from_source(
         zip(baseline_lines, forced_lines)
     ):
         if not baseline_line.words or not forced_line.words:
+            continue
+        effective_word_count = max(
+            len(baseline_line.words),
+            len([part for part in baseline_line.text.split() if part.strip()]),
+        )
+        if effective_word_count < min_effective_word_count:
             continue
         if len(baseline_line.words) > max_baseline_words:
             continue

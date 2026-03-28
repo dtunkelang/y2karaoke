@@ -421,6 +421,24 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - the worst case is a short-function-word lead-in followed by a held final word
   - compare raw forced word timings against gold before changing line-level seeding again
   - a narrow within-line redistribution fix can improve this family without disturbing `Stayin' Alive`, `Time After Time`, or `Total Eclipse`
+- `Clocks` exposed a different forced-alignment family from both `Take On Me` and the held-tail clips:
+  - raw forced alignment already gets line 3 (`Confusion that never stops`) right
+  - the bad output came from restoring short lines toward an overlong source baseline
+  - the keepable fix was two short-line guards in forced fallback:
+    - skip exact baseline restore for extreme sustained collapse on short lines
+    - skip sparse-support duration restore on those same short-line cases
+  - kept result:
+    - `benchmarks/results/20260328T_clocks_trace3`
+    - `Coldplay - Clocks` improved from `3.6572 / 2.7231` to `0.5000 / 0.6065`
+    - gold coverage stayed `1.0`
+  - guardrails stayed clean:
+    - `benchmarks/results/20260328T_clocks_guard_pack2`
+    - `Take On Me`, `Total Eclipse`, and both `Royals` clips stayed effectively unchanged
+    - `benchmarks/results/20260328T_clocks_stayin_sanity`
+    - `Stayin' Alive` stayed flat at `0.1374 / 0.1827`
+  - implication:
+    - do not treat all repeated-hook companions as one family
+    - `Clocks` is now a forced-duration-rollback control, not a mapped contamination control
 - When a live clip still looks wrong after a plausible fix, compare:
   - the helper-generated seed on the real cached clip audio
   - the accepted forced-alignment output

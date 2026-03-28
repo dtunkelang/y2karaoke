@@ -18,6 +18,20 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 - The main structure doc is `ARCHITECTURE.md`.
 - The active work is quality iteration on curated short clips, not further broad architecture cleanup.
 - Latest kept quality win:
+  - `Clocks` is now a separate forced-alignment family, not a `Take On Me` mapped-path sibling
+  - focused single-song win in `benchmarks/results/20260328T_clocks_trace3`:
+    - `Coldplay - Clocks` improved from `3.6572s / 2.7231s` in `20260328T021602Z` to `0.5000s / 0.6065s`
+    - gold coverage stayed `1.0`
+  - kept 5-song control pack in `benchmarks/results/20260328T_clocks_guard_pack2`:
+    - aggregate weighted start mean improved to `0.208s`
+    - gold coverage stayed full at `87/87`
+    - `Take On Me`, `Total Eclipse`, and both `Royals` controls stayed effectively unchanged
+  - `Stayin' Alive` sanity check in `benchmarks/results/20260328T_clocks_stayin_sanity` stayed unchanged at `0.1374 / 0.1827`
+  - driver:
+    - short-line extreme sustained-collapse restores no longer snap exact baseline timing for short lines
+    - sparse-support duration restores also skip those short-line cases
+    - this keeps `Clocks` line 3 on the good raw forced span instead of restoring it to the bad overlong source baseline
+- Latest kept quality win:
   - new sparse companion clip added: `Everybody Wants to Rule the World` (`freedom-pleasure`)
   - focused pack `Take On Me|Total Eclipse|Everybody Wants to Rule the World` in `benchmarks/results/20260326T202403Z`
   - result: `Everybody Wants to Rule the World` improved from `0.5471s / 0.7564s` in `20260326T201642Z` to effectively exact gold timing after a narrow sparse-followup forced-alignment restore

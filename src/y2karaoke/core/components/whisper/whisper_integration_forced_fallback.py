@@ -192,6 +192,11 @@ def _restored_sustained_line(
         forced_duration <= baseline_duration * exact_start_restore_ratio
         and abs(start_shift) >= exact_start_restore_min_shift_sec
     ):
+        if not _should_restore_extreme_sustained_collapse_from_baseline(
+            baseline_line=baseline_line,
+            forced_line=forced_line,
+        ):
+            return None
         return baseline_line
 
     repaired_line = _shift_line(baseline_line, start_shift)
@@ -219,6 +224,21 @@ def _restored_sustained_line(
         later_shift=later_shift,
         inter_line_gap_sec=inter_line_gap_sec,
     )
+
+
+def _should_restore_extreme_sustained_collapse_from_baseline(
+    *,
+    baseline_line: models.Line,
+    forced_line: models.Line,
+    min_word_count: int = 5,
+) -> bool:
+    baseline_token_count = max(
+        len(baseline_line.words),
+        len([part for part in baseline_line.text.split() if part.strip()]),
+    )
+    if baseline_token_count < min_word_count:
+        return False
+    return len(forced_line.words) == len(baseline_line.words)
 
 
 def _restore_final_compact_sustained_tail_from_source(

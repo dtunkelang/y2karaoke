@@ -5,6 +5,7 @@ from y2karaoke.core.components.whisper.whisper_integration_forced_fallback impor
     attempt_whisperx_forced_alignment,
 )
 from y2karaoke.core.components.whisper import (
+    whisper_forced_sparse_support_repairs as _sparse_support,
     whisper_integration_forced_fallback as _forced,
 )
 from y2karaoke.core.models import Line, Word
@@ -144,6 +145,55 @@ def test_restore_sustained_durations_restore_baseline_start_on_extreme_collapse(
     assert repaired_lines[0].start_time == pytest.approx(1.39)
     assert repaired_lines[1].start_time == pytest.approx(5.85)
     assert repaired_lines[1].end_time == pytest.approx(16.0)
+
+
+def test_restore_sustained_durations_skip_exact_baseline_restore_for_short_line():
+    baseline_lines = [
+        _dur_line(0.85, 6.65, "You are"),
+        _dur_multi_line(8.3, 13.95, ["You", "are"]),
+        _dur_multi_line(19.45, 31.54, ["Confusion", "that", "never", "stops"]),
+    ]
+    forced_lines = [
+        _dur_line(0.81, 6.304, "You are"),
+        _dur_multi_line(9.827, 10.549, ["You", "are"]),
+        _dur_multi_line(29.116, 32.0, ["Confusion", "that", "never", "stops"]),
+    ]
+
+    repaired_lines, restored_count = (
+        _forced._restore_sustained_line_durations_from_source(
+            baseline_lines,
+            forced_lines,
+        )
+    )
+
+    assert restored_count == 0
+    assert repaired_lines[1].start_time == pytest.approx(forced_lines[1].start_time)
+    assert repaired_lines[1].end_time == pytest.approx(forced_lines[1].end_time)
+    assert repaired_lines[2].start_time == pytest.approx(forced_lines[2].start_time)
+    assert repaired_lines[2].end_time == pytest.approx(forced_lines[2].end_time)
+
+
+def test_restore_sparse_support_durations_skip_short_line():
+    baseline_lines = [
+        _dur_multi_line(19.45, 31.54, ["Confusion", "that", "never", "stops"]),
+    ]
+    forced_lines = [
+        _dur_multi_line(29.116, 32.0, ["Confusion", "that", "never", "stops"]),
+    ]
+
+    repaired_lines, restored_count = (
+        _sparse_support.restore_sparse_support_line_durations_from_source(
+            baseline_lines,
+            forced_lines,
+            whisper_words=[],
+            non_placeholder_whisper_word_count_fn=lambda *_a, **_k: 0,
+            shift_line_fn=_forced._shift_line,
+        )
+    )
+
+    assert restored_count == 0
+    assert repaired_lines[0].start_time == pytest.approx(forced_lines[0].start_time)
+    assert repaired_lines[0].end_time == pytest.approx(forced_lines[0].end_time)
 
 
 def test_restore_sustained_durations_shift_compact_recovered_lines_later():
