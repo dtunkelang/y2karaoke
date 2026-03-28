@@ -1673,6 +1673,18 @@ Most likely next inspection targets:
       - line 2 / line 3
       - tail shortfall `0.57s`
       - next early start `0.55s`
+  - added `tools/analyze_forced_trace_sustained_repairs.py`
+    - this isolates lines that expand sharply between `loaded_forced_alignment` and `after_sustained_line_repair`
+    - current traced controls:
+      - `Clocks`: exactly one candidate
+        - line 2 `You are`
+        - `0.722s -> 5.888s`
+        - final line remains `10.077-15.966`
+      - `Hotline Bling`: none
+      - `Please Please Please`: none
+      - `Say My Name`: none
 - current read:
   - this is a real second family after the `Take On Me` alternating-hook work
   - it is a forced-fallback adjacent-boundary compression family, not a DTW/mapping family
+  - `Clocks` is now clearly separate again:
+    - it is a sustained-repair outlier, not a neighbor of the `Hotline Bling` exact-boundary family

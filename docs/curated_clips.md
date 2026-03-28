@@ -681,9 +681,19 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - line 2 / line 3
     - tail shortfall `0.57s`
     - next early start `0.55s`
+- second forced-trace diagnostic:
+  - `tools/analyze_forced_trace_sustained_repairs.py`
+  - this separates the remaining `Clocks` outlier from the healthier forced clips:
+    - `Clocks`: one extreme sustained-stage expansion on line 2 `You are`
+      - `loaded 0.722s -> sustained 5.888s`
+      - final `10.077-15.966`
+    - `Hotline Bling`: none
+    - `Please Please Please`: none
+    - `Say My Name`: none
 - implication:
   - this is now a real second production family beside `Take On Me`
   - it belongs to forced-fallback adjacent-boundary compression, not the alternating-hook mapped family
+  - `Clocks` is now cleanly separated as the sustained-repair outlier family
 
 ## Process Learnings
 
