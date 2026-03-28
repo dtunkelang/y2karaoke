@@ -575,7 +575,7 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - the next useful move is probably not more local `Take On Me` surgery, but extracting what generalizes
 - Family-scope check:
   - `tools/analyze_alternating_hook_family.py` now scans the curated gold set for adjacent alternating 3-word hook pairs
-  - current result is intentionally narrow:
+  - after fixing the analyzer to recurse, the broader `benchmarks/**/*.gold.json` result is still intentionally narrow:
     - only `33_a-ha-take-on-me-first-chorus.gold.json` line 1/2 matches
   - read:
     - the alternating-hook repairs are now well-validated on `Take On Me`

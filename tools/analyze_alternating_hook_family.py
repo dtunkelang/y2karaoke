@@ -31,7 +31,7 @@ def _is_alternating_pair(left: list[str], right: list[str]) -> bool:
 
 def analyze(*, gold_root: Path) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
-    for path in sorted(gold_root.glob("*.gold.json")):
+    for path in sorted(gold_root.rglob("*.gold.json")):
         data = _load_json(path)
         lines = data.get("lines", [])
         for idx in range(len(lines) - 1):
