@@ -590,6 +590,17 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - read:
     - there is no second local song example for this family in the current workspace
     - the next meaningful generalization step needs either another curated clip or a larger outside corpus
+- `Hotline Bling` is now the first useful non-`Take On Me` hook-variant control:
+  - benchmark result in `benchmarks/results/20260328T210228Z` is `0.389 / 0.424`
+  - it is not the same family as `Take On Me`
+  - `tools/analyze_shared_token_boundary_drift.py` shows the actual shape:
+    - line 1 `You used to call me on my cell phone` and line 3 `Call me on my cell phone` overlap strongly (`0.667`)
+    - line 3 starts `1.36s` early
+    - the middle line 2 `Late night when you need my love` ends `0.88s` early
+    - line 1 itself is basically healthy
+  - read:
+    - this is a shared-token boundary compression family across a three-line window
+    - not an alternating-hook start-drift family
 
 ## Process Learnings
 

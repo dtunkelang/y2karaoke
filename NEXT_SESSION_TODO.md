@@ -1550,8 +1550,21 @@ Most likely next inspection targets:
     - but every hit is still just `Take on me` / `Take me on`
     - no second song family appears in local cached clip lyrics
   - implication:
-    - local corpus evidence is now exhausted for this family
-    - the next useful step is either one new curated clip with the same adjacent alternating-hook shape, or a much larger external corpus scan
+  - local corpus evidence is now exhausted for this family
+  - the next useful step is either one new curated clip with the same adjacent alternating-hook shape, or a much larger external corpus scan
+  - added `52_drake-hotline-bling-cell-phone-variant.gold.json`
+  - first real cross-check result in `benchmarks/results/20260328T210228Z`:
+    - `0.389 / 0.424`
+    - not a `Take On Me`-style alternating-hook failure
+  - added `tools/analyze_shared_token_boundary_drift.py`
+  - `Hotline Bling` result:
+    - line 1 and line 3 share strong token overlap (`0.667`)
+    - line 3 starts `1.36s` early
+    - the middle line 2 ends `0.88s` early
+    - line 1 itself is basically fine (`+0.03s` end)
+  - implication:
+    - this is a different family: shared-token boundary compression across a three-line window
+    - if I keep pushing here, the next target should be the line-2/line-3 boundary, not another alternating-hook start repair
 
 ## 2026-03-27 Broader strategy reset
 
