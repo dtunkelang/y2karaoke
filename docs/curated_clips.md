@@ -521,6 +521,23 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the next sensible `Take On Me` branch is a narrow restored-line exception for exact later phrase windows
     - not a broad relaxation of the baseline-anchor tolerance
+- That restored-line exact-phrase branch is now kept too:
+  - implementation lives in `whisper_integration_align_corrections.py`
+  - it only touches compact 3-4 word lines when:
+    - an exact later phrase window exists in `all_words`
+    - the current line end is already close to the phrase-window end
+    - the line is late at the start but still near its baseline anchor
+  - forced-off mapped `Take On Me` improved again in `benchmarks/results/20260328T041703Z`:
+    - `0.7767 / 0.9634 -> 0.7239 / 0.9458`
+    - line 3 `I'll be gone` moved from `11.91-15.49` to `12.34-15.39`
+  - shipped-path controls in `benchmarks/results/20260328T041950Z` stayed unchanged for the validated songs:
+    - `Take On Me` `0.1359 / 0.2834`
+    - `Clocks` `0.5000 / 0.6065`
+  - read:
+    - `Take On Me` now has two keepable narrow repairs in the same architecture family:
+      - merged-subphrase recovery for line 2
+      - restored exact-phrase late-start recovery for line 3
+    - broad later-onset relaxations are still the wrong tool; exact phrase support is the useful signal
 
 ## Process Learnings
 

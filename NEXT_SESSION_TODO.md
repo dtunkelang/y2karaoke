@@ -1493,6 +1493,21 @@ Most likely next inspection targets:
   - implication:
     - the next production probe should be a very narrow exception for restored lines with exact later phrase windows
     - not a broad relaxation of the baseline-anchor tolerance
+  - kept that narrow restored-line phrase-window exception in `whisper_integration_align_corrections.py`
+  - it only targets compact 3-4 word lines where:
+    - an exact later phrase window exists in `all_words`
+    - the current end already agrees closely with Whisper
+    - only the start is late
+    - the line is still near its baseline start
+  - forced-off mapped `Take On Me` improved again in `benchmarks/results/20260328T041703Z`:
+    - `0.7767 / 0.9634 -> 0.7239 / 0.9458`
+    - line 3 moved from `11.91-15.49` to `12.34-15.39`
+  - shipped-path controls stayed flat in `benchmarks/results/20260328T041950Z`:
+    - `Take On Me` remained `0.1359 / 0.2834`
+    - `Clocks` remained `0.5000 / 0.6065`
+  - implication:
+    - exact later phrase windows are now a second real merged-segment / restored-line architecture lever
+    - the next `Take On Me` work should keep favoring narrow exact-phrase sequence repairs over broad onset-tolerance relaxations
 
 ## 2026-03-27 Broader strategy reset
 

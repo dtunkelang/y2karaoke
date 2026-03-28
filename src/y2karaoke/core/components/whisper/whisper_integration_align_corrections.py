@@ -242,6 +242,100 @@ def _restore_alternating_middle_hook_from_phrase_window(
     return repaired, restored
 
 
+def _compact_exact_phrase_late_start_is_eligible(
+    *,
+    base: models.Line,
+    mapped: models.Line,
+    next_line: models.Line,
+    min_duration_sec: float,
+) -> bool:
+    if not base.words or not mapped.words or not next_line.words:
+        return False
+    if len(mapped.words) < 3 or len(mapped.words) > 4:
+        return False
+    if len(_normalized_line_tokens(base)) != len(mapped.words):
+        return False
+    mapped_duration = mapped.end_time - mapped.start_time
+    return mapped_duration >= min_duration_sec
+
+
+def _compact_exact_phrase_late_start_target_window(
+    *,
+    base: models.Line,
+    mapped: models.Line,
+    next_line: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    min_start_gain_sec: float,
+    max_start_gain_sec: float,
+    max_baseline_anchor_delta_sec: float,
+    max_end_delta_sec: float,
+) -> tuple[float, float] | None:
+    phrase_window = _find_exact_phrase_window(
+        whisper_words,
+        _normalized_line_tokens(base),
+    )
+    if phrase_window is None:
+        return None
+    phrase_start, phrase_end = phrase_window
+    start_gain = phrase_start - mapped.start_time
+    if start_gain < min_start_gain_sec or start_gain > max_start_gain_sec:
+        return None
+    if abs(mapped.start_time - base.start_time) > max_baseline_anchor_delta_sec:
+        return None
+    if abs(phrase_end - mapped.end_time) > max_end_delta_sec:
+        return None
+    if phrase_end > next_line.start_time - 0.05:
+        return None
+    return phrase_start, phrase_end
+
+
+def _restore_compact_exact_phrase_late_starts(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    min_start_gain_sec: float = 0.25,
+    max_start_gain_sec: float = 0.65,
+    max_baseline_anchor_delta_sec: float = 0.6,
+    max_end_delta_sec: float = 0.2,
+    min_duration_sec: float = 2.4,
+) -> tuple[List[models.Line], int]:
+    repaired = list(mapped_lines)
+    restored = 0
+    limit = min(len(mapped_lines), len(baseline_lines))
+    for idx in range(limit - 1):
+        base = baseline_lines[idx]
+        mapped = repaired[idx]
+        next_line = repaired[idx + 1]
+        if not _compact_exact_phrase_late_start_is_eligible(
+            base=base,
+            mapped=mapped,
+            next_line=next_line,
+            min_duration_sec=min_duration_sec,
+        ):
+            continue
+        target_window = _compact_exact_phrase_late_start_target_window(
+            base=base,
+            mapped=mapped,
+            next_line=next_line,
+            whisper_words=whisper_words,
+            min_start_gain_sec=min_start_gain_sec,
+            max_start_gain_sec=max_start_gain_sec,
+            max_baseline_anchor_delta_sec=max_baseline_anchor_delta_sec,
+            max_end_delta_sec=max_end_delta_sec,
+        )
+        if target_window is None:
+            continue
+        phrase_start, phrase_end = target_window
+        repaired[idx] = _retime_line_to_window(
+            mapped,
+            window_start=phrase_start,
+            window_end=phrase_end,
+        )
+        restored += 1
+    return repaired, restored
+
+
 def _apply_baseline_constraint_and_snap(
     *,
     mapped_lines: List[models.Line],
@@ -359,6 +453,25 @@ def _apply_baseline_restore_shift_passes(
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
         stage="after_restore_adjacent_near_threshold_late_shifts",
+    )
+
+    mapped_lines, restored_compact_exact_phrase = (
+        _restore_compact_exact_phrase_late_starts(
+            mapped_lines,
+            baseline_lines,
+            all_words,
+        )
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_compact_exact_phrase,
+        "Restored {count} compact exact-phrase late start line(s)",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_restore_compact_exact_phrase_late_starts",
     )
 
     if not apply_baseline_constraint:
