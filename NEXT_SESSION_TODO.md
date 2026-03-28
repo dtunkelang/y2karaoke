@@ -1752,3 +1752,14 @@ Most likely next inspection targets:
       - `benchmarks/results/20260328T232941Z`
       - `Take On Me`, `Hotline Bling`, `Please Please Please`, `Say My Name` unchanged at aggregate level
     - next best `Clocks` step, if worth it, is to see whether line 1 can be lengthened slightly without pushing line 2 late again
+  - kept upstream refinement:
+    - the first version of that `Clocks` rule had a dead first-gap knob because it used `max(..., 0.6)` against the default compact gap of `1.0`
+    - replacing that with a real clamp `min(..., 0.7)` improved the same family again without touching controls
+    - kept run:
+      - `benchmarks/results/20260328T235500Z`
+      - `gold_start_abs_mean_weighted 0.394 -> 0.391`
+      - `gold_end_abs_mean 0.272 -> 0.219`
+      - line 2 improved from `9.09-14.15` to `8.54-13.73`
+    - 4-song control pack stayed flat again:
+      - `benchmarks/results/20260328T235650Z`
+      - aggregate remained `gold_start_abs_mean_weighted=0.139`, `gold_end_abs_mean=0.191`

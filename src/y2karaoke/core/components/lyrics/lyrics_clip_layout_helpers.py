@@ -219,6 +219,6 @@ def _adjust_three_line_repeated_short_intro_layout(
     adjusted_line_weights[0] = max(2.4, adjusted_line_weights[0])
     adjusted_line_weights[1] = max(2.2, adjusted_line_weights[1])
     adjusted_line_weights[2] = min(adjusted_line_weights[2], 1.1)
-    adjusted_gap_weights[0] = max(adjusted_gap_weights[0], 0.6)
+    adjusted_gap_weights[0] = min(adjusted_gap_weights[0], 0.7)
     adjusted_gap_weights[1] = max(adjusted_gap_weights[1], 6.1)
     return adjusted_line_weights, adjusted_gap_weights

@@ -407,9 +407,9 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_three_line_intro(
     lh._anchor_plain_text_lines_to_audio_window(lines, 32.0, "vocals.wav")
 
     assert lines[0].start_time == pytest.approx(0.859, abs=0.05)
-    assert 6.3 < lines[0].end_time < 6.7
-    assert 9.0 < lines[1].start_time < 9.2
-    assert 14.0 < lines[1].end_time < 14.3
+    assert 6.45 < lines[0].end_time < 6.6
+    assert 8.45 < lines[1].start_time < 8.65
+    assert 13.65 < lines[1].end_time < 13.85
     assert lines[2].start_time > 29.1
     assert lines[2].end_time > 31.6
 

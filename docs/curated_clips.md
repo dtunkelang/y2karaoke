@@ -753,6 +753,19 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - current honest read:
     - this is a real upstream fix for the `Clocks` family
     - but line 1 still ends a bit early, so the family is improved rather than solved
+- kept upstream `Clocks` refinement:
+  - the original first-gap setting was accidentally inert because the helper used `max(..., 0.6)` against the default compact gap of `1.0`
+  - switching that to a real clamp `min(..., 0.7)` improved the clip again
+  - kept run:
+    - `benchmarks/results/20260328T235500Z`
+    - `gold_start_abs_mean_weighted 0.394 -> 0.391`
+    - `gold_end_abs_mean 0.272 -> 0.219`
+    - line 2 improved from `9.09-14.15` to `8.54-13.73`
+  - 4-song control pack stayed flat again:
+    - `benchmarks/results/20260328T235650Z`
+  - current honest read:
+    - this makes the `Clocks` upstream family cleaner and clearly keepable
+    - line 1 still ends a bit early, but the main repeated-short carryover is now much closer to gold
 
 ## Process Learnings
 
