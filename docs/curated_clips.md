@@ -287,6 +287,13 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the next viable mapped-path experiment is no longer a generic weak-evidence rule
     - it is a repeated-short-hook-specific exception, likely requiring strong overlap with a neighboring repeated hook
+- That narrower repeated-short-hook bypass was also tested and reverted:
+  - run dir: `benchmarks/results/20260327T235954Z`
+  - outcome was an exact no-op versus the forced-off mapped baseline: about `0.870 / 1.028`
+  - all final line timings matched `20260327T233011Z`
+  - implication:
+    - even the repeated-short-hook weak-evidence restore is not the active live lever
+    - the remaining `Take On Me` mapped-path error is still being set earlier or elsewhere than this restore stage
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

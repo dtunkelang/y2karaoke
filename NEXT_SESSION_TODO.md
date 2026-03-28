@@ -1250,6 +1250,13 @@ Most likely next inspection targets:
     - implication:
       - any future weak-evidence exception must target the repeated-short-hook family only
       - sparse tails cannot share that exception
+  - tested a diagnostics-only repeated-short-hook weak-evidence bypass and reverted it
+    - run dir: `benchmarks/results/20260327T235954Z`
+    - result was an exact no-op vs the forced-off mapped baseline: `0.870 / 1.028`
+    - all final line timings matched `20260327T233011Z`
+    - implication:
+      - even the narrower repeated-short-hook weak-evidence restore is not the active live lever
+      - the remaining `Take On Me` mapped-path issue is still earlier or elsewhere than this restore policy
 
 ## 2026-03-27 Broader strategy reset
 
