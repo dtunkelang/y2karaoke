@@ -620,6 +620,14 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - read:
     - `Hotline Bling` now looks like an upstream aggregate-segmentation problem that later mapping preserves
     - the most promising future fix is a guarded advisory use of vocals segment boundaries, not another late line-boundary heuristic
+- `tools/analyze_aggregate_merge_pack.py` shows this is not unique to `Hotline Bling`:
+  - current cached curated hits are:
+    - `Hotline Bling`
+    - `Please Please Please`
+  - but `Please Please Please` benchmark run `20260328T213014Z` is exact on gold metrics even though the cache-side merge exists
+  - read:
+    - aggregate-only merge is a real structural clue, but not enough by itself
+    - any future production hook needs a second discriminator that separates `Hotline Bling` from healthy controls like `Please Please Please`
 
 ## Process Learnings
 

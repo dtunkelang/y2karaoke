@@ -1584,6 +1584,17 @@ Most likely next inspection targets:
   - implication:
     - the strongest current `Hotline Bling` lever is upstream segment evidence, not another late boundary heuristic
     - if I touch production here, the best candidate is a guarded advisory use of vocals segment boundaries when aggregate merges adjacent gold-like lines
+  - added `tools/analyze_aggregate_merge_pack.py`
+  - full curated cache scan result:
+    - aggregate-only adjacent-line merges appear on:
+      - `Hotline Bling`
+      - `Please Please Please`
+  - benchmark cross-check:
+    - `Please Please Please` run `20260328T213014Z` is exact on gold metrics despite the same cache-side merge signature
+    - line timings match gold to the millisecond
+  - implication:
+    - aggregate-only merge is not sufficient by itself
+    - the harmful `Hotline Bling` case needs an additional discriminator beyond “aggressive merged two adjacent lines that vocals split”
 
 ## 2026-03-27 Broader strategy reset
 
