@@ -601,6 +601,16 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - read:
     - this is a shared-token boundary compression family across a three-line window
     - not an alternating-hook start-drift family
+- `Say My Name` is a useful negative control for that same question:
+  - benchmark result in `benchmarks/results/20260328T211820Z` is `0.194 / 0.239`
+  - exact timings:
+    - line 1 `0.86-2.87` vs gold `0.85-2.45`
+    - line 2 `2.89-5.52` vs gold `2.90-6.35`
+    - line 3 `5.54-7.77` vs gold `6.35-7.80`
+  - `tools/analyze_shared_token_boundary_drift.py` reports no qualifying overlap pair
+  - read:
+    - this is not a second `Hotline Bling` family hit
+    - the boundary-compression family needs real line-1 / line-3 lexical overlap, not just any three-line hook window
 
 ## Process Learnings
 

@@ -1565,6 +1565,18 @@ Most likely next inspection targets:
   - implication:
     - this is a different family: shared-token boundary compression across a three-line window
     - if I keep pushing here, the next target should be the line-2/line-3 boundary, not another alternating-hook start repair
+  - added `53_destiny-s-child-say-my-name-opening-hook-variant.gold.json`
+  - `Say My Name` benchmark result in `benchmarks/results/20260328T211820Z`:
+    - `0.194 / 0.239`
+    - not a second `Hotline Bling`-style family hit
+  - exact timing shape:
+    - line 1 `0.86-2.87` vs gold `0.85-2.45`
+    - line 2 `2.89-5.52` vs gold `2.90-6.35`
+    - line 3 `5.54-7.77` vs gold `6.35-7.80`
+  - `tools/analyze_shared_token_boundary_drift.py` reports `pair_count = 0`
+  - implication:
+    - `Say My Name` is a useful negative control
+    - the `Hotline Bling` family needs actual line-1 / line-3 lexical overlap, not just a short hook followed by two more lines
 
 ## 2026-03-27 Broader strategy reset
 
