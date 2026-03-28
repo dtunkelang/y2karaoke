@@ -1692,9 +1692,20 @@ Most likely next inspection targets:
         - final `10.080-15.970`
         - gold `8.300-13.950`
       - `Hotline Bling`: none
+  - added `tools/analyze_pre_whisper_support_gaps.py`
+    - this narrows retained-upstream misses to the cases with weak local Whisper support
+    - current live read:
+      - `Clocks`: same line 2 is isolated again
+        - `window_overlap_ratio = 0.0`
+        - `whisper_window_word_count = 1`
+        - nearest segment still ends at `11.28`
+      - `Hotline Bling`: none
 - current read:
   - this is a real second family after the `Take On Me` alternating-hook work
   - it is a forced-fallback adjacent-boundary compression family, not a DTW/mapping family
   - `Clocks` is now clearly separate again:
     - it is a sustained-repair outlier, not a neighbor of the `Hotline Bling` exact-boundary family
     - and the remaining `Clocks` miss is already present in the pre-whisper baseline, so another local forced-fallback tweak is unlikely to be the right next fix
+    - the stronger upstream read is now:
+      - line 2 is being retained from pre-whisper despite having essentially no local Whisper support in its own window
+      - the next code-side probe should target the pre-whisper segment/line assignment family, not forced fallback

@@ -699,11 +699,21 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
       - final `10.080-15.970`
       - gold `8.300-13.950`
     - `Hotline Bling`: no retained-upstream miss
+- support-gap diagnostic:
+  - `tools/analyze_pre_whisper_support_gaps.py`
+  - this narrows retained-upstream misses to the cases with weak local Whisper support
+  - current live read:
+    - `Clocks`: line 2 is isolated again
+      - `window_overlap_ratio = 0.0`
+      - `whisper_window_word_count = 1`
+      - nearest segment still ends at `11.28`
+    - `Hotline Bling`: none
 - implication:
   - this is now a real second production family beside `Take On Me`
   - it belongs to forced-fallback adjacent-boundary compression, not the alternating-hook mapped family
   - `Clocks` is now cleanly separated as the sustained-repair outlier family
   - and the remaining `Clocks` miss is upstream of local forced-fallback repair, not a simple exact-vs-shifted sustained restore choice
+  - more specifically, it now looks like a pre-whisper segment/line assignment miss with almost no local Whisper support for the retained line
 
 ## Process Learnings
 
