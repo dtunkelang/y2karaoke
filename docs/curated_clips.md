@@ -645,6 +645,39 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
       - plus immediate reused phrase pressure in the very next segment
     - that is a better future production hook than a generic vocals-boundary override
 
+## 2026-03-28 Hotline Bling forced-boundary repair
+
+- kept repair:
+  - `src/y2karaoke/core/components/whisper/whisper_integration_forced_fallback.py`
+  - `_restore_forced_exact_adjacent_segment_boundaries()`
+- what changed in the read:
+  - the live forced path is not using the over-merged 2-segment advisory shape as the repair source
+  - forced trace metadata showed the actual `transcription` passed into fallback is already split into 3 exact-text segments
+  - the bad result comes from boundary compression after loading forced alignment, not from missing segment separation
+- live `Hotline Bling` trace:
+  - transcription preview:
+    - `0.4-2.84` `You used to call me on my cell phone`
+    - `2.84-7.74` `Late night when you need my love`
+    - `7.74-9.96` `Call me on my cell phone`
+  - post-finalize forced lines before repair:
+    - line 2 `5.005-7.170`
+    - line 3 `7.190-9.195`
+  - after exact-segment-boundary repair:
+    - line 2 `5.005-7.690`
+    - line 3 `7.740-9.960`
+- kept result:
+  - single-song `Hotline Bling` improved:
+    - `gold_start_abs_mean_weighted 0.389 -> 0.239`
+    - `gold_end_abs_mean 0.424 -> 0.241`
+    - run: `benchmarks/results/20260328T220435Z`
+- controls:
+  - `Please Please Please` stayed exact
+  - 5-song control pack stayed stable:
+    - run: `benchmarks/results/20260328T220557Z`
+- implication:
+  - this is now a real second production family beside `Take On Me`
+  - it belongs to forced-fallback adjacent-boundary compression, not the alternating-hook mapped family
+
 ## Process Learnings
 
 - See also `docs/development.md` for the broader local workflow and documentation-maintenance rules around this loop.

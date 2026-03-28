@@ -43,7 +43,10 @@ def test_attempt_whisperx_forced_alignment_writes_stage_trace_when_enabled(
             {
                 "forced_word_coverage": 1.0,
                 "forced_line_coverage": 1.0,
-                "aligned_segments": [],
+                "aligned_segments": [
+                    {"start": 1.0, "end": 1.4, "text": "x"},
+                    {"start": 2.0, "end": 2.4, "text": "x"},
+                ],
             },
         ),
         should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
@@ -57,7 +60,11 @@ def test_attempt_whisperx_forced_alignment_writes_stage_trace_when_enabled(
     payload = json.loads(trace_path.read_text())
     assert payload["metadata"]["status"] == "accepted"
     assert payload["metadata"]["reason"] == "test-trace"
+    assert payload["metadata"]["transcription_segment_count"] == 0
+    assert payload["metadata"]["forced_segment_count"] == 2
+    assert payload["metadata"]["forced_segment_preview"][0]["text"] == "x"
     stages = [snapshot["stage"] for snapshot in payload["snapshots"]]
+    assert "baseline_lines" in stages
     assert "loaded_forced_alignment" in stages
     assert "after_finalize_forced_line_timing" in stages
     assert "final_forced_lines" in stages

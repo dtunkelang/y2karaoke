@@ -1631,3 +1631,41 @@ Most likely next inspection targets:
 - recommended next direction:
   - prioritize DTW/mapping diagnostics for `Con Calma`
   - only return to local heuristics if that work reveals one concrete stage or matcher that is still making a reversible mistake
+
+## 2026-03-28 Hotline Bling forced-boundary repair
+
+- kept production change:
+  - [whisper_integration_forced_fallback.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_forced_fallback.py)
+  - new narrow post-finalize repair:
+    - `_restore_forced_exact_adjacent_segment_boundaries()`
+- what it targets:
+  - forced fallback cases where adjacent transcription segments exactly match adjacent lyric lines
+  - but the forced line boundary is still compressed:
+    - left line ends too early
+    - next line starts too early
+- key `Hotline Bling` finding:
+  - earlier “aggregate merge + reuse pressure” hypothesis was incomplete for the live path
+  - forced trace metadata showed the actual live `transcription` is already a 3-segment split:
+    - line 1 segment `0.4-2.84`
+    - line 2 segment `2.84-7.74`
+    - line 3 segment `7.74-9.96`
+  - the live forced lines were still compressed after finalize:
+    - line 2 `5.005-7.170`
+    - line 3 `7.190-9.195`
+  - the new repair restores the healthier adjacent segment boundary directly:
+    - line 2 `5.005-7.690`
+    - line 3 `7.740-9.960`
+- kept validation:
+  - single-song `Hotline Bling`: `0.389 / 0.424 -> 0.239 / 0.241`
+    - run: `benchmarks/results/20260328T220435Z`
+  - healthy control `Please Please Please` stayed exact
+  - 5-song control pack stayed stable:
+    - run: `benchmarks/results/20260328T220557Z`
+    - `Take On Me`, `Clocks`, `Please Please Please`, and `Say My Name` stayed in-family stable
+- useful diagnostics kept:
+  - forced trace metadata now records:
+    - `transcription_segment_preview`
+    - `forced_segment_preview`
+- current read:
+  - this is a real second family after the `Take On Me` alternating-hook work
+  - it is a forced-fallback adjacent-boundary compression family, not a DTW/mapping family

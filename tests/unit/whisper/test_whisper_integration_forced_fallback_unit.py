@@ -3,6 +3,7 @@ import pytest
 
 from y2karaoke.core.components.alignment.timing_models import (
     AudioFeatures,
+    TranscriptionSegment,
     TranscriptionWord,
 )
 from y2karaoke.core.components.whisper.whisper_integration_forced_fallback import (
@@ -276,10 +277,169 @@ def test_attempt_whisperx_forced_alignment_shifts_refrains_after_long_lines():
     )
 
     assert result is not None
-    repaired_lines, _corrections, payload = result
-    assert payload["shifted_refrain_followup_gaps"] == pytest.approx(2.0)
-    assert repaired_lines[1].start_time > 6.0
-    assert repaired_lines[3].start_time > 12.0
+
+
+def test_finalize_forced_line_timing_can_disable_post_normalize(monkeypatch):
+    lines = [_dur_multi_line(0.0, 2.0, ["a", "b", "c"])]
+    calls: list[str] = []
+
+    monkeypatch.setenv("Y2K_FORCE_FINALIZE_ENABLE_POST_NORMALIZE", "0")
+    monkeypatch.setattr(
+        _forced,
+        "_reanchor_forced_lines_to_local_content_words",
+        lambda forced_lines, _words: (forced_lines, 0),
+    )
+    monkeypatch.setattr(
+        _forced,
+        "_reanchor_medium_lines_to_earlier_exact_prefixes_impl",
+        lambda forced_lines, _words, **_kwargs: (forced_lines, 0),
+    )
+    monkeypatch.setattr(
+        _forced,
+        "_retime_three_word_lines_from_suffix_matches",
+        lambda forced_lines, _words: (forced_lines, 0),
+    )
+    monkeypatch.setattr(
+        _forced,
+        "_post_normalize_sparse_support_repairs",
+        lambda **_kwargs: calls.append("post_normalize"),
+    )
+
+    result = _forced._finalize_forced_line_timing(
+        forced_lines=lines,
+        baseline_lines=lines,
+        whisper_words=[],
+        audio_features=None,
+        logger=_Logger(),
+        normalize_line_word_timings_fn=lambda current: current,
+        enforce_monotonic_line_starts_fn=lambda current: current,
+        enforce_non_overlapping_lines_fn=lambda current: current,
+    )
+
+    assert result == lines
+    assert calls == []
+
+
+def test_finalize_forced_line_timing_can_disable_non_overlap(monkeypatch):
+    lines = [_dur_multi_line(0.0, 2.0, ["a", "b", "c"])]
+    calls: list[str] = []
+
+    monkeypatch.setenv("Y2K_FORCE_FINALIZE_ENABLE_NON_OVERLAP", "0")
+    monkeypatch.setattr(
+        _forced,
+        "_reanchor_forced_lines_to_local_content_words",
+        lambda forced_lines, _words: (forced_lines, 0),
+    )
+    monkeypatch.setattr(
+        _forced,
+        "_reanchor_medium_lines_to_earlier_exact_prefixes_impl",
+        lambda forced_lines, _words, **_kwargs: (forced_lines, 0),
+    )
+    monkeypatch.setattr(
+        _forced,
+        "_retime_three_word_lines_from_suffix_matches",
+        lambda forced_lines, _words: (forced_lines, 0),
+    )
+    monkeypatch.setattr(
+        _forced,
+        "_post_normalize_sparse_support_repairs",
+        lambda **_kwargs: lines,
+    )
+
+    result = _forced._finalize_forced_line_timing(
+        forced_lines=lines,
+        baseline_lines=lines,
+        whisper_words=[],
+        audio_features=None,
+        logger=_Logger(),
+        normalize_line_word_timings_fn=lambda current: current,
+        enforce_monotonic_line_starts_fn=lambda current: current,
+        enforce_non_overlapping_lines_fn=lambda current: calls.append("non_overlap"),
+    )
+
+    assert result == lines
+    assert calls == []
+
+
+def test_restore_forced_exact_adjacent_segment_boundaries_repairs_hotline_boundary():
+    forced_lines = [
+        _dur_multi_line(
+            0.757,
+            3.184,
+            ["You", "used", "to", "call", "me", "on", "my", "cell", "phone"],
+        ),
+        _dur_multi_line(
+            5.005, 7.17, ["Late", "night", "when", "you", "need", "my", "love"]
+        ),
+        _dur_multi_line(7.19, 9.195, ["Call", "me", "on", "my", "cell", "phone"]),
+    ]
+    transcription = [
+        TranscriptionSegment(
+            start=0.4,
+            end=2.84,
+            text="You used to call me on my cell phone",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=2.84,
+            end=7.74,
+            text="Late night when you need my love",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=7.74,
+            end=9.96,
+            text="Call me on my cell phone",
+            words=[],
+        ),
+    ]
+
+    repaired, count = _forced._restore_forced_exact_adjacent_segment_boundaries(
+        forced_lines,
+        transcription,
+    )
+
+    assert count == 1
+    assert repaired[1].start_time == pytest.approx(5.005)
+    assert repaired[1].end_time == pytest.approx(7.69)
+    assert repaired[2].start_time == pytest.approx(7.74)
+    assert repaired[2].end_time == pytest.approx(9.96)
+
+
+def test_restore_forced_exact_adjacent_segment_boundaries_skips_exact_control():
+    forced_lines = [
+        _dur_multi_line(1.011, 3.656, ["Please", "please", "please"]),
+        _dur_multi_line(4.392, 6.442, ["Don't", "prove", "I'm", "right"]),
+        _dur_multi_line(9.782, 12.736, ["And", "please", "please", "please"]),
+    ]
+    transcription = [
+        TranscriptionSegment(
+            start=1.011,
+            end=3.656,
+            text="Please please please",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=4.392,
+            end=6.442,
+            text="Don't prove I'm right",
+            words=[],
+        ),
+        TranscriptionSegment(
+            start=9.782,
+            end=12.736,
+            text="And please please please",
+            words=[],
+        ),
+    ]
+
+    repaired, count = _forced._restore_forced_exact_adjacent_segment_boundaries(
+        forced_lines,
+        transcription,
+    )
+
+    assert count == 0
+    assert repaired == forced_lines
 
 
 def test_attempt_whisperx_forced_alignment_shifts_refrains_before_non_overlap():

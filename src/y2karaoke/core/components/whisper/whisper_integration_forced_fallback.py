@@ -61,6 +61,84 @@ _retime_three_word_lines_from_suffix_matches = (
 _shift_line = _forced_local_repairs.shift_line
 
 
+def _normalized_token_list(text: str) -> list[str]:
+    return [
+        token for token in (_normalize_token(part) for part in text.split()) if token
+    ]
+
+
+def _segment_text_matches_line(
+    segment: timing_models.TranscriptionSegment,
+    line: models.Line,
+) -> bool:
+    return _normalized_token_list(segment.text) == _normalized_token_list(line.text)
+
+
+def _set_line_end(line: models.Line, end_time: float) -> models.Line:
+    if not line.words or end_time <= line.start_time:
+        return line
+    words = [
+        models.Word(
+            text=word.text,
+            start_time=word.start_time,
+            end_time=(end_time if idx == len(line.words) - 1 else word.end_time),
+            singer=word.singer,
+        )
+        for idx, word in enumerate(line.words)
+    ]
+    return models.Line(words=words, singer=line.singer)
+
+
+def _restore_forced_exact_adjacent_segment_boundaries(
+    forced_lines: List[models.Line],
+    segments: List[timing_models.TranscriptionSegment] | None,
+    *,
+    max_segment_gap_sec: float = 0.1,
+    min_tail_shortfall_sec: float = 0.3,
+    min_next_early_start_sec: float = 0.3,
+    min_gap: float = 0.05,
+) -> tuple[List[models.Line], int]:
+    if not segments or len(segments) < 2:
+        return forced_lines, 0
+
+    repaired = list(forced_lines)
+    restored = 0
+    pair_count = min(len(repaired), len(segments)) - 1
+    for idx in range(pair_count):
+        left = repaired[idx]
+        right = repaired[idx + 1]
+        left_segment = segments[idx]
+        right_segment = segments[idx + 1]
+        if not left.words or not right.words:
+            continue
+        if not _segment_text_matches_line(left_segment, left):
+            continue
+        if not _segment_text_matches_line(right_segment, right):
+            continue
+        if abs(right_segment.start - left_segment.end) > max_segment_gap_sec:
+            continue
+        if (left_segment.end - left.end_time) < min_tail_shortfall_sec:
+            continue
+        if (right_segment.start - right.start_time) < min_next_early_start_sec:
+            continue
+        repaired_left = _set_line_end(left, left_segment.end - min_gap)
+        shifted_right = _shift_line(right, right_segment.start - right.start_time)
+        repaired_right = _set_line_end(shifted_right, right_segment.end)
+        if repaired_left.end_time > repaired_right.start_time - min_gap:
+            continue
+        repaired[idx] = repaired_left
+        repaired[idx + 1] = repaired_right
+        restored += 1
+    return repaired, restored
+
+
+def _forced_finalize_step_enabled(env_name: str) -> bool:
+    raw = os.environ.get(env_name, "").strip().lower()
+    if not raw:
+        return True
+    return raw not in {"0", "false", "no", "off"}
+
+
 def _count_sustained_line_degradations(
     baseline_lines: List[models.Line],
     forced_lines: List[models.Line],
@@ -821,17 +899,22 @@ def _finalize_forced_line_timing(
             suffix_retimed_count,
         )
 
-    forced_lines = _post_normalize_sparse_support_repairs(
-        baseline_lines=baseline_lines,
-        forced_lines=forced_lines,
-        whisper_words=whisper_words,
-        audio_features=audio_features,
-        logger=logger,
-        normalize_line_word_timings_fn=normalize_line_word_timings_fn,
-    )
-    if enforce_monotonic_line_starts_fn is not None:
+    if _forced_finalize_step_enabled("Y2K_FORCE_FINALIZE_ENABLE_POST_NORMALIZE"):
+        forced_lines = _post_normalize_sparse_support_repairs(
+            baseline_lines=baseline_lines,
+            forced_lines=forced_lines,
+            whisper_words=whisper_words,
+            audio_features=audio_features,
+            logger=logger,
+            normalize_line_word_timings_fn=normalize_line_word_timings_fn,
+        )
+    if enforce_monotonic_line_starts_fn is not None and _forced_finalize_step_enabled(
+        "Y2K_FORCE_FINALIZE_ENABLE_MONOTONIC"
+    ):
         forced_lines = enforce_monotonic_line_starts_fn(forced_lines)
-    if enforce_non_overlapping_lines_fn is not None:
+    if enforce_non_overlapping_lines_fn is not None and _forced_finalize_step_enabled(
+        "Y2K_FORCE_FINALIZE_ENABLE_NON_OVERLAP"
+    ):
         forced_lines = enforce_non_overlapping_lines_fn(forced_lines)
     return forced_lines
 
@@ -1026,6 +1109,23 @@ def _apply_forced_post_finalize_repairs(
         lines=forced_lines,
         line_range=trace_line_range,
     )
+    forced_lines, restored_exact_segment_boundaries = (
+        _restore_forced_exact_adjacent_segment_boundaries(
+            forced_lines,
+            transcription,
+        )
+    )
+    if restored_exact_segment_boundaries:
+        logger.info(
+            "Restored %d exact forced segment boundary pair(s)",
+            restored_exact_segment_boundaries,
+        )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_exact_segment_boundaries",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
     if _reject_compact_line_duration_collapse_if_needed(
         baseline_lines=baseline_lines,
         forced_lines=forced_lines,
@@ -1105,6 +1205,17 @@ def attempt_whisperx_forced_alignment(
         "reason": reason,
         "used_model": used_model,
         "vocals_path": vocals_path,
+        "transcription_segment_count": (
+            len(transcription) if isinstance(transcription, list) else 0
+        ),
+        "transcription_segment_preview": [
+            {
+                "start": segment.start,
+                "end": segment.end,
+                "text": segment.text,
+            }
+            for segment in (transcription or [])[:3]
+        ],
     }
     forced_result = _load_forced_alignment_result(
         lines=lines,
@@ -1130,7 +1241,22 @@ def attempt_whisperx_forced_alignment(
             "aligned_segment_count": (
                 len(aligned_segments) if isinstance(aligned_segments, list) else 0
             ),
+            "forced_segment_count": len(forced_segments),
+            "forced_segment_preview": [
+                {
+                    "start": segment.start,
+                    "end": segment.end,
+                    "text": segment.text,
+                }
+                for segment in forced_segments[:3]
+            ],
         }
+    )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="baseline_lines",
+        lines=baseline_lines,
+        line_range=trace_line_range,
     )
     _capture_forced_trace_snapshot(
         trace_snapshots,
