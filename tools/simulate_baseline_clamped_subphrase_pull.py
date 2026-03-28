@@ -15,17 +15,36 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 def _load_selective_pull():
-    module_path = (
-        Path(__file__).resolve().parent / "simulate_selective_subphrase_pull.py"
-    )
+    module_path = Path(__file__).resolve().parent / "simulate_segment_subphrase_pull.py"
     spec = importlib.util.spec_from_file_location(
-        "simulate_selective_subphrase_pull_module", module_path
+        "simulate_segment_subphrase_pull_module", module_path
     )
     assert spec is not None
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
+
+
+def _normalize_tokens(line: dict[str, Any]) -> list[str]:
+    return [
+        "".join(ch for ch in word.get("text", "").lower() if ch.isalpha())
+        for word in line.get("words", [])
+        if "".join(ch for ch in word.get("text", "").lower() if ch.isalpha())
+    ]
+
+
+def _is_alternating_pair(
+    prev_tokens: list[str], current_tokens: list[str], next_tokens: list[str]
+) -> bool:
+    return (
+        len(prev_tokens) == len(current_tokens) == 3
+        and prev_tokens[0] == current_tokens[0]
+        and prev_tokens[1] == current_tokens[2]
+        and prev_tokens[2] == current_tokens[1]
+        and prev_tokens[1] != prev_tokens[2]
+        and not any(token in prev_tokens for token in next_tokens)
+    )
 
 
 def analyze(
@@ -51,6 +70,16 @@ def analyze(
         line_index = int(row["line_index"])
         baseline_row = baseline_rows.get(line_index)
         if baseline_row is None:
+            continue
+        prev_row = baseline_rows.get(line_index - 1)
+        next_row = baseline_rows.get(line_index + 1)
+        if prev_row is None or next_row is None:
+            continue
+        if not _is_alternating_pair(
+            _normalize_tokens(prev_row),
+            _normalize_tokens(baseline_row),
+            _normalize_tokens(next_row),
+        ):
             continue
         baseline_start = float(baseline_row["start"])
         clamped_start = max(
