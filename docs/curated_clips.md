@@ -364,6 +364,16 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - active-gap extension is not part of the current shipped bad layout
     - it only becomes relevant after the earlier tail-extension choice is improved
     - so the eventual fix is likely a paired cross-stage policy, not an isolated active-gap change
+- A narrow compact-handoff guard in `_extend_line_ends_across_active_gaps()` was tested and reverted:
+  - forced-off `Take On Me` stayed exactly flat in `benchmarks/results/20260328T005614Z` at about `0.870 / 1.028`
+  - the normal mixed control pack in that same run dir also stayed unchanged:
+    - `Take On Me` `0.1257 / 0.2781`
+    - `Stayin' Alive` `0.1374 / 0.1827`
+    - `Total Eclipse of the Heart` `0.1697 / 0.2465`
+    - `Royals` `0.2093 / 0.1278`
+  - implication:
+    - a static active-gap shape guard is not enough
+    - if a future fix uses this stage, it will need cross-stage state from the preceding tail-extension choice
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed

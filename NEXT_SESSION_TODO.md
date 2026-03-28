@@ -1331,6 +1331,16 @@ Most likely next inspection targets:
       - active-gap extension is not part of the currently shipped bad baseline
       - it only becomes a problem after tail extension is corrected earlier
       - so the next real fix will likely need a paired change across both stages, not an isolated active-gap tweak
+  - tested one narrow compact-handoff guard in `_extend_line_ends_across_active_gaps()`:
+    - it was an exact no-op on the forced-off `Take On Me` baseline in `benchmarks/results/20260328T005614Z`
+    - the normal mixed control pack in that same run dir also stayed unchanged:
+      - `Take On Me` `0.1257 / 0.2781`
+      - `Stayin' Alive` `0.1374 / 0.1827`
+      - `Total Eclipse of the Heart` `0.1697 / 0.2465`
+      - `Royals` `0.2093 / 0.1278`
+    - conclusion:
+      - this active-gap guard is not an effective paired-stage fix
+      - if the eventual fix involves continuous-vocals growth at all, it will need tighter runtime state from the earlier tail-extension choice rather than a static shape gate
 
 ## 2026-03-27 Broader strategy reset
 
