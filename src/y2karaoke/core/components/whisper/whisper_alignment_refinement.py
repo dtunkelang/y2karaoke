@@ -5,7 +5,7 @@ import logging
 import json
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Set
+from typing import Any, List, Optional, Tuple, Set
 
 from ...models import Line
 from ..alignment.timing_models import (
@@ -32,6 +32,8 @@ _check_for_silence_in_range = audio_analysis._check_for_silence_in_range
 
 logger = logging.getLogger(__name__)
 
+_CONTINUOUS_VOCALS_TRACE_CALL_COUNT = 0
+
 
 def _maybe_write_active_gap_trace(rows: list[dict]) -> None:
     trace_path = os.environ.get("Y2K_TRACE_ACTIVE_GAP_EXTENSION_JSON", "").strip()
@@ -39,6 +41,56 @@ def _maybe_write_active_gap_trace(rows: list[dict]) -> None:
         return
     with open(trace_path, "w", encoding="utf-8") as fh:
         json.dump({"rows": rows}, fh, indent=2)
+
+
+def _capture_continuous_vocals_stage(
+    rows: list[dict[str, Any]],
+    *,
+    call_index: int,
+    stage: str,
+    lines: List[Line],
+) -> None:
+    trace_line_range = os.environ.get("Y2K_TRACE_WHISPER_LINE_RANGE", "").strip()
+    if not trace_line_range:
+        return
+    try:
+        start_s, end_s = trace_line_range.split("-", 1)
+        start_idx = int(start_s)
+        end_idx = int(end_s)
+    except ValueError:
+        return
+    rows.append(
+        {
+            "call_index": call_index,
+            "stage": stage,
+            "lines": [
+                {
+                    "line_index": idx,
+                    "text": line.text,
+                    "start": round(line.start_time, 3),
+                    "end": round(line.end_time, 3),
+                }
+                for idx, line in enumerate(lines, start=1)
+                if start_idx <= idx <= end_idx and line.words
+            ],
+        }
+    )
+
+
+def _maybe_write_continuous_vocals_trace(rows: list[dict[str, Any]]) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_CONTINUOUS_VOCALS_JSON", "").strip()
+    if not trace_path:
+        return
+    existing_rows: list[dict[str, Any]] = []
+    if os.path.exists(trace_path):
+        try:
+            with open(trace_path, "r", encoding="utf-8") as fh:
+                payload = json.load(fh)
+            existing_rows = list(payload.get("rows", []))
+        except (OSError, json.JSONDecodeError, AttributeError):
+            existing_rows = []
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump({"rows": existing_rows + rows}, fh, indent=2)
 
 
 @dataclass(frozen=True)
@@ -481,6 +533,13 @@ def _pull_lines_forward_for_continuous_vocals(
     original_lines = _clone_lines(lines)
     before_long_count, before_max_gap = _long_gap_stats(lines)
     before_inv_count, before_inv_drop = _ordering_inversion_stats(lines)
+    global _CONTINUOUS_VOCALS_TRACE_CALL_COUNT
+    _CONTINUOUS_VOCALS_TRACE_CALL_COUNT += 1
+    call_index = _CONTINUOUS_VOCALS_TRACE_CALL_COUNT
+    stage_rows: list[dict[str, Any]] = []
+    _capture_continuous_vocals_stage(
+        stage_rows, call_index=call_index, stage="before", lines=lines
+    )
 
     config = _default_continuous_vocals_refinement_config()
     fixes = 0
@@ -488,12 +547,25 @@ def _pull_lines_forward_for_continuous_vocals(
         fixes += _shift_lines_across_long_activity_gaps(
             lines, audio_features, max_gap, onset_times
         )
+        _capture_continuous_vocals_stage(
+            stage_rows,
+            call_index=call_index,
+            stage="after_shift_long_activity_gaps",
+            lines=lines,
+        )
     if config.enable_extend_active_gaps:
         fixes += _extend_line_ends_across_active_gaps(lines, audio_features)
+        _capture_continuous_vocals_stage(
+            stage_rows,
+            call_index=call_index,
+            stage="after_extend_active_gaps",
+            lines=lines,
+        )
     if not (
         enable_silence_short_line_refinement
         and config.enable_silence_short_line_refinement
     ):
+        _maybe_write_continuous_vocals_trace(stage_rows)
         return lines, fixes
 
     silence_regions = getattr(audio_features, "silence_regions", None) or []
@@ -506,12 +578,42 @@ def _pull_lines_forward_for_continuous_vocals(
         fixes += _shift_short_line_runs_after_silence(
             lines, normalized_silences, onset_times
         )
+        _capture_continuous_vocals_stage(
+            stage_rows,
+            call_index=call_index,
+            stage="after_shift_short_line_runs_after_silence",
+            lines=lines,
+        )
         fixes += _shift_single_short_lines_after_silence(
             lines, normalized_silences, onset_times
         )
+        _capture_continuous_vocals_stage(
+            stage_rows,
+            call_index=call_index,
+            stage="after_shift_single_short_lines_after_silence",
+            lines=lines,
+        )
         fixes += _compact_short_lines_near_silence(lines, normalized_silences)
+        _capture_continuous_vocals_stage(
+            stage_rows,
+            call_index=call_index,
+            stage="after_compact_short_lines_near_silence",
+            lines=lines,
+        )
         fixes += _stretch_similar_adjacent_short_lines(lines, normalized_silences)
+        _capture_continuous_vocals_stage(
+            stage_rows,
+            call_index=call_index,
+            stage="after_stretch_similar_adjacent_short_lines",
+            lines=lines,
+        )
         fixes += _cap_isolated_short_lines(lines)
+        _capture_continuous_vocals_stage(
+            stage_rows,
+            call_index=call_index,
+            stage="after_cap_isolated_short_lines",
+            lines=lines,
+        )
 
     after_long_count, after_max_gap = _long_gap_stats(lines)
     after_inv_count, after_inv_drop = _ordering_inversion_stats(lines)
@@ -528,6 +630,7 @@ def _pull_lines_forward_for_continuous_vocals(
             before_max_gap,
             after_max_gap,
         )
+        _maybe_write_continuous_vocals_trace(stage_rows)
         return original_lines, 0
     if after_inv_count > before_inv_count and after_inv_drop > max(
         before_inv_drop + 0.75, 1.5
@@ -542,7 +645,9 @@ def _pull_lines_forward_for_continuous_vocals(
             before_inv_drop,
             after_inv_drop,
         )
+        _maybe_write_continuous_vocals_trace(stage_rows)
         return original_lines, 0
+    _maybe_write_continuous_vocals_trace(stage_rows)
     return lines, fixes
 
 

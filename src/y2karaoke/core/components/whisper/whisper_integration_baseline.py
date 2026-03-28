@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List, Tuple
+import json
+import os
+from typing import Any, List, Tuple
 
 from ... import models
 
@@ -154,6 +156,14 @@ def _copy_line(line: models.Line) -> models.Line:
     return _clone_lines_for_fallback([line])[0]
 
 
+def _maybe_write_baseline_constraint_trace(rows: list[dict]) -> None:
+    trace_path = os.environ.get("Y2K_TRACE_BASELINE_CONSTRAINT_JSON", "").strip()
+    if not trace_path:
+        return
+    with open(trace_path, "w", encoding="utf-8") as fh:
+        json.dump({"rows": rows}, fh, indent=2)
+
+
 def _find_next_baseline_start(
     baseline_lines: List[models.Line], start_idx: int
 ) -> float | None:
@@ -193,12 +203,20 @@ def _constrain_line_starts_to_baseline(
     min_gap: float = 0.01,
     max_shift_sec: float = 2.5,
 ) -> List[models.Line]:
-    """Force mapped line starts to baseline (LRC) starts while preserving within-line shape."""
+    """Force mapped line starts to baseline while preserving within-line shape."""
     constrained: List[models.Line] = []
+    trace_rows: list[dict[str, Any]] = []
     prev_output_start: float | None = None
     unstable_sequence = _has_start_inversion(mapped_lines)
     for idx, line in enumerate(mapped_lines):
+        row: dict[str, Any] = {
+            "line_index": idx + 1,
+            "mapped_start": round(line.start_time, 3) if line.words else None,
+            "mapped_end": round(line.end_time, 3) if line.words else None,
+        }
         if idx >= len(baseline_lines) or not line.words:
+            row["decision"] = "keep_no_baseline_or_words"
+            trace_rows.append(row)
             constrained.append(line)
             if line.words:
                 prev_output_start = line.start_time
@@ -206,6 +224,8 @@ def _constrain_line_starts_to_baseline(
 
         baseline = baseline_lines[idx]
         if not baseline.words:
+            row["decision"] = "keep_baseline_empty"
+            trace_rows.append(row)
             constrained.append(line)
             if line.words:
                 prev_output_start = line.start_time
@@ -213,20 +233,28 @@ def _constrain_line_starts_to_baseline(
 
         target_start = baseline.start_time
         shift = target_start - line.start_time
+        row["baseline_start"] = round(target_start, 3)
+        row["shift"] = round(shift, 3)
         if abs(shift) > max_shift_sec:
             if unstable_sequence and (
                 prev_output_start is None
                 or target_start >= (prev_output_start + min_gap)
             ):
+                row["decision"] = "copy_baseline_unstable_sequence"
                 constrained.append(_copy_line(baseline))
+                trace_rows.append(row)
                 prev_output_start = target_start
                 continue
+            row["decision"] = "keep_shift_too_large"
+            trace_rows.append(row)
             constrained.append(line)
             prev_output_start = line.start_time
             continue
         if prev_output_start is not None and target_start < (
             prev_output_start + min_gap
         ):
+            row["decision"] = "keep_prev_output_guard"
+            trace_rows.append(row)
             constrained.append(line)
             prev_output_start = line.start_time
             continue
@@ -246,11 +274,17 @@ def _constrain_line_starts_to_baseline(
         if next_baseline_start is not None and shifted_line.end_time > (
             next_baseline_start - min_gap
         ):
+            row["compressed_to_next_baseline"] = round(next_baseline_start, 3)
             shifted_line = _compress_line_to_fit(
                 shifted_line, target_start, next_baseline_start, min_gap
             )
 
+        row["decision"] = "shift_to_baseline"
+        row["new_start"] = round(shifted_line.start_time, 3)
+        row["new_end"] = round(shifted_line.end_time, 3)
+        trace_rows.append(row)
         constrained.append(shifted_line)
         prev_output_start = shifted_line.start_time
 
+    _maybe_write_baseline_constraint_trace(trace_rows)
     return constrained
