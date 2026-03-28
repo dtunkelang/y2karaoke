@@ -336,6 +336,55 @@ def _restore_compact_exact_phrase_late_starts(
     return repaired, restored
 
 
+def _extend_final_line_last_word_to_baseline_end(
+    mapped_lines: List[models.Line],
+    baseline_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    max_start_delta_sec: float = 0.45,
+    min_end_gain_sec: float = 0.35,
+    max_end_gain_sec: float = 0.9,
+    max_phrase_end_delta_sec: float = 0.2,
+    min_word_count: int = 4,
+) -> tuple[List[models.Line], int]:
+    if not mapped_lines or not baseline_lines:
+        return mapped_lines, 0
+    idx = min(len(mapped_lines), len(baseline_lines)) - 1
+    mapped = mapped_lines[idx]
+    baseline = baseline_lines[idx]
+    if not mapped.words or not baseline.words:
+        return mapped_lines, 0
+    if len(mapped.words) != len(baseline.words) or len(mapped.words) < min_word_count:
+        return mapped_lines, 0
+    if abs(mapped.start_time - baseline.start_time) > max_start_delta_sec:
+        return mapped_lines, 0
+    baseline_end = baseline.end_time
+    end_gain = baseline_end - mapped.end_time
+    if end_gain < min_end_gain_sec or end_gain > max_end_gain_sec:
+        return mapped_lines, 0
+    phrase_window = _find_exact_phrase_window(
+        whisper_words,
+        _normalized_line_tokens(baseline),
+    )
+    if (
+        phrase_window is not None
+        and phrase_window[1] > mapped.end_time + max_phrase_end_delta_sec
+    ):
+        return mapped_lines, 0
+
+    repaired = list(mapped_lines)
+    new_words = list(mapped.words)
+    last_word = new_words[-1]
+    new_words[-1] = models.Word(
+        text=last_word.text,
+        start_time=last_word.start_time,
+        end_time=baseline_end,
+        singer=last_word.singer,
+    )
+    repaired[idx] = models.Line(words=new_words, singer=mapped.singer)
+    return repaired, 1
+
+
 def _apply_baseline_constraint_and_snap(
     *,
     mapped_lines: List[models.Line],
@@ -537,6 +586,23 @@ def _apply_baseline_restore_cleanup_passes(
         trace_snapshots=trace_snapshots,
         trace_line_range=trace_line_range,
         stage="after_restore_implausibly_short_lines",
+    )
+
+    mapped_lines, restored_final_tail = _extend_final_line_last_word_to_baseline_end(
+        mapped_lines,
+        baseline_lines,
+        all_words,
+    )
+    _append_correction_if_any(
+        corrections,
+        restored_final_tail,
+        "Extended {count} final line last word to baseline end",
+    )
+    _capture_stage_lines(
+        mapped_lines=mapped_lines,
+        trace_snapshots=trace_snapshots,
+        trace_line_range=trace_line_range,
+        stage="after_extend_final_line_last_word_to_baseline_end",
     )
 
     mapped_lines, restored_inversions = _restore_pairwise_inversions_from_source(

@@ -2,6 +2,7 @@ import pytest
 
 from y2karaoke.core.components.alignment.timing_models import TranscriptionWord
 from y2karaoke.core.components.whisper.whisper_integration_align_corrections import (
+    _extend_final_line_last_word_to_baseline_end,
     _restore_alternating_middle_hook_from_phrase_window,
     _restore_compact_exact_phrase_late_starts,
 )
@@ -149,3 +150,59 @@ def test_restore_compact_exact_phrase_late_starts_skips_when_end_would_cross_nex
 
     assert restored == 0
     assert repaired[0].start_time == pytest.approx(mapped_lines[0].start_time)
+
+
+def test_extend_final_line_last_word_to_baseline_end_only_extends_tail():
+    baseline_lines = [
+        _line(["Take", "me", "on"], 6.8, 10.6),
+        _line(["I'll", "be", "gone"], 12.35, 15.5),
+        _line(["In", "a", "day", "or", "two"], 17.05, 21.42),
+    ]
+    mapped_lines = [
+        _line(["Take", "me", "on"], 6.451, 9.91),
+        _line(["I'll", "be", "gone"], 12.34, 15.394666666666668),
+        _line(["In", "a", "day", "or", "two"], 17.37, 20.87),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="take", start=4.22, end=5.48, probability=1.0),
+        TranscriptionWord(text="me", start=5.48, end=8.08, probability=1.0),
+        TranscriptionWord(text="on", start=8.08, end=9.7, probability=1.0),
+    ]
+
+    repaired, restored = _extend_final_line_last_word_to_baseline_end(
+        mapped_lines,
+        baseline_lines,
+        whisper_words,
+    )
+
+    assert restored == 1
+    assert repaired[-1].start_time == pytest.approx(mapped_lines[-1].start_time)
+    assert repaired[-1].words[-1].start_time == pytest.approx(
+        mapped_lines[-1].words[-1].start_time
+    )
+    assert repaired[-1].end_time == pytest.approx(21.42)
+
+
+def test_extend_final_line_last_word_to_baseline_end_skips_when_later_phrase_exists():
+    baseline_lines = [
+        _line(["In", "a", "day", "or", "two"], 17.05, 21.42),
+    ]
+    mapped_lines = [
+        _line(["In", "a", "day", "or", "two"], 17.37, 20.87),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="in", start=17.4, end=17.8, probability=1.0),
+        TranscriptionWord(text="a", start=17.8, end=18.1, probability=1.0),
+        TranscriptionWord(text="day", start=18.1, end=18.8, probability=1.0),
+        TranscriptionWord(text="or", start=18.8, end=19.2, probability=1.0),
+        TranscriptionWord(text="two", start=21.4, end=22.0, probability=1.0),
+    ]
+
+    repaired, restored = _extend_final_line_last_word_to_baseline_end(
+        mapped_lines,
+        baseline_lines,
+        whisper_words,
+    )
+
+    assert restored == 0
+    assert repaired[-1].end_time == pytest.approx(mapped_lines[-1].end_time)

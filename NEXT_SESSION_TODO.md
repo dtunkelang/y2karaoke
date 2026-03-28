@@ -1508,6 +1508,19 @@ Most likely next inspection targets:
   - implication:
     - exact later phrase windows are now a second real merged-segment / restored-line architecture lever
     - the next `Take On Me` work should keep favoring narrow exact-phrase sequence repairs over broad onset-tolerance relaxations
+  - kept a third narrow `Take On Me` repair in the same family:
+    - final-line last-word-only extension to baseline end
+    - only when there is no later Whisper phrase window for that final line
+    - this avoids the earlier full-line baseline restore regression
+  - forced-off mapped `Take On Me` improved again in `benchmarks/results/20260328T042557Z`:
+    - `0.7239 / 0.9458 -> 0.7239 / 0.9069`
+    - line 4 moved from `17.37-20.87` to `17.37-21.42`
+  - shipped-path controls stayed flat in `benchmarks/results/20260328T042657Z`:
+    - `Take On Me` remained `0.1359 / 0.2834`
+    - `Clocks` remained `0.5000 / 0.6065`
+  - implication:
+    - `Take On Me` now has three keepable narrow repairs across lines 2-4
+    - the remaining gap is now mostly line 1 / broader sequence placement rather than late-tail recovery
 
 ## 2026-03-27 Broader strategy reset
 

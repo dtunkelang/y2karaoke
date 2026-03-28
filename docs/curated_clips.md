@@ -538,6 +538,22 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
       - merged-subphrase recovery for line 2
       - restored exact-phrase late-start recovery for line 3
     - broad later-onset relaxations are still the wrong tool; exact phrase support is the useful signal
+- A third narrow `Take On Me` repair is now kept for the final line:
+  - implementation also lives in `whisper_integration_align_corrections.py`
+  - it extends only the last word of the final line to baseline end
+  - it only fires when:
+    - the final line start is still near baseline
+    - the baseline tail gain is modest
+    - there is no later exact Whisper phrase window for that final line
+  - forced-off mapped `Take On Me` improved again in `benchmarks/results/20260328T042557Z`:
+    - `0.7239 / 0.9458 -> 0.7239 / 0.9069`
+    - line 4 `In a day or two` moved from `17.37-20.87` to `17.37-21.42`
+  - shipped-path controls in `benchmarks/results/20260328T042657Z` stayed unchanged:
+    - `Take On Me` `0.1359 / 0.2834`
+    - `Clocks` `0.5000 / 0.6065`
+  - read:
+    - the earlier full-line baseline restore was too blunt
+    - last-word-only baseline tail repair is the safe version for this final-line shape
 
 ## Process Learnings
 
