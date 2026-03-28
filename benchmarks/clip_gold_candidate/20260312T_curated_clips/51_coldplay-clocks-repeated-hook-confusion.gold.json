@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "title": "",
+  "artist": "",
+  "audio_path": "/Users/dtunkelang/.cache/karaoke/PFW2uSCZ0uE/trimmed_from_59.00s_for_32.00s.wav",
+  "lines": [
+    {
+      "line_index": 1,
+      "text": "You are",
+      "start": 0.85,
+      "end": 6.65,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 0.85,
+          "end": 4.0
+        },
+        {
+          "word_index": 2,
+          "text": "are",
+          "start": 4.95,
+          "end": 6.65
+        }
+      ]
+    },
+    {
+      "line_index": 2,
+      "text": "You are",
+      "start": 8.3,
+      "end": 13.95,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "You",
+          "start": 8.3,
+          "end": 10.95
+        },
+        {
+          "word_index": 2,
+          "text": "are",
+          "start": 12.4,
+          "end": 13.95
+        }
+      ]
+    },
+    {
+      "line_index": 3,
+      "text": "Confusion that never stops",
+      "start": 29.1,
+      "end": 32.05,
+      "words": [
+        {
+          "word_index": 1,
+          "text": "Confusion",
+          "start": 29.1,
+          "end": 30.45
+        },
+        {
+          "word_index": 2,
+          "text": "that",
+          "start": 30.45,
+          "end": 30.9
+        },
+        {
+          "word_index": 3,
+          "text": "never",
+          "start": 30.9,
+          "end": 31.45
+        },
+        {
+          "word_index": 4,
+          "text": "stops",
+          "start": 31.45,
+          "end": 32.05
+        }
+      ]
+    }
+  ]
+}

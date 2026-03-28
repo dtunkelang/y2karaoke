@@ -782,3 +782,25 @@ songs:
   lyrics: |
     All I needed was the love you gave
     All I needed for another day
+
+- title: Clocks
+  artist: Coldplay
+  clip_id: repeated-hook-confusion
+  clip_tags:
+  - stress
+  - repeated-hook
+  - backing-echo
+  - chorus
+  youtube_url: https://www.youtube.com/watch?v=PFW2uSCZ0uE
+  youtube_id: PFW2uSCZ0uE
+  audio_start_sec: 59
+  clip_duration_sec: 32
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Repeated short-hook pair followed by a distinct followup line for mapped sequence-policy stress.
+  slug: coldplay-clocks-repeated-hook-confusion
+  lyrics: |
+    You are
+    You are
+    Confusion that never stops
