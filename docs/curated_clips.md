@@ -511,6 +511,16 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - line 4 is not another merged-subphrase recovery candidate
     - do not spend the next branch on a local Whisper-tail extension there
+- `Take On Me` line 3 is now better localized:
+  - `tools/analyze_restored_later_onset_candidates.py` shows the real cached segment still has an exact phrase window for `I'll be gone`
+  - current forced-off mapped line: `11.91-15.49`
+  - exact phrase window: `12.34-15.5`
+  - baseline start: `12.35`
+  - the existing later-onset reanchors never reach it because they require near-baseline anchoring first
+  - line 3 is `0.44s` off baseline, so it is blocked before exact phrase support is considered
+  - implication:
+    - the next sensible `Take On Me` branch is a narrow restored-line exception for exact later phrase windows
+    - not a broad relaxation of the baseline-anchor tolerance
 
 ## Process Learnings
 

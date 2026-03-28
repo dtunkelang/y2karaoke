@@ -1482,6 +1482,17 @@ Most likely next inspection targets:
   - implication:
     - line 4 is not another merged-subphrase recovery candidate
     - if it moves again, it needs a different source of evidence than local Whisper tail words
+  - added `tools/analyze_restored_later_onset_candidates.py`
+  - line 3 (`I'll be gone`) is now the clean remaining local `Take On Me` candidate:
+    - real exact phrase window exists at `12.34-15.5`
+    - current mapped line is `11.91-15.49`
+    - baseline start is `12.35`
+  - key blocker:
+    - existing later-onset reanchors require near-baseline anchoring
+    - line 3 is `0.44s` off baseline, so it is effectively excluded before its exact phrase support is considered
+  - implication:
+    - the next production probe should be a very narrow exception for restored lines with exact later phrase windows
+    - not a broad relaxation of the baseline-anchor tolerance
 
 ## 2026-03-27 Broader strategy reset
 
