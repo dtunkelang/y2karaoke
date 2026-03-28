@@ -554,6 +554,25 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - read:
     - the earlier full-line baseline restore was too blunt
     - last-word-only baseline tail repair is the safe version for this final-line shape
+- The leading hook now has a kept repair too:
+  - stage trace showed the live line-1 regression clearly:
+    - `after_initial_baseline_constraint` put `Take on me` at `0.99-4.57`
+    - `after_reanchor_late_supported_lines_to_earlier_whisper` pulled it back to `0.64-4.57`
+  - the kept fix lives in `whisper_integration_align_corrections.py`
+  - it restores the leading alternating 3-word hook start after that generic earlier-Whisper reanchor
+  - only when:
+    - the following baseline line forms the alternating pair
+    - the line end is already near baseline
+    - exact phrase support exists for the current line text
+  - forced-off mapped `Take On Me` improved again in `benchmarks/results/20260328T203409Z`:
+    - `0.7239 / 0.9069 -> 0.6214 / 0.8550`
+    - line 1 `Take on me` moved from `0.64-4.57` to `0.99-4.45`
+  - shipped-path controls in `benchmarks/results/20260328T203450Z` stayed unchanged:
+    - `Take On Me` `0.1359 / 0.2834`
+    - `Clocks` `0.5000 / 0.6065`
+  - read:
+    - `Take On Me` now has a full four-line stack of keepable narrow repairs
+    - the next useful move is probably not more local `Take On Me` surgery, but extracting what generalizes
 
 ## Process Learnings
 

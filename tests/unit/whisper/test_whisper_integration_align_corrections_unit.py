@@ -5,6 +5,7 @@ from y2karaoke.core.components.whisper.whisper_integration_align_corrections imp
     _extend_final_line_last_word_to_baseline_end,
     _restore_alternating_middle_hook_from_phrase_window,
     _restore_compact_exact_phrase_late_starts,
+    _restore_leading_alternating_hook_start_to_baseline,
 )
 from y2karaoke.core.models import Line, Word
 
@@ -206,3 +207,59 @@ def test_extend_final_line_last_word_to_baseline_end_skips_when_later_phrase_exi
 
     assert restored == 0
     assert repaired[-1].end_time == pytest.approx(mapped_lines[-1].end_time)
+
+
+def test_restore_leading_alternating_hook_start_to_baseline_reanchors_start_only():
+    baseline_lines = [
+        _line(["Take", "on", "me"], 1.12, 4.57),
+        _line(["Take", "me", "on"], 6.84, 10.42),
+        _line(["I'll", "be", "gone"], 12.23, 15.81),
+    ]
+    mapped_lines = [
+        _line(["Take", "on", "me"], 0.64, 4.57),
+        _line(["Take", "me", "on"], 6.45, 9.91),
+        _line(["I'll", "be", "gone"], 12.34, 15.39),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="take", start=0.64, end=1.2, probability=1.0),
+        TranscriptionWord(text="on", start=1.2, end=3.08, probability=1.0),
+        TranscriptionWord(text="me", start=3.08, end=4.22, probability=1.0),
+        TranscriptionWord(text="take", start=4.22, end=5.48, probability=1.0),
+        TranscriptionWord(text="me", start=5.48, end=8.08, probability=1.0),
+        TranscriptionWord(text="on", start=8.08, end=9.7, probability=1.0),
+    ]
+
+    repaired, restored = _restore_leading_alternating_hook_start_to_baseline(
+        mapped_lines,
+        baseline_lines,
+        whisper_words,
+    )
+
+    assert restored == 1
+    assert repaired[0].start_time == pytest.approx(1.12)
+    assert repaired[0].end_time == pytest.approx(4.455)
+
+
+def test_restore_leading_alternating_hook_start_to_baseline_skips_non_alternating():
+    baseline_lines = [
+        _line(["Take", "on", "me"], 1.12, 4.57),
+        _line(["Take", "on", "me"], 6.84, 10.42),
+    ]
+    mapped_lines = [
+        _line(["Take", "on", "me"], 0.64, 4.57),
+        _line(["Take", "on", "me"], 6.45, 9.91),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="take", start=0.64, end=1.2, probability=1.0),
+        TranscriptionWord(text="on", start=1.2, end=3.08, probability=1.0),
+        TranscriptionWord(text="me", start=3.08, end=4.22, probability=1.0),
+    ]
+
+    repaired, restored = _restore_leading_alternating_hook_start_to_baseline(
+        mapped_lines,
+        baseline_lines,
+        whisper_words,
+    )
+
+    assert restored == 0
+    assert repaired[0].start_time == pytest.approx(mapped_lines[0].start_time)

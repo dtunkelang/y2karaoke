@@ -1521,6 +1521,22 @@ Most likely next inspection targets:
   - implication:
     - `Take On Me` now has three keepable narrow repairs across lines 2-4
     - the remaining gap is now mostly line 1 / broader sequence placement rather than late-tail recovery
+  - traced line 1 directly with `Y2K_TRACE_WHISPER_STAGES_JSON` and found the live culprit:
+    - baseline constraint briefly improves line 1 to `0.99-4.57`
+    - `reanchor_late_supported_lines_to_earlier_whisper` then pulls it back to `0.64-4.57`
+    - later stages leave that early start unchanged
+  - kept a narrow post-earlier-whisper repair for the leading alternating hook:
+    - only for the first line in an alternating 3-word hook pair
+    - only when the end is already near baseline and exact phrase support exists
+  - forced-off mapped `Take On Me` improved again in `benchmarks/results/20260328T203409Z`:
+    - `0.7239 / 0.9069 -> 0.6214 / 0.8550`
+    - line 1 moved from `0.64-4.57` to `0.99-4.45`
+  - shipped-path controls stayed flat in `benchmarks/results/20260328T203450Z`:
+    - `Take On Me` remained `0.1359 / 0.2834`
+    - `Clocks` remained `0.5000 / 0.6065`
+  - implication:
+    - `Take On Me` now has keepable narrow repairs on all four lines
+    - the remaining work should probably move from this clip back to family generalization or other hotspots
 
 ## 2026-03-27 Broader strategy reset
 
