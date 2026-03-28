@@ -468,6 +468,13 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - `Take on me` / `Take me on` has perfect normalized token overlap
   - but the current helper only triggers on 3+ line runs with an exact duplicate
   - so this family needs either a new alternating-hook repetition path or a later baseline-aware sequence correction
+- `Take On Me` also exposes a merged-segment anchoring problem:
+  - the real vocals transcription collapses lines 1-3 into one segment starting at `0.0`
+  - segment-start anchoring is therefore unusable for line 2
+  - but subphrase windows inside that merged segment are still good enough to anchor:
+    - `Take me on` local phrase window `4.22-9.7`
+    - `I'll be gone` local phrase window `12.34-15.5`
+  - so a phrase-window anchor inside merged segments is now a plausible next architecture step
 
 ## Process Learnings
 

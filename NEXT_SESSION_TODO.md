@@ -1431,6 +1431,17 @@ Most likely next inspection targets:
     - at least one exact duplicate line in the run
   - implication:
     - if `Take On Me` is going to move earlier than baseline cleanup, it needs a new alternating-hook family in repetition postpasses rather than reuse of the exact-duplicate run logic
+  - added `tools/analyze_segment_subphrase_windows.py`
+  - real cached vocals segment read:
+    - the whole segment starts at `0.0`, which is too early for `_pull_late_lines_to_matching_segments()`
+    - but subphrase windows inside that merged segment are usable:
+      - line 1 `Take on me` -> `0.64-4.22`
+      - line 2 `Take me on` -> `4.22-9.7`
+      - line 3 `I'll be gone` -> `12.34-15.5`
+  - implication:
+    - the next clean timing path is likely phrase-window anchoring inside merged segments
+    - not raw segment-start anchoring
+    - this is the timing analogue of the clipped-anchor comparability work that helped `Con Calma`
 
 ## 2026-03-27 Broader strategy reset
 
