@@ -1700,6 +1700,17 @@ Most likely next inspection targets:
         - `whisper_window_word_count = 1`
         - nearest segment still ends at `11.28`
       - `Hotline Bling`: none
+  - added `tools/analyze_forced_trace_transcription_support_gaps.py`
+    - this narrows forced-trace support gaps to lines that:
+      - lack lexical overlap with the accepted forced transcription preview
+      - then get materially expanded by sustained repair
+    - current live read:
+      - `Clocks`: exactly one hit
+        - line 2 `You are`
+        - accepted transcription overlap `0.0`
+        - loaded `9.827-10.549`
+        - sustained `9.827-15.715`
+      - `Hotline Bling`: none
 - current read:
   - this is a real second family after the `Take On Me` alternating-hook work
   - it is a forced-fallback adjacent-boundary compression family, not a DTW/mapping family
@@ -1709,3 +1720,7 @@ Most likely next inspection targets:
     - the stronger upstream read is now:
       - line 2 is being retained from pre-whisper despite having essentially no local Whisper support in its own window
       - the next code-side probe should target the pre-whisper segment/line assignment family, not forced fallback
+  - correction to that read:
+    - `Clocks` is not actually a mapped/segment-assignment case
+    - the live log shows accepted WhisperX forced alignment with only one retained transcription preview segment: `Confusion never stops`
+    - so the next code-side probe should target accepted forced-transcription handling, not DTW mapper stages
