@@ -826,3 +826,25 @@ songs:
     You used to call me on my cell phone
     Late night when you need my love
     Call me on my cell phone
+
+- title: Say My Name
+  artist: Destiny's Child
+  clip_id: opening-hook-variant
+  clip_tags:
+  - stress
+  - hook-variant
+  - repeated-hook
+  - boundary-compression
+  youtube_url: https://www.youtube.com/watch?v=Ajez9PaCgek
+  youtube_id: Ajez9PaCgek
+  audio_start_sec: 1
+  clip_duration_sec: 8
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Shared-token three-line opening block for boundary-compression stress.
+  slug: destinys-child-say-my-name-opening-hook-variant
+  lyrics: |
+    Say my name, say my name
+    If no one is around you, say, "Baby, I love you"
+    If you ain't runnin' game
