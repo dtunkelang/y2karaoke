@@ -1450,6 +1450,13 @@ Most likely next inspection targets:
   - implication:
     - merged-segment subphrase windows are real evidence
     - but they need a selective / family-aware hook, not a blanket replacement for segment-start pull
+  - added `tools/simulate_baseline_clamped_subphrase_pull.py`
+  - first promising selective result:
+    - for only the alternating middle hook line, clamp start near baseline and use the subphrase window to recover end
+    - `Take me on` simulates to `6.45-10.25`
+  - implication:
+    - the next production probe should be a baseline-aware selective subphrase repair for the middle alternating hook line inside merged segments
+    - this is now a stronger candidate than another long-gap or weak-evidence tweak
 
 ## 2026-03-27 Broader strategy reset
 

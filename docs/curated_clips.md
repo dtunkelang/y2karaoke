@@ -479,6 +479,11 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - if you simply replace merged-segment starts with local phrase-window starts, `Take On Me` line 1 also moves earlier
   - that then forces line 2 early as well (`4.99-8.79`)
   - so the useful version of this idea has to be selective, likely targeting the alternating-hook line rather than the whole merged segment family
+- A baseline-clamped selective version looks materially better:
+  - if only the middle alternating hook line is retimed
+  - and its start is clamped near baseline while its end is allowed to follow the local phrase window
+  - `Take me on` simulates to `6.45-10.25`
+  - that is the first merged-segment path that looks plausibly ship-worthy enough to test in production
 
 ## Process Learnings
 
