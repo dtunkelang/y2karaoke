@@ -1417,6 +1417,13 @@ Most likely next inspection targets:
   - implication:
     - the next keepable `Take On Me` rule cannot be onset-only
     - it needs sequence-level start+end selection across lines 2 and 3 together
+  - added `tools/simulate_long_gap_shift_sequences.py`
+  - new sequence-level read:
+    - under current shifted durations, the best valid line-2/line-3 pair is not the gold-nearest line-2 onset
+    - line 2 currently wants a slightly later onset (`7.268-8.081`) because the current carried duration is too short to reach the gold end from `6.803`
+  - implication:
+    - the next real fix is probably paired onset selection plus duration policy for repeated-hook sequences
+    - onset-only long-gap scoring is still insufficient
 
 ## 2026-03-27 Broader strategy reset
 

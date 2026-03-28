@@ -461,6 +461,9 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - For repeated-hook mapped failures like `Take On Me`, inspect the long-gap candidate set as windows, not just starts:
   - multiple later onsets can be safe against the next line and still differ materially in end quality
   - if several candidate windows are safe, the right next rule is sequence-level line-pair selection, not a per-line onset tweak
+- Even sequence-level onset pairing may still be insufficient when the carried line duration is too short:
+  - the best valid `Take On Me` line-2/line-3 pair under current durations prefers a later line-2 onset than the gold-nearest one
+  - that means the next probe likely has to combine paired onset choice with a repeated-hook duration policy
 
 ## Process Learnings
 
