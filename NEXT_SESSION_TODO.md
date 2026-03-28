@@ -1272,6 +1272,19 @@ Most likely next inspection targets:
     - implication:
       - the root cause inside trailing extension is now identified
       - but the correct fix needs more than just forbidding short substring matches; it also needs an end-selection guard
+  - added `tools/simulate_trailing_extension_candidate_scoring.py` as a benchmark-only scorer for those candidates
+    - it rewards exact token matches and penalizes:
+      - short soft-only matches
+      - large extension distance from the current line end
+      - crossing into the next lyric phrase
+    - on the real cached `Take On Me` transcription, that scorer correctly ranks the early `Take me on` phrase above the later false positive
+    - attempted production tie-break based on that ranking was reverted:
+      - run dir: `benchmarks/results/20260328T001400Z`
+      - result got worse: `0.870 / 1.028 -> 0.961 / 1.195`
+    - implication:
+      - candidate scoring is still the right diagnostic direction
+      - but the first ranking policy was too weak to control the live extension step safely
+      - next probe should score the final chosen end more directly instead of only reordering matched-count ties
 
 ## 2026-03-27 Broader strategy reset
 

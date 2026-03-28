@@ -310,6 +310,19 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - implication:
     - the root cause inside trailing extension is now known
     - but the correct fix still needs an additional end-selection guard, not just stricter token matching
+- A follow-up tail-extension scoring simulator now exists:
+  - tool: `tools/simulate_trailing_extension_candidate_scoring.py`
+  - it rewards exact matches and penalizes:
+    - short soft-only matches
+    - large distance from the current line end
+    - crossing into the next lyric phrase
+  - on the real cached `Take On Me` transcription, this correctly prefers the early `Take me on` phrase over the later `on -> gone` false positive
+  - but the first production-style ranking attempt was reverted:
+    - run dir: `benchmarks/results/20260328T001400Z`
+    - result got slightly worse again: about `0.961 / 1.195`
+  - implication:
+    - keep this as a diagnostic lens for tail-extension candidate quality
+    - but do not treat simple candidate reordering as sufficient; the next safe probe needs a stronger end-selection policy
 - Two-line falsetto/refrain clips exposed a different failure mode from longer repeated-hook clips:
   - WhisperX forced alignment previously could not help 2-line clips at all
   - weak onset detection could incorrectly fall back to a generic spread seed
