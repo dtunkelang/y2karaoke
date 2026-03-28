@@ -464,6 +464,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - Even sequence-level onset pairing may still be insufficient when the carried line duration is too short:
   - the best valid `Take On Me` line-2/line-3 pair under current durations prefers a later line-2 onset than the gold-nearest one
   - that means the next probe likely has to combine paired onset choice with a repeated-hook duration policy
+- `Take On Me` also does not fit the existing repetition-run realigner family:
+  - `Take on me` / `Take me on` has perfect normalized token overlap
+  - but the current helper only triggers on 3+ line runs with an exact duplicate
+  - so this family needs either a new alternating-hook repetition path or a later baseline-aware sequence correction
 
 ## Process Learnings
 

@@ -1424,6 +1424,13 @@ Most likely next inspection targets:
   - implication:
     - the next real fix is probably paired onset selection plus duration policy for repeated-hook sequences
     - onset-only long-gap scoring is still insufficient
+  - checked the existing repetition-run realigner path
+  - `Take on me` -> `Take me on` already passes the pairwise overlap gate (`1.0`)
+  - but it is excluded by construction because `_realign_repetitive_runs_to_matching_segments()` requires:
+    - `min_run_len >= 3`
+    - at least one exact duplicate line in the run
+  - implication:
+    - if `Take On Me` is going to move earlier than baseline cleanup, it needs a new alternating-hook family in repetition postpasses rather than reuse of the exact-duplicate run logic
 
 ## 2026-03-27 Broader strategy reset
 
