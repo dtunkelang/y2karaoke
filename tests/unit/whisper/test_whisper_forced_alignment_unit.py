@@ -130,6 +130,25 @@ def test_map_segment_words_to_line_tightens_leading_article_before_content_ancho
     assert abs(mapped[1].start_time - 22.48) < 0.05
 
 
+def test_map_segment_words_to_line_tightens_leading_if_before_content_anchor():
+    line = _line("If", "you", "ain't", "runnin'", "game")
+    seg_words = [
+        (5.539, 6.022, "If"),
+        (6.062, 6.223, "you"),
+        (6.243, 6.726, "ain't"),
+        (6.787, 7.37, "runnin'"),
+        (7.431, 7.773, "game"),
+    ]
+
+    mapped = wfa._map_segment_words_to_line(line, seg_words, 5.539, 7.773)
+
+    assert mapped[0].text == "If"
+    assert mapped[1].text == "you"
+    assert mapped[0].start_time > 5.7
+    assert mapped[0].end_time <= mapped[1].start_time
+    assert abs(mapped[1].start_time - 6.062) < 0.05
+
+
 def test_align_lines_with_whisperx_accepts_two_line_repeated_hook(monkeypatch):
     lines = [
         _line("Ah", "ha", "ha", "ha", "stayin'", "alive", "stayin'", "alive"),

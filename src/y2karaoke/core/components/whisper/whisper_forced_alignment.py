@@ -12,7 +12,7 @@ from ... import models
 from .whisperx_compat import patch_torchaudio_for_whisperx
 
 _TOKEN_RE = re.compile(r"[a-z0-9']+")
-_LIGHT_LEADING_TOKENS = {"the", "a", "an"}
+_LIGHT_LEADING_TOKENS = {"the", "a", "an", "if"}
 
 
 def _trace_whisperx_char_alignments_enabled() -> bool:

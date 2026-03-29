@@ -845,3 +845,17 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   3. run one focused probe
   4. either keep the win or record the elimination
   5. only then widen to the broader canary
+
+## Say My Name: Forced Leading Overhang
+
+- `Say My Name` is not a mapped-line regression:
+  - accepted WhisperX forced alignment is the live path
+  - forced trace shows line 3 is already wrong at `loaded_forced_alignment`
+  - later forced stages do not change that line
+- raw WhisperX trace isolates the source:
+  - line 3 `If you ain't runnin' game` is accepted as an exact segment match
+  - the first word `If` is a low-confidence leading overhang
+  - that makes this a raw forced segment-mapping problem, not a forced cleanup problem
+- keepable fix:
+  - [whisper_forced_alignment.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_forced_alignment.py) now treats `if` as a light leading token for `_tighten_leading_light_token_anchors()`
+  - this improved `Say My Name` while leaving the current `Take On Me`, `Clocks`, and `Hotline Bling` controls unchanged

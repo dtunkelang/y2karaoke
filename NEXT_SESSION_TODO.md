@@ -1806,3 +1806,24 @@ Most likely next inspection targets:
     - negative control:
       - `Hotline Bling` has `0` hits on the same analyzer
     - next real `Say My Name` probe should target downstream early-start regression on line 3, not line-1/2 hook handling
+  - updated `Say My Name` read:
+    - generate log and forced trace show this clip uses accepted WhisperX forced alignment
+    - line 3 is already wrong at `loaded_forced_alignment`:
+      - baseline `5.889-7.174`
+      - loaded forced `5.539-7.773`
+      - later forced stages leave it unchanged
+    - raw WhisperX trace shows exact segment acceptance with a low-confidence leading overhang:
+      - `If` mapped at `5.539-6.022`, score `0.346`
+      - the rest of the segment is much healthier
+    - keepable fix:
+      - [whisper_forced_alignment.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_forced_alignment.py) now treats `if` as a light leading token for `_tighten_leading_light_token_anchors()`
+    - kept single-song run:
+      - `benchmarks/results/20260329T_say_my_name_forced_if_probe`
+      - `gold_start_abs_mean_weighted 0.194 -> 0.161`
+      - `gold_end_abs_mean 0.239 -> 0.191`
+    - kept 4-song control pack:
+      - `benchmarks/results/20260329T_forced_if_control_pack`
+      - `Take On Me` stayed `0.1359 / 0.2834`
+      - `Clocks` stayed `0.3907 / 0.1910`
+      - `Hotline Bling` stayed `0.2387 / 0.2411`
+      - `Say My Name` improved to `0.1609 / 0.1905`
