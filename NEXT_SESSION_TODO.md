@@ -88,6 +88,36 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
     - implication:
       - this late-tail family is primarily a merged-segment assignment/mapping problem, not a post-mapping boundary problem
       - next credible `Con Calma` work should target segment selection / segment-bag clipping for late lines inside merged segments, not more tail reanchors
+  - 2026-03-29 followup on `Con Calma` mapping:
+    - do not keep the strict within-line forward-only candidate experiment
+    - focused rerun: [20260329T041130Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T041130Z/benchmark_report.json)
+      - regressed badly to `0.4094 / 0.4173`
+      - dtw word coverage fell from `0.951` to `0.707`
+    - implication:
+      - the mapper currently relies on some backward reuse inside merged segments; a global monotonic candidate gate is too blunt
+  - 2026-03-29 better `Con Calma` candidate-level trace:
+    - trace-only generate run: [20260329T_con_calma_candidate_trace](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T_con_calma_candidate_trace)
+    - most useful file: [mapper_candidates.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T_con_calma_candidate_trace/mapper_candidates.json)
+    - key new finding:
+      - future-word theft starts earlier than the visible bad tail lines, and some of it is hidden by later line clamps
+      - line 9 (`Ya vi que estás solita, acompáñame`) consumes Whisper word `73` (`me`, `27.48s`) even though its final mapped line is clamped back to `21.5-24.612`
+      - line 10 then consumes through `gana / dam / dam,`
+      - line 11 is left choosing `degollarte / mami / nosotros`
+    - implication:
+      - the real bug is not just the final line 11-12 timing surface
+      - lines can reserve far-future Whisper words during matching and keep them marked used even when later duration/start clamps pull the final rendered line back earlier
+      - any next `Con Calma` code probe should inspect word-usage reservation / release after mapping assembly, or another equally narrow way to stop hidden future-word consumption
+  - 2026-03-29 non-kept local span experiment:
+    - do not keep the line-assigned-span clipping branch
+    - focused rerun: [20260329T041516Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T041516Z/benchmark_report.json)
+      - moved the visible target lines in the intended direction:
+        - line 10: `24.68-25.62 -> 24.68-26.55`
+        - line 11: `27.38-28.88 -> 26.60-28.56`
+        - line 12: `28.89-29.65 -> 28.66-29.94`
+      - but still regressed overall to `0.333 / 0.336` from the kept `0.3206 / 0.3330`
+      - also perturbed earlier chorus lines 3-6
+    - implication:
+      - line-local segment clipping is closer to the real problem than the monotonic gate, but its current scope is still too broad to keep
 
 - The major lyrics / Whisper / sync architecture cleanup is largely complete.
 - The main reference doc is `docs/tech_debt_backlog.md`.
