@@ -1835,3 +1835,19 @@ Most likely next inspection targets:
         - `Clocks`: `0`
     - implication:
       - low-confidence leading overhangs are a narrower accepted-forced family than generic early forced starts
+  - attempted `Sweet Caroline` advisory-start production widening was reverted:
+    - widened [whisper_forced_advisory_nudges.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_forced_advisory_nudges.py) to accept `high_confidence` candidates
+    - live rerun stayed flat in `benchmarks/results/20260329T005007Z`
+      - `Sweet Caroline`: `0.2154 / 0.2287`
+    - traced run with `Y2K_TRACE_FORCED_ADVISORY_JSON=/tmp/sweet_caroline_advisory_trace.json` proved why:
+      - runtime candidate count is `0`
+      - line 3 `I've been inclined` still has exact aggressive support
+      - but accepted-forced default support is already merged and non-sparse:
+        - `default_overlap=0.130`
+        - `default_window_word_count=4`
+        - `current_window_word_count=4`
+    - implication:
+      - the offline advisory ranker and the live accepted-forced candidate builder are classifying different evidence surfaces
+      - the next `Sweet Caroline` path, if resumed, should reconcile those surfaces first instead of widening the runtime bucket gate
+    - kept diagnostic:
+      - [analyze_forced_advisory_candidate_blockers.py](/Users/dtunkelang/y2karaoke/tools/analyze_forced_advisory_candidate_blockers.py)

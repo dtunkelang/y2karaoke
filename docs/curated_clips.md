@@ -866,3 +866,16 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
     - `Hotline Bling`: `0`
     - `Clocks`: `0`
   - this keeps the new family narrower than generic accepted-forced early starts
+
+## Sweet Caroline: Advisory Candidate Surface Mismatch
+
+- the old offline advisory hypothesis was still directionally right but not live-ready:
+  - offline ranking on an older benchmark report still singled out line 3 `I've been inclined`
+  - but the live accepted-forced advisory trace on `benchmarks/results/20260329T005007Z` produced `0` runtime candidates
+- traced reason:
+  - aggressive support is still exact for line 3
+  - but the live accepted-forced default evidence is already merged and non-sparse, so the runtime candidate builder does not see the same sparse hole that the offline report-based analysis saw
+- the attempted production widening to allow `high_confidence` advisory nudges was reverted because it had no live effect
+- kept diagnostic:
+  - [analyze_forced_advisory_candidate_blockers.py](/Users/dtunkelang/y2karaoke/tools/analyze_forced_advisory_candidate_blockers.py)
+  - use it on `Y2K_TRACE_FORCED_ADVISORY_JSON` outputs to explain why an exact aggressive match still fails to become a live runtime candidate
