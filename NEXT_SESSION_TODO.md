@@ -1793,3 +1793,16 @@ Most likely next inspection targets:
     - 4-song control pack stayed flat again:
       - `benchmarks/results/20260329T003300Z`
       - aggregate remained `gold_start_abs_mean_weighted=0.139`, `gold_end_abs_mean=0.191`
+  - next hotspot is now `Say My Name`:
+    - added `tools/analyze_later_segment_start_regressions.py`
+    - on `benchmarks/results/20260329T004100Z`, it isolates exactly one line:
+      - line 3 `If you ain't runnin' game`
+      - final start `5.540`
+      - pre-whisper start `5.889`
+      - nearest segment start `6.140`
+      - gold start `6.350`
+      - pre-whisper regression `0.349s`
+      - later-segment gain `0.600s`
+    - negative control:
+      - `Hotline Bling` has `0` hits on the same analyzer
+    - next real `Say My Name` probe should target downstream early-start regression on line 3, not line-1/2 hook handling

@@ -799,6 +799,21 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - current read:
     - the `Clocks` family now has keepable upstream and forced-fallback wins
     - the remaining gap is much smaller and no longer obviously worth another narrow probe
+- next narrow family isolated in `Say My Name`:
+  - `tools/analyze_later_segment_start_regressions.py` flags one line on `benchmarks/results/20260329T004100Z`
+  - hit:
+    - line 3 `If you ain't runnin' game`
+    - final start `5.540`
+    - pre-whisper start `5.889`
+    - nearest segment start `6.140`
+    - gold start `6.350`
+  - interpretation:
+    - this line regressed earlier after pre-whisper, even though a later segment start still exists
+  - negative control:
+    - `Hotline Bling` shows `0` hits on the same analyzer
+  - current read:
+    - the next `Say My Name` fix should target downstream early-start regression on line 3
+    - this looks like a different family from both `Take On Me` and `Hotline Bling`
 
 ## Process Learnings
 
