@@ -23,6 +23,9 @@ from .whisper_forced_tail_repairs import (
 from .whisper_forced_sparse_followup_repairs import (
     restore_sparse_forced_followup_lines_from_source as _restore_sparse_forced_followup_lines_from_source,  # noqa: E501
 )
+from .whisper_forced_repeated_short_repairs import (
+    restore_leading_repeated_short_line_tails_from_baseline as _restore_leading_repeated_short_line_tails_from_baseline,  # noqa: E501
+)
 from .whisper_forced_sparse_support_repairs import (
     redistribute_sparse_support_sustained_words as _redistribute_sparse_support_sustained_words,  # noqa: E501
     restore_compact_two_word_lines_from_source as _restore_compact_two_word_lines_from_source,  # noqa: E501
@@ -920,6 +923,25 @@ def _apply_forced_pre_finalize_repairs(
     _capture_forced_trace_snapshot(
         trace_snapshots,
         stage="after_sustained_line_repair",
+        lines=forced_lines,
+        line_range=trace_line_range,
+    )
+
+    (
+        forced_lines,
+        restored_repeated_short_tails,
+    ) = _restore_leading_repeated_short_line_tails_from_baseline(
+        baseline_lines,
+        forced_lines,
+    )
+    if restored_repeated_short_tails:
+        logger.info(
+            "Restored %d leading repeated short line tail(s) from baseline timing",
+            restored_repeated_short_tails,
+        )
+    _capture_forced_trace_snapshot(
+        trace_snapshots,
+        stage="after_restore_leading_repeated_short_line_tails",
         lines=forced_lines,
         line_range=trace_line_range,
     )

@@ -780,6 +780,25 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - current read:
     - the plain-text layout stage is no longer the main `Clocks` blocker
     - the next fix, if any, should target post-pre-whisper end compression on the first repeated short line
+- kept leading repeated-short forced repair:
+  - forced stage trace showed line 1 was already short in `loaded_forced_alignment`, and later forced stages left it alone
+  - WhisperX forced debug showed this was still an exact 2-word segment match, not a fallback distribution case
+  - added a narrow forced-fallback repair for:
+    - first two lines identical and short
+    - third line longer and distinct
+    - line 1 start still near baseline
+    - line 1 baseline tail only modestly later
+    - safe gap before line 2
+  - kept run:
+    - `benchmarks/results/20260329T003100Z`
+    - `gold_start_abs_mean_weighted 0.391 -> 0.391`
+    - `gold_end_abs_mean 0.219 -> 0.191`
+    - line 1 improved from `0.81-6.29` to `0.81-6.51`
+  - 4-song control pack stayed flat again:
+    - `benchmarks/results/20260329T003300Z`
+  - current read:
+    - the `Clocks` family now has keepable upstream and forced-fallback wins
+    - the remaining gap is much smaller and no longer obviously worth another narrow probe
 
 ## Process Learnings
 

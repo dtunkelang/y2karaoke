@@ -1776,3 +1776,20 @@ Most likely next inspection targets:
       - `Hotline Bling`: `0` hits
       - `Say My Name`: `0` hits
     - next `Clocks` path, if worth pursuing, should target post-pre-whisper end compression on the first repeated short line, not another plain-text layout retune
+  - kept leading repeated-short forced repair:
+    - forced trace showed line 1 was already short in `loaded_forced_alignment`, and no later forced stage changed it
+    - WhisperX debug showed that short line was still an exact 2-word segment match, not a fallback estimate
+    - added a narrow repair for the leading repeated short line family in forced fallback:
+      - first two lines identical and short
+      - third line distinct and longer
+      - line 1 start still near baseline
+      - line 1 baseline tail modestly later
+      - safe gap before line 2
+    - kept run:
+      - `benchmarks/results/20260329T003100Z`
+      - `gold_start_abs_mean_weighted 0.391 -> 0.391`
+      - `gold_end_abs_mean 0.219 -> 0.191`
+      - line 1 moved from `0.81-6.29` to `0.81-6.51`
+    - 4-song control pack stayed flat again:
+      - `benchmarks/results/20260329T003300Z`
+      - aggregate remained `gold_start_abs_mean_weighted=0.139`, `gold_end_abs_mean=0.191`
