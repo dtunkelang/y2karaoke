@@ -107,6 +107,17 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
       - the real bug is not just the final line 11-12 timing surface
       - lines can reserve far-future Whisper words during matching and keep them marked used even when later duration/start clamps pull the final rendered line back earlier
       - any next `Con Calma` code probe should inspect word-usage reservation / release after mapping assembly, or another equally narrow way to stop hidden future-word consumption
+  - 2026-03-29 stage-trace refinement for `Con Calma`:
+    - trace-only generate run: [20260329T_con_calma_stage_trace](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T_con_calma_stage_trace)
+    - most useful file: [whisper_stages.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T_con_calma_stage_trace/whisper_stages.json)
+    - key new finding:
+      - the first large visible shrink happens immediately after mapping, before baseline-constraint restore passes
+      - line 10 goes from `24.1-27.699` at `after_map_lrc_words_to_whisper` to `24.1-25.04` at `postpass_interpolate_unmatched`
+      - line 9 simultaneously contracts from `21.5-24.612` to `21.5-24.1`
+      - baseline constraint later restores them to `22.458-24.67` and `24.68-25.62`, but by then the future Whisper words are already long gone from the mapping state
+    - implication:
+      - the next credible probe is not another downstream repair
+      - inspect `_enforce_mapped_line_stage_invariants()` / overlap resolution around the first post-mapper pass, plus whether Whisper word reservations should be released when those invariant passes trim matched tails away
   - 2026-03-29 non-kept local span experiment:
     - do not keep the line-assigned-span clipping branch
     - focused rerun: [20260329T041516Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T041516Z/benchmark_report.json)
