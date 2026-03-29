@@ -859,3 +859,10 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
 - keepable fix:
   - [whisper_forced_alignment.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_forced_alignment.py) now treats `if` as a light leading token for `_tighten_leading_light_token_anchors()`
   - this improved `Say My Name` while leaving the current `Take On Me`, `Clocks`, and `Hotline Bling` controls unchanged
+- reusable diagnostic:
+  - [analyze_whisperx_forced_leading_overhangs.py](/Users/dtunkelang/y2karaoke/tools/analyze_whisperx_forced_leading_overhangs.py)
+  - current traced controls:
+    - `Say My Name`: `1` hit on line 3
+    - `Hotline Bling`: `0`
+    - `Clocks`: `0`
+  - this keeps the new family narrower than generic accepted-forced early starts

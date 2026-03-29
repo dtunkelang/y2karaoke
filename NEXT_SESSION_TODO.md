@@ -1827,3 +1827,11 @@ Most likely next inspection targets:
       - `Clocks` stayed `0.3907 / 0.1910`
       - `Hotline Bling` stayed `0.2387 / 0.2411`
       - `Say My Name` improved to `0.1609 / 0.1905`
+    - new reusable classifier:
+      - [analyze_whisperx_forced_leading_overhangs.py](/Users/dtunkelang/y2karaoke/tools/analyze_whisperx_forced_leading_overhangs.py)
+      - on raw WhisperX traces:
+        - `Say My Name`: `1` hit
+        - `Hotline Bling`: `0`
+        - `Clocks`: `0`
+    - implication:
+      - low-confidence leading overhangs are a narrower accepted-forced family than generic early forced starts
