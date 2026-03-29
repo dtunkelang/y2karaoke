@@ -7,6 +7,9 @@ from y2karaoke.core.components.whisper import (
 from y2karaoke.core.components.whisper.whisper_forced_prefix_repairs import (
     reanchor_medium_lines_to_earlier_exact_prefixes,
 )
+from y2karaoke.core.components.whisper.whisper_forced_sparse_support_repairs import (
+    restore_compact_two_word_lines_from_source,
+)
 from y2karaoke.core.models import Line, Word
 
 
@@ -213,3 +216,99 @@ def test_retime_three_word_lines_from_suffix_matches_skips_balanced_refrain_line
     assert restored_count == 0
     assert repaired_lines[0].start_time == pytest.approx(forced_lines[0].start_time)
     assert repaired_lines[0].end_time == pytest.approx(forced_lines[0].end_time)
+
+
+def test_retime_three_word_lines_from_suffix_matches_allows_late_suffix_with_smaller_prefix_share():  # noqa: E501
+    forced_lines = [
+        _dur_multi_line(7.01, 7.86, ["Shady's", "back"]),
+        Line(
+            words=[
+                Word(text="Tell", start_time=8.12, end_time=8.724),
+                Word(text="a", start_time=9.066, end_time=9.409),
+                Word(text="friend", start_time=9.409, end_time=9.72),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="he's", start=7.33, end=7.51, probability=0.99),
+        TranscriptionWord(text="back", start=7.51, end=7.73, probability=0.99),
+        TranscriptionWord(text="back", start=7.87, end=8.25, probability=0.99),
+        TranscriptionWord(text="back", start=8.35, end=8.69, probability=0.99),
+        TranscriptionWord(text="tell", start=8.79, end=9.17, probability=0.99),
+        TranscriptionWord(text="a", start=9.17, end=9.51, probability=0.99),
+        TranscriptionWord(text="friend", start=9.51, end=9.83, probability=0.99),
+    ]
+
+    repaired_lines, restored_count = (
+        _forced._retime_three_word_lines_from_suffix_matches(
+            forced_lines,
+            whisper_words,
+        )
+    )
+
+    assert restored_count == 1
+    assert repaired_lines[1].start_time == pytest.approx(8.77, abs=0.08)
+    assert repaired_lines[1].words[1].start_time == pytest.approx(9.17, abs=0.05)
+
+
+def test_retime_three_word_lines_from_suffix_matches_allows_more_compressed_live_without_me_shape():  # noqa: E501
+    forced_lines = [
+        _dur_multi_line(7.01, 7.86, ["Shady's", "back"]),
+        Line(
+            words=[
+                Word(text="Tell", start_time=8.124, end_time=8.447),
+                Word(text="a", start_time=8.81, end_time=8.931),
+                Word(text="friend", start_time=9.173, end_time=9.718),
+            ]
+        ),
+    ]
+    whisper_words = [
+        TranscriptionWord(text="he's", start=7.33, end=7.51, probability=0.99),
+        TranscriptionWord(text="back", start=7.51, end=7.73, probability=0.99),
+        TranscriptionWord(text="back", start=7.87, end=8.25, probability=0.99),
+        TranscriptionWord(text="back", start=8.35, end=8.69, probability=0.99),
+        TranscriptionWord(text="tell", start=8.79, end=9.17, probability=0.99),
+        TranscriptionWord(text="a", start=9.17, end=9.51, probability=0.99),
+        TranscriptionWord(text="friend", start=9.51, end=9.83, probability=0.99),
+    ]
+
+    repaired_lines, restored_count = (
+        _forced._retime_three_word_lines_from_suffix_matches(
+            forced_lines,
+            whisper_words,
+        )
+    )
+
+    assert restored_count == 1
+    assert repaired_lines[1].start_time == pytest.approx(8.77, abs=0.08)
+    assert repaired_lines[1].words[2].start_time == pytest.approx(9.53, abs=0.06)
+
+
+def test_restore_compact_two_word_lines_from_source_allows_earlier_shorter_live_shape():
+    baseline_lines = [
+        _dur_multi_line(2.75, 4.06, ["Guess", "who's", "back"]),
+        Line(
+            words=[
+                Word(text="Back", start_time=4.692, end_time=5.208),
+                Word(text="again", start_time=5.265, end_time=5.781),
+            ]
+        ),
+    ]
+    forced_lines = [
+        baseline_lines[0],
+        Line(
+            words=[
+                Word(text="Back", start_time=4.404, end_time=4.666),
+                Word(text="again", start_time=5.008, end_time=5.351),
+            ]
+        ),
+    ]
+
+    repaired_lines, restored_count = restore_compact_two_word_lines_from_source(
+        baseline_lines,
+        forced_lines,
+    )
+
+    assert restored_count == 1
+    assert repaired_lines[1].start_time == pytest.approx(4.692)
+    assert repaired_lines[1].end_time == pytest.approx(5.781)

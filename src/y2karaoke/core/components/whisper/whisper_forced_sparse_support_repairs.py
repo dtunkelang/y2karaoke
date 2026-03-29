@@ -173,6 +173,7 @@ def restore_compact_two_word_lines_from_source(
     min_baseline_duration_sec: float = 0.9,
     max_duration_ratio: float = 0.8,
     min_early_shift_sec: float = 0.15,
+    min_end_regression_sec: float = 0.2,
 ) -> tuple[List[models.Line], int]:
     repaired = list(forced_lines)
     restored = 0
@@ -189,7 +190,11 @@ def restore_compact_two_word_lines_from_source(
             continue
         if forced_line.start_time >= baseline_line.start_time - min_early_shift_sec:
             continue
-        if forced_duration >= baseline_duration * max_duration_ratio:
+        end_regression = baseline_line.end_time - forced_line.end_time
+        if (
+            forced_duration >= baseline_duration * max_duration_ratio
+            and end_regression < min_end_regression_sec
+        ):
             continue
         repaired[idx] = models.Line(
             words=[

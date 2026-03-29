@@ -104,8 +104,8 @@ def _candidate_matches_bucket_and_support(
     return (
         candidate["bucket"] == "medium_confidence"
         and aggressive_overlap >= 0.99
-        and default_overlap <= 0.0
-        and current_window_word_count <= 3
+        and default_overlap <= 0.2
+        and current_window_word_count <= 4
     )
 
 

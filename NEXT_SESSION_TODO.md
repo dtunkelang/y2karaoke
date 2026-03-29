@@ -1,6 +1,6 @@
 # Next Session TODO
 
-Last updated: 2026-03-27
+Last updated: 2026-03-28
 
 Use this file as a session handoff, not as a second backlog.
 
@@ -12,6 +12,82 @@ This handoff collected unusually frequent tiny updates because iteration budget 
 In normal mode, batch note-only updates unless they would be expensive to rediscover.
 
 ## Current Position
+
+- 2026-03-28 refresh:
+  - newest kept broad cached curated canary is now [20260328T_broad_after_sweet_advisory](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_broad_after_sweet_advisory/benchmark_report.json)
+    - weighted start mean: `0.2161s`
+    - mean gold end error: `0.2141s`
+    - compared with prior kept broad [20260329T030556Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T030556Z/benchmark_report.json):
+      - weighted start improved `0.2181 -> 0.2161`
+      - mean gold end stayed effectively flat `0.2138 -> 0.2141`
+      - only material song movement was `Sweet Caroline`: `0.2154 / 0.2287 -> 0.1832 / 0.2287`
+    - top current offenders:
+      - `Con Calma`: `0.3206 / 0.3330`
+      - `Royals` companion clip: `0.2093 / 0.1278`
+      - `Rap God`: `0.2088 / 0.2120`
+      - `Without Me`: `0.2017 / 0.1957`
+      - `Houdini`: `0.1924 / 0.2334`
+      - `Royals` opening clip: `0.1869 / 0.1567`
+      - `Sweet Caroline`: `0.1832 / 0.2287`
+  - kept wins now in tree:
+    - offline curated reruns now work with exact cached trimmed clips even when the full-song WAV is absent
+    - `Without Me` forced-alignment repairs recovered the live `Back again` / `Tell a friend` family and improved the broad pack materially
+    - accepted forced-alignment advisory start nudges now allow the `Sweet Caroline` family even when one unrelated extra default-window word is present, as long as aggressive overlap is exact and default overlap is near-zero
+  - kept focused/broad artifacts for that work:
+    - focused 4-song pack: [20260329T030051Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T030051Z/benchmark_report.json)
+    - mixed guard pack: [20260329T030334Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T030334Z/benchmark_report.json)
+    - focused `Sweet Caroline` advisory-gate rerun: [20260328T_sweet_advisory_gate_relax](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_sweet_advisory_gate_relax/benchmark_report.json)
+    - mixed guard pack for that change: [20260328T_sweet_advisory_guard_pack](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_sweet_advisory_guard_pack/benchmark_report.json)
+    - prior broad rerun after `Without Me`: [20260329T030556Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260329T030556Z/benchmark_report.json)
+    - newest kept broad rerun after `Sweet Caroline` advisory gate relax: [20260328T_broad_after_sweet_advisory](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_broad_after_sweet_advisory/benchmark_report.json)
+  - negative learning just confirmed:
+    - `Sweet Caroline` line 3 (`I've been inclined`) is already late in raw loaded forced alignment, before any forced-fallback repair stages
+    - trace: [20260328T_sweet_trace/forced_trace.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_sweet_trace/forced_trace.json)
+    - implication:
+      - do not spend more time on forced-fallback postpasses for `Sweet Caroline`
+      - the next `Sweet Caroline` read has to start lower, around forced alignment loading / WhisperX raw line timing
+  - kept `Sweet Caroline` advisory-start fix:
+    - raw WhisperX forced alignment returns an accepted exact `I've been inclined` match at `12.741-14.125` with low scores, while the normal Whisper window still contains an earlier exact phrase (`11.76-13.8`)
+    - WhisperX trace: [20260328T_sweet_forced_trace/whisperx_forced.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_sweet_forced_trace/whisperx_forced.json)
+    - the existing advisory-nudge machinery already knew about this family, but it was blocked because `current_window_word_count` became `4` from one stray `To` token even though default overlap was only `0.13`
+    - advisory trace: [20260328T_sweet_advisory_trace/forced_advisory.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_sweet_advisory_trace/forced_advisory.json)
+    - kept change:
+      - advisory medium-confidence gating now allows exact aggressive overlap with up to one extra default-window word when default overlap is still very low (`<= 0.2`)
+      - production effect:
+        - `Sweet Caroline` line 3 moved from `12.741` back to `12.0`
+        - focused song improved `0.2154 / 0.2287 -> 0.1832 / 0.2287`
+      - guard result:
+        - `Con Calma|Sweet Caroline|Taste|Without Me|Royals` pack in [20260328T_sweet_advisory_guard_pack](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_sweet_advisory_guard_pack/benchmark_report.json) stayed clean
+      - broad result:
+        - only material movement in the 13-song rerun was `Sweet Caroline`
+  - negative learning just confirmed:
+    - `Con Calma` late-tail repair-layer idea is not a keeper
+    - direct production experiment in [20260328T_con_calma_gap_tail_fix](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_con_calma_gap_tail_fix/benchmark_report.json) moved the visible tail in the intended direction:
+      - line 11: `27.38-28.88 -> 26.60-28.56`
+      - line 12: `28.89-29.65 -> 28.66-29.65`
+    - but the focused metric regressed from `0.3206 / 0.3330` to `0.3392 / 0.3542`
+    - implication:
+      - the current `Con Calma` miss is not solved by another late-tail boundary/start-only repair
+      - if resuming `Con Calma`, inspect lower-level mapped/pre-Whisper construction or clip/gold semantics before retrying runtime heuristics
+  - fresh `Con Calma` lower-level diagnosis:
+    - mapper trace: [20260328T_con_calma_mapper_trace](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_con_calma_mapper_trace/benchmark_report.json)
+    - useful files:
+      - [mapper_details.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_con_calma_mapper_trace/mapper_details.json)
+      - [segment_selection.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_con_calma_mapper_trace/segment_selection.json)
+      - [segment_assignments.json](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_con_calma_mapper_trace/segment_assignments.json)
+    - lines `10-12` all get forced onto merged segment `2`, whose span is `20.82-29.98`
+    - segment selection never escapes that merged bag:
+      - line 10 score `0.5`
+      - line 11 score `0.3333`
+      - line 12 score `0.3333`
+      - all with `seg_cursor_before=2`, `search_start=2`, `search_end=3`, `final_segment=2`
+    - the pathology is already visible in mapper details before later repairs:
+      - line 10 consumes tokens through `que`
+      - line 11 shows mismatched `matches` and a mapped span `25.04-27.274`
+      - line 12 has `match_count=0` and still inherits mapped span `27.274-28.329`
+    - implication:
+      - this late-tail family is primarily a merged-segment assignment/mapping problem, not a post-mapping boundary problem
+      - next credible `Con Calma` work should target segment selection / segment-bag clipping for late lines inside merged segments, not more tail reanchors
 
 - The major lyrics / Whisper / sync architecture cleanup is largely complete.
 - The main reference doc is `docs/tech_debt_backlog.md`.

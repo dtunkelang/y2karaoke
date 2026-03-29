@@ -138,6 +138,33 @@ def test_download_audio_offline_ignores_trimmed_audio_when_matching_cache(tmp_pa
     generator.downloader.download_audio.assert_not_called()
 
 
+def test_download_audio_offline_accepts_exact_cached_trimmed_clip(tmp_path):
+    generator = KaraokeGenerator(cache_dir=tmp_path)
+    generator.downloader = MagicMock()
+
+    cache = CacheManager(tmp_path)
+    video_id = "abc123"
+    cache.save_metadata(video_id, {"title": "Song", "artist": "Artist"})
+
+    video_dir = cache.get_video_cache_dir(video_id)
+    trimmed = video_dir / "trimmed_from_57.00s_for_12.00s.wav"
+    trimmed.write_bytes(b"trimmed")
+
+    result = generator._download_audio(
+        video_id,
+        "https://youtu.be/abc123",
+        False,
+        offline=True,
+        expected_title="Song",
+        expected_artist="Artist",
+        audio_start=57.0,
+        audio_duration=12.0,
+    )
+
+    assert result["audio_path"] == str(trimmed)
+    generator.downloader.download_audio.assert_not_called()
+
+
 def test_download_audio_rejects_cached_karaoke_asset(tmp_path):
     generator = KaraokeGenerator(cache_dir=tmp_path)
     generator.downloader = MagicMock(

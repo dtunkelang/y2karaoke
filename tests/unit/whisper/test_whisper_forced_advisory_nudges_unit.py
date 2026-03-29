@@ -85,6 +85,68 @@ def test_apply_forced_advisory_start_nudges_shifts_only_exact_three_word_candida
     assert adjusted[1].end_time == lines[1].end_time
 
 
+def test_apply_forced_advisory_start_nudges_allows_low_default_overlap_with_four_word_window(  # noqa: E501
+    tmp_path,
+) -> None:
+    lines = [
+        _line("I've been inclined", 12.74, 14.12),
+    ]
+    current_segments = [
+        TranscriptionSegment(
+            start=8.72,
+            end=25.18,
+            text=(
+                "Oh, sweet Caroline, your times never seemed so good, "
+                "I've been inclined to believe they never were, but now I "
+                "look at the night."
+            ),
+            words=[],
+        )
+    ]
+    current_words = [
+        TranscriptionWord(text="I've", start=11.76, end=12.46, probability=0.9),
+        TranscriptionWord(text="been", start=12.46, end=13.06, probability=0.9),
+        TranscriptionWord(text="inclined", start=13.06, end=13.8, probability=0.9),
+        TranscriptionWord(text="To", start=16.0, end=16.7, probability=0.9),
+    ]
+    aggressive_words = [
+        TranscriptionWord(text="I've", start=12.0, end=12.4, probability=0.9),
+        TranscriptionWord(text="been", start=12.4, end=12.8, probability=0.9),
+        TranscriptionWord(text="inclined", start=12.8, end=13.8, probability=0.9),
+        TranscriptionWord(text="To", start=16.0, end=16.7, probability=0.9),
+    ]
+    aggressive_segments = [
+        TranscriptionSegment(
+            start=12.0,
+            end=13.8,
+            text="I've been inclined",
+            words=aggressive_words[:3],
+        )
+    ]
+
+    vocals_path = tmp_path / "vocals.wav"
+    vocals_path.write_bytes(b"")
+
+    adjusted, nudged = apply_forced_advisory_start_nudges(
+        lines=lines,
+        current_segments=current_segments,
+        current_words=current_words,
+        vocals_path=str(vocals_path),
+        language="en",
+        model_size="large",
+        logger=_Logger(),
+        load_aggressive_variant_fn=lambda **_kwargs: (
+            aggressive_segments,
+            aggressive_words,
+            "en",
+        ),
+    )
+
+    assert nudged == 1
+    assert adjusted[0].start_time == 12.0
+    assert adjusted[0].end_time == lines[0].end_time
+
+
 def test_apply_forced_advisory_start_nudges_respects_disable_env(monkeypatch) -> None:
     monkeypatch.setenv("Y2K_DISABLE_FORCED_ADVISORY_START_NUDGE", "1")
     line = _line("I've been inclined", 12.74, 14.12)

@@ -188,18 +188,8 @@ def reanchor_forced_lines_to_local_content_words(
     return adjusted, shifted
 
 
-def _three_word_suffix_retime_tokens(
-    line: models.Line,
-    *,
-    min_prefix_share: float,
-) -> list[str] | None:
+def _three_word_suffix_retime_tokens(line: models.Line) -> list[str] | None:
     if len(line.words) != 3:
-        return None
-    line_duration = line.end_time - line.start_time
-    if line_duration <= 0.0:
-        return None
-    prefix_duration = line.words[0].end_time - line.words[0].start_time
-    if prefix_duration / line_duration < min_prefix_share:
         return None
     normalized = [normalize_token(word.text) for word in line.words]
     if any(not token for token in normalized):
@@ -301,6 +291,8 @@ def retime_three_word_lines_from_suffix_matches(
     min_suffix_span_sec: float = 0.35,
     max_prefix_slot_sec: float = 0.4,
     min_prefix_share: float = 0.55,
+    min_relaxed_prefix_share: float = 0.2,
+    min_relaxed_suffix_start_gain_sec: float = 0.8,
 ) -> tuple[List[models.Line], int]:
     if not whisper_words:
         return forced_lines, 0
@@ -310,7 +302,6 @@ def retime_three_word_lines_from_suffix_matches(
     for idx, line in enumerate(adjusted):
         normalized = _three_word_suffix_retime_tokens(
             line,
-            min_prefix_share=min_prefix_share,
         )
         if normalized is None:
             continue
@@ -323,6 +314,17 @@ def retime_three_word_lines_from_suffix_matches(
         )
         if suffix_match is None:
             continue
+        line_duration = line.end_time - line.start_time
+        if line_duration <= 0.0:
+            continue
+        prefix_duration = line.words[0].end_time - line.words[0].start_time
+        prefix_share = prefix_duration / line_duration
+        suffix_start = suffix_match[0]
+        if prefix_share < min_prefix_share:
+            if prefix_share < min_relaxed_prefix_share:
+                continue
+            if suffix_start - line.start_time < min_relaxed_suffix_start_gain_sec:
+                continue
 
         prev_end, next_start = _neighbor_line_bounds(adjusted, idx)
         target_window = _three_word_suffix_retime_window(

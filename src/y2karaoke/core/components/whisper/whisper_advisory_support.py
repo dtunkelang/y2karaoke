@@ -130,6 +130,13 @@ def advisory_candidate_bucket(summary: AdvisoryLineSupport) -> str | None:
         and summary.current_window_word_count <= 3
     ):
         return "medium_confidence"
+    if (
+        summary.aggressive_best_overlap >= 0.99
+        and summary.aggressive_window_word_count >= 3
+        and summary.current_window_word_count <= 4
+        and summary.default_best_overlap <= 0.2
+    ):
+        return "medium_confidence"
     return None
 
 

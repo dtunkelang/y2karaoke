@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Any, Tuple, TYPE_CHECKING
 import musicbrainzngs
 
-from ..config import get_cache_dir
+from ..config import DEFAULT_CACHE_DIR, get_cache_dir
 from ..exceptions import Y2KaraokeError
 from ..utils.cache import CacheManager
 from ..utils.logging import get_logger
@@ -209,6 +209,8 @@ class KaraokeGenerator:
         offline: bool = False,
         expected_title: Optional[str] = None,
         expected_artist: Optional[str] = None,
+        audio_start: float = 0.0,
+        audio_duration: float | None = None,
     ) -> Dict[str, str]:
         metadata = self.cache_manager.load_metadata(video_id)
         audio_files = self.cache_manager.find_files(video_id, "*.wav")
@@ -238,6 +240,22 @@ class KaraokeGenerator:
         metadata_title = metadata["title"] if metadata else "Unknown"
         metadata_artist = metadata["artist"] if metadata else "Unknown"
 
+        exact_trimmed_audio: Path | None = None
+        if audio_start > 0 or (audio_duration is not None and audio_duration > 0):
+            trimmed_name = (
+                f"trimmed_from_{audio_start:.2f}s.wav"
+                if audio_duration is None
+                else f"trimmed_from_{audio_start:.2f}s_for_{audio_duration:.2f}s.wav"
+            )
+            trimmed_candidates = [
+                self.cache_manager.get_file_path(video_id, trimmed_name),
+                DEFAULT_CACHE_DIR / video_id / trimmed_name,
+            ]
+            for candidate in trimmed_candidates:
+                if candidate.exists():
+                    exact_trimmed_audio = candidate
+                    break
+
         if metadata and not force and original_audio:
             logger.info("📁 Using cached audio")
             return {
@@ -249,6 +267,13 @@ class KaraokeGenerator:
             logger.warning("📁 Using cached audio in offline mode")
             return {
                 "audio_path": str(original_audio),
+                "title": expected_title or metadata_title,
+                "artist": expected_artist or metadata_artist,
+            }
+        if offline and exact_trimmed_audio:
+            logger.warning("📁 Using cached trimmed audio in offline mode")
+            return {
+                "audio_path": str(exact_trimmed_audio),
                 "title": expected_title or metadata_title,
                 "artist": expected_artist or metadata_artist,
             }
@@ -301,6 +326,8 @@ class KaraokeGenerator:
             offline,
             expected_title=expected_title,
             expected_artist=expected_artist,
+            audio_start=audio_start,
+            audio_duration=audio_duration,
         )
 
         video_path = None

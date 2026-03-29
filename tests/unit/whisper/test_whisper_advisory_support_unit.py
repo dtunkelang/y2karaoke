@@ -103,6 +103,23 @@ def test_advisory_candidate_bucket_marks_high_confidence_exact_gain() -> None:
     assert advisory_candidate_bucket(summary) == "high_confidence"
 
 
+def test_advisory_candidate_bucket_allows_exact_gain_with_extra_window_word() -> None:
+    summary = AdvisoryLineSupport(
+        index=3,
+        text="I've been inclined",
+        current_window_word_count=4,
+        default_window_word_count=4,
+        aggressive_window_word_count=4,
+        default_best_segment_text="merged default segment",
+        aggressive_best_segment_text="I've been inclined",
+        default_best_overlap=0.13,
+        aggressive_best_overlap=1.0,
+        aggressive_gain=False,
+    )
+
+    assert advisory_candidate_bucket(summary) == "medium_confidence"
+
+
 def test_advisory_candidate_bucket_rejects_weak_merged_overlap() -> None:
     summary = AdvisoryLineSupport(
         index=2,
