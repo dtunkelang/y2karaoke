@@ -1763,3 +1763,16 @@ Most likely next inspection targets:
     - 4-song control pack stayed flat again:
       - `benchmarks/results/20260328T235650Z`
       - aggregate remained `gold_start_abs_mean_weighted=0.139`, `gold_end_abs_mean=0.191`
+  - remaining `Clocks` line-1 blocker is now isolated:
+    - added `tools/analyze_pre_whisper_end_compression.py`
+    - on `benchmarks/results/20260328T235500Z`, only line 1 `You are` is flagged
+    - pre-whisper was already closer to gold:
+      - pre-whisper end `6.512`
+      - final end `6.290`
+      - gold end `6.650`
+      - downstream end regression `0.222s`
+    - nearby controls are clean:
+      - `Take On Me`: `0` hits
+      - `Hotline Bling`: `0` hits
+      - `Say My Name`: `0` hits
+    - next `Clocks` path, if worth pursuing, should target post-pre-whisper end compression on the first repeated short line, not another plain-text layout retune

@@ -766,6 +766,20 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   - current honest read:
     - this makes the `Clocks` upstream family cleaner and clearly keepable
     - line 1 still ends a bit early, but the main repeated-short carryover is now much closer to gold
+- remaining `Clocks` blocker after the upstream wins:
+  - `tools/analyze_pre_whisper_end_compression.py` shows the last miss is isolated to line 1
+  - on `benchmarks/results/20260328T235500Z`:
+    - pre-whisper end `6.512`
+    - final end `6.290`
+    - gold end `6.650`
+    - downstream end regression `0.222s`
+  - nearby controls do not show this family:
+    - `Take On Me`: `0` hits
+    - `Hotline Bling`: `0` hits
+    - `Say My Name`: `0` hits
+  - current read:
+    - the plain-text layout stage is no longer the main `Clocks` blocker
+    - the next fix, if any, should target post-pre-whisper end compression on the first repeated short line
 
 ## Process Learnings
 
