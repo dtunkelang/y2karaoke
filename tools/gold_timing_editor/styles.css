@@ -249,6 +249,15 @@ button:hover {
   color: white;
 }
 
+.word.selected {
+  box-shadow: 0 0 0 3px rgba(18, 107, 67, 0.35);
+  z-index: 3;
+}
+
+.line-row.selected-line {
+  box-shadow: inset 0 0 0 2px rgba(18, 107, 67, 0.18);
+}
+
 .handle {
   position: absolute;
   width: 8px;
@@ -258,6 +267,43 @@ button:hover {
 }
 .handle.left { left: 0; }
 .handle.right { right: 0; }
+
+.line-drag-box {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  border: 2px dashed rgba(18, 107, 67, 0.8);
+  background: rgba(18, 107, 67, 0.12);
+  border-radius: 6px;
+  cursor: grab;
+  z-index: 2;
+}
+
+.line-drag-box.selected {
+  background: rgba(18, 107, 67, 0.2);
+  border-style: solid;
+}
+
+.line-edit-mode .word {
+  opacity: 0.55;
+}
+
+.line-edit-mode .line-drag-box {
+  opacity: 1;
+}
+
+.gap-track {
+  background: #f5f7f4;
+}
+
+.gap-bar {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  border-radius: 4px;
+  background: rgba(94, 108, 95, 0.15);
+  border: 1px solid rgba(94, 108, 95, 0.25);
+}
 
 audio {
   display: block;

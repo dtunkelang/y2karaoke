@@ -848,3 +848,26 @@ songs:
     Say my name, say my name
     If no one is around you, say, "Baby, I love you"
     If you ain't runnin' game
+
+- title: Rolling in the Deep
+  artist: Adele
+  clip_id: chorus-parenthetical-bleed
+  clip_tags:
+  - stress
+  - parenthetical
+  - advisory
+  - chorus
+  youtube_url: https://www.youtube.com/watch?v=bDtjO-R0QSo
+  youtube_id: bDtjO-R0QSo
+  audio_start_sec: 113
+  clip_duration_sec: 9
+  preferred_lyrics_provider: syncedlyrics
+  fallback_lyrics_provider: lyriq
+  lrc_duration_tolerance_sec: 20
+  notes: Chorus block with parenthetical bleed and a short exact line that may separate aggressive support from merged live support.
+  slug: adele-rolling-in-the-deep-chorus-parenthetical-bleed
+  lyrics: |
+    We could have had it all
+    (You're gonna wish you never had met me)
+    Rolling in the deep
+    Tears are gonna fall

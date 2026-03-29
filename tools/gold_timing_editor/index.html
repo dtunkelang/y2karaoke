@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gold Timing Editor</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles.css?v=3" />
   </head>
   <body>
     <header>
@@ -53,6 +53,10 @@
           <input id="autoscrollToggle" type="checkbox" checked />
           Autoscroll
         </label>
+        <label class="toggle-label">
+          <input id="overlapToggle" type="checkbox" />
+          Allow Line Overlap
+        </label>
         <label>
           Zoom
           <input id="zoomRange" type="range" min="20" max="300" step="10" value="90" />
@@ -78,9 +82,9 @@
       <div>Anchor jump: ] next anchor, [ previous anchor (whole move). Shift+[ / Shift+] jump end only, Alt+[ / Alt+] jump start only.</div>
       <div>Line mode: drag a line ruler/bar (or use Left/Right) to shift the entire line while preserving word durations and intraline gaps.</div>
       <div>Drag bar to move whole interval. Drag left/right handles to resize.</div>
-      <div>Editing is permissive: overlaps are allowed while adjusting and validated only on save.</div>
+      <div>Overlap mode: enable "Allow Line Overlap" to keep intraline word order while editing overlapping lines.</div>
     </footer>
 
-    <script src="/app.js" defer></script>
+    <script src="/app.js?v=3" defer></script>
   </body>
 </html>

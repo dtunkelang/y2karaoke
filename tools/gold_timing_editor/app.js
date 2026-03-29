@@ -15,6 +15,7 @@ const state = {
   autoScrollEnabled: true,
   tapPassMode: false,
   tapCursor: null,
+  allowLineOverlap: false,
 };
 const MIN_WORD_DURATION = 0.1;
 const SNAP_SECONDS = 0.05;
@@ -37,6 +38,7 @@ const els = {
   lineModeBtn: document.getElementById("lineModeBtn"),
   tapModeToggle: document.getElementById("tapModeToggle"),
   autoscrollToggle: document.getElementById("autoscrollToggle"),
+  overlapToggle: document.getElementById("overlapToggle"),
   zoomRange: document.getElementById("zoomRange"),
   playbackInfo: document.getElementById("playbackInfo"),
   selectionInfo: document.getElementById("selectionInfo"),
@@ -66,6 +68,13 @@ function blurEditableFocus() {
 function setStatus(msg, isError = false) {
   els.status.textContent = msg;
   els.status.style.color = isError ? "#a92323" : "#5e6c5f";
+}
+
+function lineOverlapAllowed() {
+  if (els.overlapToggle) {
+    return Boolean(els.overlapToggle.checked);
+  }
+  return Boolean(state.allowLineOverlap);
 }
 
 function resetSessionStats() {
@@ -292,6 +301,21 @@ function restoreAllLineWords(snapshot) {
   updateLineBounds();
 }
 
+function _applyWordTimingWithinLine(li, wi, nextStart, nextEnd) {
+  const line = state.doc.lines[li];
+  const words = line?.words || [];
+  const word = words[wi];
+  if (!word) return;
+
+  let start = snap(nextStart);
+  let end = snap(nextEnd);
+  if (start < 0) start = 0;
+  if (end < start + MIN_WORD_DURATION) end = start + MIN_WORD_DURATION;
+  word.start = start;
+  word.end = end;
+  updateLineBounds();
+}
+
 function enforceNonOverlapCascade(anchorLi) {
   const lines = state.doc.lines;
   if (!lines.length) return;
@@ -355,6 +379,10 @@ function _allWordRefs() {
 }
 
 function setWordTiming(li, wi, nextStart, nextEnd) {
+  if (lineOverlapAllowed()) {
+    _applyWordTimingWithinLine(li, wi, nextStart, nextEnd);
+    return;
+  }
   const refs = _allWordRefs();
   const editedIndex = refs.findIndex((r) => r.li === li && r.wi === wi);
   if (editedIndex < 0) return;
@@ -422,16 +450,28 @@ function setWordTiming(li, wi, nextStart, nextEnd) {
 
 function moveWord(li, wi, delta) {
   const w = state.doc.lines[li].words[wi];
+  if (lineOverlapAllowed()) {
+    _applyWordTimingWithinLine(li, wi, w.start + delta, w.end + delta);
+    return;
+  }
   setWordTiming(li, wi, w.start + delta, w.end + delta);
 }
 
 function adjustStart(li, wi, delta) {
   const w = state.doc.lines[li].words[wi];
+  if (lineOverlapAllowed()) {
+    _applyWordTimingWithinLine(li, wi, w.start + delta, w.end);
+    return;
+  }
   setWordTiming(li, wi, w.start + delta, w.end);
 }
 
 function adjustEnd(li, wi, delta) {
   const w = state.doc.lines[li].words[wi];
+  if (lineOverlapAllowed()) {
+    _applyWordTimingWithinLine(li, wi, w.start, w.end + delta);
+    return;
+  }
   setWordTiming(li, wi, w.start, w.end + delta);
 }
 
@@ -491,7 +531,9 @@ function snapSelectedToAudioAnchor(mode) {
     const target = nearestAudioAnchor(line.start);
     if (target == null) return false;
     shiftLine(state.selectedLine, target - line.start);
-    enforceNonOverlapCascade(state.selectedLine);
+    if (!lineOverlapAllowed()) {
+      enforceNonOverlapCascade(state.selectedLine);
+    }
     return true;
   }
 
@@ -528,7 +570,9 @@ function jumpSelectedToAudioAnchor(direction, mode) {
     const target = directionalAudioAnchor(line.start, direction);
     if (target == null) return false;
     shiftLine(state.selectedLine, target - line.start);
-    enforceNonOverlapCascade(state.selectedLine);
+    if (!lineOverlapAllowed()) {
+      enforceNonOverlapCascade(state.selectedLine);
+    }
     return true;
   }
 
@@ -796,7 +840,7 @@ function buildLineLane(line, li, row) {
     state.secondsToPx,
     laneMinWidth / Math.max(viewWindow.duration, 0.1)
   );
-  
+
   // Store metadata on the ROW for consistent access
   row.dataset.start = viewWindow.start;
   row.dataset.duration = viewWindow.duration;
@@ -869,7 +913,7 @@ function updatePlaybackVisuals() {
 
   const currentActiveLineIndex = currentLineIndexForTime(currentTime);
   const allRows = els.timeline.querySelectorAll(".lyric-line, .gap-row");
-  
+
   allRows.forEach((row) => {
     const type = row.dataset.type;
     const vStart = parseFloat(row.dataset.start);
@@ -878,7 +922,7 @@ function updatePlaybackVisuals() {
 
     const rel = currentTime - vStart;
     const clampedRel = Math.max(0, Math.min(rel, vDuration));
-    
+
     const playhead = row.querySelector(".ruler-playhead");
     if (playhead) playhead.style.left = `${clampedRel * pxPerSec}px`;
 
@@ -1034,7 +1078,7 @@ function render() {
     els.selectionInfo.textContent = "No word selected";
   }
   updateTelemetryInfo();
-  
+
   // Update visuals immediately after full render
   updatePlaybackVisuals();
 }
@@ -1190,6 +1234,15 @@ els.autoscrollToggle.addEventListener("change", () => {
   }
 });
 
+els.overlapToggle.addEventListener("change", () => {
+  state.allowLineOverlap = Boolean(els.overlapToggle.checked);
+  setStatus(
+    state.allowLineOverlap
+      ? "Line overlap editing enabled."
+      : "Line overlap editing disabled."
+  );
+});
+
 els.tapModeToggle.addEventListener("change", () => {
   setTapPassMode(Boolean(els.tapModeToggle.checked));
   if (state.tapPassMode && !state.tapCursor) {
@@ -1209,17 +1262,36 @@ document.addEventListener("mousemove", (ev) => {
   const { li, wi } = state.drag;
 
   if (state.drag.mode === "move") {
-    setWordTiming(li, wi, state.drag.startStart + dt, state.drag.startEnd + dt);
+    if (lineOverlapAllowed()) {
+      _applyWordTimingWithinLine(
+        li,
+        wi,
+        state.drag.startStart + dt,
+        state.drag.startEnd + dt
+      );
+    } else {
+      setWordTiming(li, wi, state.drag.startStart + dt, state.drag.startEnd + dt);
+    }
   } else if (state.drag.mode === "resize-left") {
     const end = state.doc.lines[li].words[wi].end;
-    setWordTiming(li, wi, state.drag.startStart + dt, end);
+    if (lineOverlapAllowed()) {
+      _applyWordTimingWithinLine(li, wi, state.drag.startStart + dt, end);
+    } else {
+      setWordTiming(li, wi, state.drag.startStart + dt, end);
+    }
   } else if (state.drag.mode === "resize-right") {
     const start = state.doc.lines[li].words[wi].start;
-    setWordTiming(li, wi, start, state.drag.startEnd + dt);
+    if (lineOverlapAllowed()) {
+      _applyWordTimingWithinLine(li, wi, start, state.drag.startEnd + dt);
+    } else {
+      setWordTiming(li, wi, start, state.drag.startEnd + dt);
+    }
   } else if (state.drag.mode === "line-move") {
     restoreAllLineWords(state.drag.originalAll);
     shiftLine(state.drag.li, dt);
-    enforceNonOverlapCascade(state.drag.li);
+    if (!lineOverlapAllowed()) {
+      enforceNonOverlapCascade(state.drag.li);
+    }
   }
 
   render();
@@ -1273,7 +1345,9 @@ document.addEventListener("keydown", (ev) => {
     if (state.editMode === "line") {
       if (state.selectedLine == null) return;
       shiftLine(state.selectedLine, delta);
-      enforceNonOverlapCascade(state.selectedLine);
+      if (!lineOverlapAllowed()) {
+        enforceNonOverlapCascade(state.selectedLine);
+      }
     } else {
       if (!state.selected) return;
       const { li, wi } = state.selected;
@@ -1383,6 +1457,7 @@ async function applyUrlParams() {
     params.get("save") || params.get("gold") || params.get("goldFile");
   const autoscroll = params.get("autoscroll");
   const tapMode = params.get("tapmode");
+  const overlap = params.get("overlap");
 
   if (timing) els.timingPath.value = timing;
   if (audio) els.audioPath.value = audio;
@@ -1395,6 +1470,13 @@ async function applyUrlParams() {
   if (tapMode != null) {
     const enabled = !["0", "false", "off"].includes(tapMode.toLowerCase());
     setTapPassMode(enabled);
+  }
+  if (overlap != null) {
+    const enabled = !["0", "false", "off"].includes(overlap.toLowerCase());
+    state.allowLineOverlap = enabled;
+    if (els.overlapToggle) {
+      els.overlapToggle.checked = enabled;
+    }
   }
 
   if (audio) {
