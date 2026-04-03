@@ -243,7 +243,8 @@ syncedlyrics, SYNCEDLYRICS_AVAILABLE, lyriq_get_lyrics, LYRIQ_AVAILABLE = (
 # Musixmatch: Best quality but has rate limits
 # NetEase: Good coverage, especially for Asian music
 # Megalobiz: Less reliable but can have unique content
-# Lrclib: Moved to end since lyriq already uses LRCLib API with potentially better search
+# Lrclib: Moved to end since lyriq already uses LRCLib API with
+# potentially better search
 # Genius: Plain text only (not useful for synced lyrics, kept as last resort)
 PROVIDER_ORDER = ["Musixmatch", "NetEase", "Megalobiz", "Lrclib", "Genius"]
 
@@ -395,16 +396,24 @@ def _search_with_fallback(
     if override_result is not None:
         return override_result
 
-    return sync_search.search_with_fallback(
-        search_term=search_term,
-        provider_order=PROVIDER_ORDER,
-        search_single_provider_fn=lambda term, provider, synced_only=True, enhanced=False: _search_single_with_state_fallback(
+    def _search_single_provider(
+        term: str,
+        provider: str,
+        synced_only: bool = True,
+        enhanced: bool = False,
+    ) -> Optional[str]:
+        return _search_single_with_state_fallback(
             term,
             provider,
             synced_only=synced_only,
             enhanced=enhanced,
             runtime_state=runtime_state,
-        ),
+        )
+
+    return sync_search.search_with_fallback(
+        search_term=search_term,
+        provider_order=PROVIDER_ORDER,
+        search_single_provider_fn=_search_single_provider,
         search_cache=runtime_state.search_cache,
         disk_cache=runtime_state.disk_cache,
         disk_cache_enabled=_disk_cache_enabled(runtime_state),
@@ -566,6 +575,30 @@ def fetch_lyrics_for_duration(
     runtime_config = runtime_config or load_lyrics_runtime_config(
         lrc_duration_tolerance_sec=tolerance
     )
+
+    def _fetch_with_runtime_config(
+        title: str,
+        artist: str,
+        *,
+        synced_only: bool = True,
+        enhanced: bool = False,
+        target_duration: Optional[int] = None,
+        duration_tolerance: int = 20,
+        offline: bool = False,
+        state: Optional[SyncState] = None,
+    ) -> Tuple[Optional[str], bool, str]:
+        return fetch_lyrics_multi_source(
+            title,
+            artist,
+            synced_only=synced_only,
+            enhanced=enhanced,
+            target_duration=target_duration,
+            duration_tolerance=duration_tolerance,
+            offline=offline,
+            state=state,
+            runtime_config=runtime_config,
+        )
+
     return sync_providers.fetch_lyrics_for_duration(
         title,
         artist,
@@ -575,10 +608,7 @@ def fetch_lyrics_for_duration(
         state=runtime_state,
         is_syncedlyrics_available_fn=_is_syncedlyrics_available,
         is_lyriq_available_fn=_is_lyriq_available,
-        fetch_lyrics_multi_source_fn=lambda *a, **k: fetch_lyrics_multi_source(
-            *a,
-            **({"runtime_config": runtime_config} | k),
-        ),
+        fetch_lyrics_multi_source_fn=_fetch_with_runtime_config,
         get_lrc_duration_fn=_get_lrc_duration_for_state,
         search_with_state_fallback_fn=_search_with_state_fallback,
         has_timestamps_fn=_has_timestamps_for_state,

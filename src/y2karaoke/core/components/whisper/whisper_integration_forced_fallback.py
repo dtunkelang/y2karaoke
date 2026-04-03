@@ -52,9 +52,7 @@ from .whisper_split_refrain_restore import (
 
 _can_apply_reanchored_line = _forced_local_repairs.can_apply_reanchored_line
 _mean_nearest_onset_distance = _forced_local_repairs.mean_nearest_onset_distance
-_non_placeholder_whisper_word_count = (
-    _forced_local_repairs.non_placeholder_whisper_word_count
-)
+_whisper_word_count = _forced_local_repairs.non_placeholder_whisper_word_count
 _normalize_token = _forced_local_repairs.normalize_token
 _reanchor_forced_lines_to_local_content_words = (
     _forced_local_repairs.reanchor_forced_lines_to_local_content_words
@@ -66,16 +64,14 @@ _retime_three_word_lines_from_suffix_matches = (
     _forced_local_repairs.retime_three_word_lines_from_suffix_matches
 )
 _shift_line = _forced_local_repairs.shift_line
-_restore_forced_exact_adjacent_segment_boundaries = (
+_restore_exact_segment_boundaries = (
     _segment_boundary_repairs.restore_forced_exact_adjacent_segment_boundaries
 )
 
 
 def _forced_finalize_step_enabled(env_name: str) -> bool:
     raw = os.environ.get(env_name, "").strip().lower()
-    if not raw:
-        return True
-    return raw not in {"0", "false", "no", "off"}
+    return raw not in {"0", "false", "no", "off"} if raw else True
 
 
 def _count_sustained_line_degradations(
@@ -85,8 +81,7 @@ def _count_sustained_line_degradations(
     min_baseline_duration_sec: float = 3.5,
     max_duration_ratio: float = 0.6,
 ) -> tuple[int, int]:
-    compared = 0
-    degraded = 0
+    compared = degraded = 0
     for baseline_line, forced_line in zip(baseline_lines, forced_lines):
         if not baseline_line.words or not forced_line.words:
             continue
@@ -472,7 +467,7 @@ def _forced_alignment_hurts_sparse_onsets(
     audio_features: timing_models.AudioFeatures | None,
     logger: Any,
 ) -> bool:
-    lexical_word_count = _non_placeholder_whisper_word_count(whisper_words)
+    lexical_word_count = _whisper_word_count(whisper_words)
     baseline_onset_distance = _mean_nearest_onset_distance(
         baseline_lines, audio_features
     )
@@ -598,7 +593,7 @@ def _post_normalize_sparse_support_repairs(
             baseline_lines,
             forced_lines,
             whisper_words,
-            non_placeholder_whisper_word_count_fn=_non_placeholder_whisper_word_count,
+            non_placeholder_whisper_word_count_fn=_whisper_word_count,
             shift_line_fn=_shift_line,
         )
     )
@@ -616,7 +611,7 @@ def _post_normalize_sparse_support_repairs(
             forced_lines,
             whisper_words,
             audio_features,
-            non_placeholder_whisper_word_count_fn=_non_placeholder_whisper_word_count,
+            non_placeholder_whisper_word_count_fn=_whisper_word_count,
             shift_line_fn=_shift_line,
         )
     )
@@ -634,7 +629,7 @@ def _post_normalize_sparse_support_repairs(
             forced_lines,
             whisper_words,
             audio_features,
-            non_placeholder_whisper_word_count_fn=_non_placeholder_whisper_word_count,
+            non_placeholder_whisper_word_count_fn=_whisper_word_count,
             shift_line_fn=_shift_line,
         )
     )
@@ -659,7 +654,7 @@ def _post_normalize_sparse_support_repairs(
             baseline_lines,
             forced_lines,
             whisper_words,
-            non_placeholder_whisper_word_count_fn=_non_placeholder_whisper_word_count,
+            non_placeholder_whisper_word_count_fn=_whisper_word_count,
         )
     )
     if sustained_word_redistributed_count:
@@ -798,8 +793,7 @@ def _finalize_forced_line_timing(
     enforce_non_overlapping_lines_fn: Callable[..., Any] | None,
 ) -> List[models.Line]:
     forced_lines, reanchored_count = _reanchor_forced_lines_to_local_content_words(
-        forced_lines,
-        whisper_words,
+        forced_lines, whisper_words
     )
     if reanchored_count:
         logger.info(
@@ -827,9 +821,7 @@ def _finalize_forced_line_timing(
         )
     forced_lines, restored_leading_prefix_starts = (
         _restore_forced_leading_unmatched_prefix_starts_from_source(
-            baseline_lines,
-            forced_lines,
-            whisper_words,
+            baseline_lines, forced_lines, whisper_words
         )
     )
     if restored_leading_prefix_starts:
@@ -1082,11 +1074,8 @@ def _apply_forced_post_finalize_repairs(
         lines=forced_lines,
         line_range=trace_line_range,
     )
-    forced_lines, restored_exact_segment_boundaries = (
-        _restore_forced_exact_adjacent_segment_boundaries(
-            forced_lines,
-            transcription,
-        )
+    forced_lines, restored_exact_segment_boundaries = _restore_exact_segment_boundaries(
+        forced_lines, transcription
     )
     if restored_exact_segment_boundaries:
         logger.info(

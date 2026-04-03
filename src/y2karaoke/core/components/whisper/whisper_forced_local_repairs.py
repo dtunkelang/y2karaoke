@@ -243,41 +243,16 @@ def restore_forced_leading_unmatched_prefix_starts_from_source(
         if start_gain < min_start_gain_sec or start_gain > max_start_gain_sec:
             continue
 
-        tokens = [normalize_token(word.text) for word in forced.words]
-        nearby = [
-            (normalize_token(word.text), float(word.start))
-            for word in whisper_words
-            if forced.start_time - lookback_sec
-            <= word.start
-            <= forced.end_time + lookahead_sec
-        ]
-        if not nearby:
+        anchor = _best_leading_prefix_restore_anchor(
+            baseline=baseline,
+            forced=forced,
+            whisper_words=whisper_words,
+            lookback_sec=lookback_sec,
+            lookahead_sec=lookahead_sec,
+        )
+        if anchor is None:
             continue
-
-        best_anchor_idx = None
-        best_anchor_start = None
-        best_anchor_score: tuple[float, int, int] | None = None
-        for token_idx, token in enumerate(tokens):
-            if not token:
-                continue
-            matches = [start for observed, start in nearby if observed == token]
-            if not matches:
-                continue
-            anchor_start = min(
-                matches, key=lambda start: abs(baseline.start_time - start)
-            )
-            anchor_delta = abs(baseline.start_time - anchor_start)
-            anchor_score = (
-                anchor_delta,
-                _low_signal_penalty(token),
-                -token_idx,
-            )
-            if best_anchor_score is None or anchor_score < best_anchor_score:
-                best_anchor_idx = token_idx
-                best_anchor_start = anchor_start
-                best_anchor_score = anchor_score
-        if best_anchor_idx is None or best_anchor_start is None:
-            continue
+        best_anchor_idx, best_anchor_start = anchor
         if best_anchor_idx < min_leading_unmatched_tokens:
             continue
         if abs(baseline.start_time - best_anchor_start) > max_anchor_delta_sec:
@@ -290,6 +265,56 @@ def restore_forced_leading_unmatched_prefix_starts_from_source(
         )
         restored += 1
     return repaired, restored
+
+
+def _nearby_whisper_token_starts(
+    whisper_words: List[timing_models.TranscriptionWord],
+    *,
+    window_start: float,
+    window_end: float,
+) -> list[tuple[str, float]]:
+    return [
+        (normalize_token(word.text), float(word.start))
+        for word in whisper_words
+        if window_start <= word.start <= window_end
+    ]
+
+
+def _best_leading_prefix_restore_anchor(
+    *,
+    baseline: models.Line,
+    forced: models.Line,
+    whisper_words: List[timing_models.TranscriptionWord],
+    lookback_sec: float,
+    lookahead_sec: float,
+) -> tuple[int, float] | None:
+    nearby = _nearby_whisper_token_starts(
+        whisper_words,
+        window_start=forced.start_time - lookback_sec,
+        window_end=forced.end_time + lookahead_sec,
+    )
+    if not nearby:
+        return None
+
+    best_anchor: tuple[int, float] | None = None
+    best_anchor_score: tuple[float, int, int] | None = None
+    for token_idx, word in enumerate(forced.words):
+        token = normalize_token(word.text)
+        if not token:
+            continue
+        matches = [start for observed, start in nearby if observed == token]
+        if not matches:
+            continue
+        anchor_start = min(matches, key=lambda start: abs(baseline.start_time - start))
+        anchor_score = (
+            abs(baseline.start_time - anchor_start),
+            _low_signal_penalty(token),
+            -token_idx,
+        )
+        if best_anchor_score is None or anchor_score < best_anchor_score:
+            best_anchor = (token_idx, anchor_start)
+            best_anchor_score = anchor_score
+    return best_anchor
 
 
 def _three_word_suffix_retime_tokens(line: models.Line) -> list[str] | None:
