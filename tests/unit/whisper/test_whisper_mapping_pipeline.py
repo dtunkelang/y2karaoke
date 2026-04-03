@@ -259,6 +259,7 @@ def test_register_word_match_advances_current_segment_to_line_override():
     )
     line_matches = []
     line_match_intervals = {}
+    line_match_word_indices = {}
     line_last_idx_ref = [None]
 
     candidates._register_word_match(
@@ -271,6 +272,7 @@ def test_register_word_match_advances_current_segment_to_line_override():
         line_segment=7,
         line_matches=line_matches,
         line_match_intervals=line_match_intervals,
+        line_match_word_indices=line_match_word_indices,
         word_idx=0,
         line_last_idx_ref=line_last_idx_ref,
         phonetic_similarity_fn=lambda *_: 1.0,
@@ -301,6 +303,7 @@ def test_register_word_match_keeps_later_best_segment_when_ahead_of_override():
         line_segment=7,
         line_matches=[],
         line_match_intervals={},
+        line_match_word_indices={},
         word_idx=0,
         line_last_idx_ref=[None],
         phonetic_similarity_fn=lambda *_: 1.0,
@@ -349,6 +352,167 @@ def test_select_best_candidate_prefers_lexical_match_over_tighter_time_fit():
 
     assert best_idx == 1
     assert best_word.text == "Fuck"
+
+
+def test_select_best_candidate_penalizes_backtracking_in_dense_line():
+    ctx = _LineMappingContext(
+        all_words=[
+            TranscriptionWord(text="late", start=24.68, end=24.9),
+            TranscriptionWord(text="mid", start=25.86, end=26.5),
+            TranscriptionWord(text="future", start=26.6, end=27.12),
+        ],
+        segments=[],
+        word_segment_idx={0: 2, 1: 2, 2: 2},
+        language="eng-Latn",
+        total_lrc_words=20,
+        total_whisper_words=20,
+    )
+    word = Word("de", start_time=25.457, end_time=25.7)
+    whisper_candidates = [
+        (TranscriptionWord(text=f"filler{i}", start=20.0 + i, end=20.1 + i), i + 10)
+        for i in range(10)
+    ]
+    whisper_candidates.extend(
+        [
+            (ctx.all_words[2], 14),
+            (ctx.all_words[1], 12),
+            (ctx.all_words[0], 6),
+        ]
+    )
+
+    best_word, best_idx = candidates._select_best_candidate(
+        ctx,
+        whisper_candidates,
+        word,
+        line_shift=0.0,
+        line_segment=2,
+        line_anchor_time=24.612,
+        lrc_idx_opt=3,
+        prior_matched_word_idx=13,
+        line_word_count=10,
+        time_drift_threshold=0.8,
+        phonetic_similarity_fn=lambda *_: 1.0,
+    )
+
+    assert best_idx == 12
+    assert best_word.text == "mid"
+
+
+def test_match_assigned_words_prefers_local_assigned_window_before_full_segment():
+    ctx = _LineMappingContext(
+        all_words=[
+            TranscriptionWord(text="ya", start=21.5, end=22.08),
+            TranscriptionWord(text="vi", start=22.08, end=22.16),
+            TranscriptionWord(text="que", start=22.16, end=22.32),
+            TranscriptionWord(text="estas", start=22.32, end=22.5),
+            TranscriptionWord(text="solita,", start=22.5, end=23.02),
+            TranscriptionWord(text="acompáñame,", start=23.08, end=23.9),
+            TranscriptionWord(text="la", start=24.1, end=24.6),
+            TranscriptionWord(text="me", start=27.48, end=27.58),
+        ],
+        segments=[],
+        word_segment_idx={idx: 2 for idx in range(8)},
+        language="eng-Latn",
+        total_lrc_words=6,
+        total_whisper_words=8,
+    )
+    line = Line(
+        words=[
+            Word("Ya", start_time=22.458, end_time=22.7),
+            Word("vi", start_time=22.788, end_time=23.0),
+            Word("que", start_time=23.117, end_time=23.3),
+            Word("estás", start_time=23.447, end_time=23.7),
+            Word("solita,", start_time=23.777, end_time=24.0),
+            Word("acompáñame", start_time=24.106, end_time=24.612),
+        ]
+    )
+    lrc_index_by_loc = {(0, idx): idx for idx in range(len(line.words))}
+    lrc_assignments = {
+        0: [0],
+        1: [0],
+        2: [1],
+        3: [2],
+        4: [3],
+        5: [4],
+    }
+    line_matches = []
+    line_match_intervals = {}
+    line_match_word_indices = {}
+    line_last_idx_ref = [None]
+
+    matching._match_assigned_words(
+        ctx,
+        line_idx=0,
+        line=line,
+        lrc_index_by_loc=lrc_index_by_loc,
+        lrc_assignments=lrc_assignments,
+        line_segment=2,
+        line_anchor_time=22.458,
+        line_shift=0.0,
+        line_matches=line_matches,
+        line_match_intervals=line_match_intervals,
+        line_match_word_indices=line_match_word_indices,
+        line_last_idx_ref=line_last_idx_ref,
+        filter_and_order_candidates_fn=wmp._filter_and_order_candidates,
+        select_best_candidate_fn=wmp._select_best_candidate,
+        register_word_match_fn=wmp._register_word_match,
+    )
+
+    assert line_match_word_indices == {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5}
+    assert 7 not in ctx.used_word_indices
+    assert line_last_idx_ref[0] == 5
+
+
+def test_assemble_mapped_line_releases_trailing_outlier_match_from_cursor():
+    ctx = _LineMappingContext(
+        all_words=[
+            TranscriptionWord(text="ya", start=21.5, end=22.08),
+            TranscriptionWord(text="vi", start=22.08, end=22.16),
+            TranscriptionWord(text="solita", start=23.08, end=23.9),
+            TranscriptionWord(text="me", start=27.48, end=27.58),
+        ],
+        segments=[],
+        word_segment_idx={0: 2, 1: 2, 2: 2, 3: 2},
+        language="eng-Latn",
+        total_lrc_words=10,
+        total_whisper_words=10,
+        used_word_indices={0, 1, 2, 3},
+    )
+    line = Line(
+        words=[
+            Word("Ya", start_time=22.458, end_time=22.7),
+            Word("vi", start_time=22.788, end_time=23.0),
+            Word("solita,", start_time=23.777, end_time=24.0),
+            Word("acompáñame", start_time=24.106, end_time=24.612),
+        ]
+    )
+    line_matches = [
+        (0, (21.5, 22.08)),
+        (1, (22.08, 22.16)),
+        (2, (23.08, 23.9)),
+        (3, (27.48, 27.58)),
+    ]
+    line_match_intervals = dict(line_matches)
+    line_match_word_indices = {0: 0, 1: 1, 2: 2, 3: 3}
+    line_last_idx_ref = [3]
+
+    mapped = wmp._assemble_mapped_line(
+        ctx,
+        line_idx=8,
+        line=line,
+        line_matches=line_matches,
+        line_match_intervals=line_match_intervals,
+        line_match_word_indices=line_match_word_indices,
+        line_anchor_time=22.458,
+        line_segment=2,
+        line_last_idx_ref=line_last_idx_ref,
+        next_original_start=24.68,
+    )
+
+    assert mapped.end_time == 24.622
+    assert line_last_idx_ref[0] == 2
+    assert ctx.next_word_idx_start == 3
+    assert ctx.used_word_indices == {0, 1, 2}
 
 
 def test_skip_collapsed_assigned_match_for_late_fragment_anchor():

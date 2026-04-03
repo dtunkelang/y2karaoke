@@ -317,12 +317,12 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_dense_short_verse(
 
     lh._anchor_plain_text_lines_to_audio_window(lines, 8.0, "vocals.wav")
 
-    assert 0.3 < lines[0].start_time < 0.5
-    assert lines[0].end_time > 2.0
-    assert 2.0 < lines[1].start_time < 2.7
-    assert 4.3 < lines[2].start_time < 5.3
-    assert lines[-1].start_time > 5.4
-    assert lines[-1].end_time > 7.7
+    assert lines[0].start_time == pytest.approx(0.94, abs=0.05)
+    assert 2.35 < lines[0].end_time < 2.5
+    assert 2.45 < lines[1].start_time < 2.55
+    assert 4.35 < lines[2].start_time < 4.5
+    assert 5.3 < lines[-1].start_time < 5.45
+    assert lines[-1].end_time > 7.9
 
 
 def test_anchor_plain_text_lines_to_audio_window_spreads_sparse_sustained_clip(

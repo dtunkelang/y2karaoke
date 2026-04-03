@@ -11,9 +11,30 @@ from .whisper_forced_prefix_repairs import (
     find_exact_whisper_sequence_match as _find_exact_whisper_sequence_match,
 )
 from .whisper_forced_refrain_repairs import _neighbor_line_bounds
+from .whisper_integration_align_heuristics import _retime_line_to_window
 
 _LIGHT_LEADING_TOKENS = {"the", "a", "an"}
+_LOW_SIGNAL_TOKENS = {
+    "a",
+    "an",
+    "and",
+    "i",
+    "i'm",
+    "if",
+    "is",
+    "it",
+    "of",
+    "oh",
+    "the",
+    "to",
+    "uh",
+    "you",
+}
 _TOKEN_RE = re.compile(r"[a-z0-9']+")
+
+
+def _low_signal_penalty(token: str) -> int:
+    return 1 if token in _LOW_SIGNAL_TOKENS else 0
 
 
 def normalize_token(text: str) -> str:
@@ -186,6 +207,89 @@ def reanchor_forced_lines_to_local_content_words(
         adjusted[idx] = shifted_line
         shifted += 1
     return adjusted, shifted
+
+
+def restore_forced_leading_unmatched_prefix_starts_from_source(
+    baseline_lines: List[models.Line],
+    forced_lines: List[models.Line],
+    whisper_words: List[timing_models.TranscriptionWord] | None,
+    *,
+    min_word_count: int = 6,
+    min_leading_unmatched_tokens: int = 3,
+    min_start_gain_sec: float = 0.25,
+    max_start_gain_sec: float = 0.7,
+    max_anchor_delta_sec: float = 0.2,
+    lookback_sec: float = 0.25,
+    lookahead_sec: float = 1.0,
+) -> tuple[List[models.Line], int]:
+    if not whisper_words:
+        return forced_lines, 0
+
+    repaired = list(forced_lines)
+    restored = 0
+    limit = min(len(baseline_lines), len(forced_lines))
+    for idx in range(limit):
+        baseline = baseline_lines[idx]
+        forced = repaired[idx]
+        if (
+            not baseline.words
+            or not forced.words
+            or len(forced.words) != len(baseline.words)
+            or len(forced.words) < min_word_count
+        ):
+            continue
+
+        start_gain = baseline.start_time - forced.start_time
+        if start_gain < min_start_gain_sec or start_gain > max_start_gain_sec:
+            continue
+
+        tokens = [normalize_token(word.text) for word in forced.words]
+        nearby = [
+            (normalize_token(word.text), float(word.start))
+            for word in whisper_words
+            if forced.start_time - lookback_sec
+            <= word.start
+            <= forced.end_time + lookahead_sec
+        ]
+        if not nearby:
+            continue
+
+        best_anchor_idx = None
+        best_anchor_start = None
+        best_anchor_score: tuple[float, int, int] | None = None
+        for token_idx, token in enumerate(tokens):
+            if not token:
+                continue
+            matches = [start for observed, start in nearby if observed == token]
+            if not matches:
+                continue
+            anchor_start = min(
+                matches, key=lambda start: abs(baseline.start_time - start)
+            )
+            anchor_delta = abs(baseline.start_time - anchor_start)
+            anchor_score = (
+                anchor_delta,
+                _low_signal_penalty(token),
+                -token_idx,
+            )
+            if best_anchor_score is None or anchor_score < best_anchor_score:
+                best_anchor_idx = token_idx
+                best_anchor_start = anchor_start
+                best_anchor_score = anchor_score
+        if best_anchor_idx is None or best_anchor_start is None:
+            continue
+        if best_anchor_idx < min_leading_unmatched_tokens:
+            continue
+        if abs(baseline.start_time - best_anchor_start) > max_anchor_delta_sec:
+            continue
+
+        repaired[idx] = _retime_line_to_window(
+            forced,
+            window_start=baseline.start_time,
+            window_end=forced.end_time,
+        )
+        restored += 1
+    return repaired, restored
 
 
 def _three_word_suffix_retime_tokens(line: models.Line) -> list[str] | None:

@@ -133,6 +133,32 @@ def test_build_triage_rankings_downweights_hook_boundary_lexical_cases():
     assert triage["likely_pipeline_failure"] == []
 
 
+def test_build_triage_rankings_downweights_anchor_disagreement_with_strong_gold():
+    module = _load_module()
+    succeeded = [
+        {
+            "artist": "Cyndi Lauper",
+            "title": "Time After Time",
+            "metrics": {
+                "gold_available": True,
+                "dtw_line_coverage": 1.0,
+                "dtw_word_coverage": 1.0,
+                "low_confidence_ratio": 0.0,
+                "agreement_coverage_ratio": 1.0,
+                "agreement_text_similarity_mean": 0.821,
+                "agreement_start_p95_abs_sec": 1.397,
+                "agreement_bad_ratio": 0.5,
+                "timing_quality_score": 0.9389,
+                "gold_word_coverage_ratio": 1.0,
+                "gold_start_mean_abs_sec": 0.1752,
+                "gold_start_p95_abs_sec": 0.3233,
+            },
+        }
+    ]
+    triage = module._build_triage_rankings(succeeded, top_n=5)
+    assert triage["likely_pipeline_failure"] == []
+
+
 def test_aggregate_includes_triage_ranking_fields():
     module = _load_module()
     results = [

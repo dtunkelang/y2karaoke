@@ -8,12 +8,34 @@ from ... import models
 from .whisper_dtw import _LineMappingContext
 
 
+def _prune_out_of_span_matched_indices(
+    *,
+    line_matches: List[Tuple[int, Tuple[float, float]]],
+    line_match_word_indices: Dict[int, int],
+    mapped_line: "models.Line",
+    max_end_slack: float = 0.15,
+) -> list[int]:
+    if not line_matches or not mapped_line.words:
+        return []
+
+    preserved: list[int] = []
+    line_end = mapped_line.end_time
+    for word_idx, (_match_start, match_end) in line_matches:
+        whisper_idx = line_match_word_indices.get(word_idx)
+        if whisper_idx is None:
+            continue
+        if match_end <= line_end + max_end_slack:
+            preserved.append(whisper_idx)
+    return preserved
+
+
 def _assemble_mapped_line(
     ctx: _LineMappingContext,
     line_idx: int,
     line: "models.Line",
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     line_anchor_time: float,
     line_segment: Optional[int],
     line_last_idx_ref: List[Optional[int]],
@@ -86,6 +108,23 @@ def _assemble_mapped_line(
         ctx.prev_line_end = mapped_line.end_time
     if line_segment is not None:
         ctx.used_segments.add(line_segment)
+    preserved_indices = _prune_out_of_span_matched_indices(
+        line_matches=line_matches,
+        line_match_word_indices=line_match_word_indices,
+        mapped_line=mapped_line,
+    )
+    pruned_indices = {
+        whisper_idx
+        for whisper_idx in line_match_word_indices.values()
+        if whisper_idx not in preserved_indices
+    }
+    if pruned_indices:
+        ctx.used_word_indices.difference_update(pruned_indices)
     if line_last_idx_ref[0] is not None:
-        ctx.next_word_idx_start = line_last_idx_ref[0] + 1
+        if preserved_indices:
+            preserved_max = max(preserved_indices)
+            line_last_idx_ref[0] = preserved_max
+            ctx.next_word_idx_start = preserved_max + 1
+        else:
+            line_last_idx_ref[0] = None
     return mapped_line

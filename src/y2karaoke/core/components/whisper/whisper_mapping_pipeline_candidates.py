@@ -39,6 +39,7 @@ def _register_word_match(
     line_segment: Optional[int],
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     word_idx: int,
     line_last_idx_ref: List[Optional[int]],
     *,
@@ -48,6 +49,7 @@ def _register_word_match(
     start, end = best_word.start, best_word.end
     line_matches.append((word_idx, (start, end)))
     line_match_intervals[word_idx] = (start, end)
+    line_match_word_indices[word_idx] = best_idx
     ctx.mapped_count += 1
     ctx.mapped_lines_set.add(line_idx)
     best_sim = max(
@@ -78,6 +80,8 @@ def _select_best_candidate(
     line_segment: Optional[int],
     line_anchor_time: float,
     lrc_idx_opt: Optional[int],
+    prior_matched_word_idx: Optional[int] = None,
+    line_word_count: int = 0,
     *,
     trace_context: Optional[dict[str, object]] = None,
     time_drift_threshold: float,
@@ -97,6 +101,11 @@ def _select_best_candidate(
         )
     ]
     candidate_pool = plausible_candidates or whisper_candidates
+    monotonic_backtrack_penalty = _dense_line_backtrack_penalty(
+        prior_matched_word_idx=prior_matched_word_idx,
+        line_word_count=line_word_count,
+        candidate_pool_size=len(candidate_pool),
+    )
     scored_candidates = [
         (
             pair[0],
@@ -112,7 +121,8 @@ def _select_best_candidate(
                 candidate_idx=pair[1],
                 total_lrc_words=ctx.total_lrc_words,
                 total_whisper_words=ctx.total_whisper_words,
-            ),
+            )
+            + monotonic_backtrack_penalty(pair[1]),
         )
         for pair in candidate_pool
     ]
@@ -150,6 +160,7 @@ def _select_best_candidate(
             "line_anchor_time": round(line_anchor_time, 3),
             "line_segment": line_segment,
             "lrc_index": lrc_idx_opt,
+            "prior_matched_word_idx": prior_matched_word_idx,
             "trace_context": trace_context or {},
             "lexical_candidate_count": len(plausible_candidates),
             "chosen_index": best_idx,
@@ -170,6 +181,33 @@ def _select_best_candidate(
         }
     )
     return best_word, best_idx
+
+
+def _dense_line_backtrack_penalty(
+    *,
+    prior_matched_word_idx: Optional[int],
+    line_word_count: int,
+    candidate_pool_size: int,
+    min_line_words: int = 8,
+    min_candidate_pool_size: int = 12,
+    grace_words: int = 1,
+    base_penalty: float = 0.55,
+    step_penalty: float = 0.14,
+) -> Callable[[int], float]:
+    if (
+        prior_matched_word_idx is None
+        or line_word_count < min_line_words
+        or candidate_pool_size < min_candidate_pool_size
+    ):
+        return lambda _candidate_idx: 0.0
+
+    def _penalty(candidate_idx: int) -> float:
+        if candidate_idx >= prior_matched_word_idx - grace_words:
+            return 0.0
+        backtrack = (prior_matched_word_idx - grace_words) - candidate_idx
+        return base_penalty + backtrack * step_penalty
+
+    return _penalty
 
 
 def _candidate_is_lexically_plausible(

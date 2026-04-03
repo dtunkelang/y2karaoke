@@ -167,6 +167,51 @@ def test_attempt_whisperx_forced_alignment_reanchors_leading_article_to_content_
     assert abs(forced_lines[0].words[1].start_time - 22.38) < 0.05
 
 
+def test_attempt_whisperx_forced_alignment_restores_start_for_unsupported_leading_prefix():
+    baseline_line = _dur_multi_line(
+        0.944,
+        2.433,
+        ["Uh,", "summa-lumma,", "dooma-lumma,", "you", "assumin'", "I'm", "a", "human"],
+    )
+    forced_line = _dur_multi_line(
+        0.554,
+        2.951,
+        ["Uh,", "summa-lumma,", "dooma-lumma,", "you", "assumin'", "I'm", "a", "human"],
+    )
+    whisper_words = [
+        TranscriptionWord(text="I'm", start=0.98, end=1.14, probability=0.6),
+        TranscriptionWord(text="a", start=1.14, end=1.24, probability=0.8),
+        TranscriptionWord(text="human", start=1.24, end=1.48, probability=0.7),
+        TranscriptionWord(text="what", start=1.48, end=1.7, probability=0.7),
+    ]
+
+    result = attempt_whisperx_forced_alignment(
+        lines=[baseline_line, _dur_line(2.8, 4.45, "What I gotta do")],
+        baseline_lines=[baseline_line, _dur_line(2.8, 4.45, "What I gotta do")],
+        vocals_path="vocals.wav",
+        language="en",
+        detected_lang="en",
+        logger=_Logger(),
+        used_model="base",
+        reason="test",
+        align_lines_with_whisperx_fn=lambda *_a, **_k: (
+            [forced_line, _dur_line(2.987, 4.596, "What I gotta do")],
+            {"forced_word_coverage": 1.0, "forced_line_coverage": 1.0},
+        ),
+        should_rollback_short_line_degradation_fn=lambda *_a, **_k: (False, 0, 0),
+        restore_implausibly_short_lines_fn=lambda *_a, **_k: ([forced_line], 0),
+        whisper_words=whisper_words,
+        normalize_line_word_timings_fn=lambda lines: lines,
+        enforce_monotonic_line_starts_fn=lambda lines: lines,
+        enforce_non_overlapping_lines_fn=lambda lines: lines,
+    )
+
+    assert result is not None
+    forced_lines, _corrections, _payload = result
+    assert forced_lines[0].start_time == pytest.approx(0.944)
+    assert forced_lines[0].end_time == pytest.approx(2.926, abs=0.01)
+
+
 def test_attempt_whisperx_forced_alignment_rejects_compact_line_drift():
     baseline_lines = [
         _dur_line(0.0, 1.98, "Guess who's back, back again?"),

@@ -3740,6 +3740,9 @@ def _build_pipeline_triage_row(
         metrics, "agreement_hook_boundary_text_similarity_mean"
     )
     timing_quality_score = _triage_metric_float(metrics, "timing_quality_score")
+    gold_cov = _triage_metric_float(metrics, "gold_word_coverage_ratio")
+    gold_start_mean = _triage_metric_float(metrics, "gold_start_mean_abs_sec")
+    gold_start_p95 = _triage_metric_float(metrics, "gold_start_p95_abs_sec")
     agreement_reliability = max(0.3, min(1.0, agree_cov / 0.5))
     ref_div = record.get("reference_divergence", {})
     lexical_diag = record.get("lexical_mismatch_diagnostics", {})
@@ -3786,6 +3789,18 @@ def _build_pipeline_triage_row(
     if isinstance(ref_div, dict) and bool(ref_div.get("suspected")):
         pipeline_score = max(0.0, pipeline_score - 1.0)
         pipeline_reasons.append("downgraded_due_to_reference_divergence")
+    if (
+        dtw_line >= 0.95
+        and dtw_word >= 0.95
+        and low_conf <= 0.05
+        and agree_cov >= 0.9
+        and gold_cov >= 0.95
+        and gold_start_mean <= 0.25
+        and gold_start_p95 <= 0.5
+        and timing_quality_score >= 0.9
+    ):
+        pipeline_score = max(0.0, pipeline_score - 0.9)
+        pipeline_reasons.append("gold_timing_consistent_despite_anchor_disagreement")
     if pipeline_score <= 0.25:
         return None
     return {

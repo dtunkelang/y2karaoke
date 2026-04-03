@@ -342,10 +342,17 @@ def test_correct_timing_with_whisper_uses_whisperx_when_sparse(monkeypatch):
     ]
 
     monkeypatch.setattr(
-        "y2karaoke.core.components.whisper.whisper_integration_correct.align_lines_with_whisperx",
+        "y2karaoke.core.components.whisper.whisper_integration_correct.attempt_whisperx_forced_alignment",
         lambda *_args, **_kwargs: (
             forced,
-            {"forced_line_coverage": 1.0, "forced_word_coverage": 1.0},
+            [
+                "Applied WhisperX transcript-constrained forced alignment due to sparse Whisper transcript"
+            ],
+            {
+                "forced_line_coverage": 1.0,
+                "forced_word_coverage": 1.0,
+                "whisperx_forced": 1.0,
+            },
         ),
     )
 
@@ -357,27 +364,23 @@ def test_correct_timing_with_whisper_uses_whisperx_when_sparse(monkeypatch):
             lines, "vocals.wav"
         )
 
-    assert aligned[0].start_time == pytest.approx(lines[0].start_time, abs=0.05)
+    assert aligned[0].start_time == pytest.approx(forced[0].start_time)
     assert metrics["whisperx_forced"] == 1.0
     assert any(
         "WhisperX transcript-constrained forced alignment" in c for c in corrections
     )
 
 
-def test_correct_timing_with_whisper_rejects_low_coverage_whisperx(monkeypatch):
+def test_correct_timing_with_whisper_respects_sparse_whisperx_rejection(monkeypatch):
     lines = [Line(words=[Word(text="hello", start_time=10.0, end_time=11.0)])]
-    forced = [Line(words=[Word(text="hello", start_time=15.0, end_time=16.0)])]
     words = [te.TranscriptionWord(start=10.1, end=10.6, text="hello", probability=0.9)]
     segments = [
         te.TranscriptionSegment(start=10.1, end=10.6, text="hello", words=words)
     ]
 
     monkeypatch.setattr(
-        "y2karaoke.core.components.whisper.whisper_integration_correct.align_lines_with_whisperx",
-        lambda *_args, **_kwargs: (
-            forced,
-            {"forced_line_coverage": 0.1, "forced_word_coverage": 0.1},
-        ),
+        "y2karaoke.core.components.whisper.whisper_integration_correct.attempt_whisperx_forced_alignment",
+        lambda *_args, **_kwargs: None,
     )
 
     with wi.use_whisper_integration_hooks(

@@ -332,6 +332,7 @@ def _map_lrc_words_to_whisper(
 
         line_matches: List[Tuple[int, Tuple[float, float]]] = []
         line_match_intervals: Dict[int, Tuple[float, float]] = {}
+        line_match_word_indices: Dict[int, int] = {}
         line_last_idx_ref: List[Optional[int]] = [None]
 
         match_assigned_words_fn(
@@ -345,6 +346,7 @@ def _map_lrc_words_to_whisper(
             line_shift,
             line_matches,
             line_match_intervals,
+            line_match_word_indices,
             line_last_idx_ref,
         )
         fill_unmatched_gaps_fn(
@@ -358,6 +360,7 @@ def _map_lrc_words_to_whisper(
             line_shift,
             line_matches,
             line_match_intervals,
+            line_match_word_indices,
             line_last_idx_ref,
         )
         mapped_line = assemble_mapped_line_fn(
@@ -366,6 +369,7 @@ def _map_lrc_words_to_whisper(
             line,
             line_matches,
             line_match_intervals,
+            line_match_word_indices,
             line_anchor_time,
             line_segment,
             line_last_idx_ref,

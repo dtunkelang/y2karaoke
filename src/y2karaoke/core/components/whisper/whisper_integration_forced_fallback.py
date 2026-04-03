@@ -59,6 +59,9 @@ _normalize_token = _forced_local_repairs.normalize_token
 _reanchor_forced_lines_to_local_content_words = (
     _forced_local_repairs.reanchor_forced_lines_to_local_content_words
 )
+_restore_forced_leading_unmatched_prefix_starts_from_source = (
+    _forced_local_repairs.restore_forced_leading_unmatched_prefix_starts_from_source
+)
 _retime_three_word_lines_from_suffix_matches = (
     _forced_local_repairs.retime_three_word_lines_from_suffix_matches
 )
@@ -821,6 +824,21 @@ def _finalize_forced_line_timing(
                 "Whisper prefixes"
             ),
             prefix_reanchored_count,
+        )
+    forced_lines, restored_leading_prefix_starts = (
+        _restore_forced_leading_unmatched_prefix_starts_from_source(
+            baseline_lines,
+            forced_lines,
+            whisper_words,
+        )
+    )
+    if restored_leading_prefix_starts:
+        logger.info(
+            (
+                "Restored %d forced-aligned line start(s) from source after "
+                "unsupported leading prefix detection"
+            ),
+            restored_leading_prefix_starts,
         )
     forced_lines, suffix_retimed_count = _retime_three_word_lines_from_suffix_matches(
         forced_lines,

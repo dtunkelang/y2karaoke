@@ -41,6 +41,7 @@ def _register_word_match(
     line_segment: Optional[int],
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     word_idx: int,
     line_last_idx_ref: List[Optional[int]],
 ) -> None:
@@ -54,6 +55,7 @@ def _register_word_match(
         line_segment,
         line_matches,
         line_match_intervals,
+        line_match_word_indices,
         word_idx,
         line_last_idx_ref,
         phonetic_similarity_fn=phonetic_utils._phonetic_similarity,
@@ -68,6 +70,8 @@ def _select_best_candidate(
     line_segment: Optional[int],
     line_anchor_time: float,
     lrc_idx_opt: Optional[int],
+    prior_matched_word_idx: Optional[int] = None,
+    line_word_count: int = 0,
     *,
     trace_context: Dict[str, object] | None = None,
 ) -> Tuple[timing_models.TranscriptionWord, int]:
@@ -79,6 +83,8 @@ def _select_best_candidate(
         line_segment,
         line_anchor_time,
         lrc_idx_opt,
+        prior_matched_word_idx=prior_matched_word_idx,
+        line_word_count=line_word_count,
         trace_context=trace_context,
         time_drift_threshold=_TIME_DRIFT_THRESHOLD,
         phonetic_similarity_fn=phonetic_utils._phonetic_similarity,
@@ -201,6 +207,7 @@ def _match_assigned_words(
     line_shift: float,
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     line_last_idx_ref: List[Optional[int]],
 ) -> None:
     return _matching_helpers._match_assigned_words(
@@ -214,6 +221,7 @@ def _match_assigned_words(
         line_shift,
         line_matches,
         line_match_intervals,
+        line_match_word_indices,
         line_last_idx_ref,
         filter_and_order_candidates_fn=_filter_and_order_candidates,
         select_best_candidate_fn=_select_best_candidate,
@@ -243,6 +251,7 @@ def _fill_unmatched_gaps(
     line_shift: float,
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     line_last_idx_ref: List[Optional[int]],
 ) -> None:
     return _matching_helpers._fill_unmatched_gaps(
@@ -256,6 +265,7 @@ def _fill_unmatched_gaps(
         line_shift,
         line_matches,
         line_match_intervals,
+        line_match_word_indices,
         line_last_idx_ref,
         compute_gap_window_fn=_compute_gap_window,
         select_best_candidate_fn=_select_best_candidate,
@@ -269,6 +279,7 @@ def _assemble_mapped_line(
     line: "models.Line",
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     line_anchor_time: float,
     line_segment: Optional[int],
     line_last_idx_ref: List[Optional[int]],
@@ -280,6 +291,7 @@ def _assemble_mapped_line(
         line,
         line_matches,
         line_match_intervals,
+        line_match_word_indices,
         line_anchor_time,
         line_segment,
         line_last_idx_ref,

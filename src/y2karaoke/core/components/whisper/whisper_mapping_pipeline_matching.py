@@ -60,6 +60,26 @@ def _compute_gap_window(
     return gap_start, gap_end
 
 
+def _expand_assigned_indices_to_local_window(
+    assigned_indices: List[int],
+    segment_indices: Set[int],
+    *,
+    radius: int = 1,
+) -> Set[int]:
+    if not assigned_indices:
+        return set()
+    if not segment_indices:
+        return set(assigned_indices)
+    local_indices: Set[int] = set(assigned_indices)
+    segment_min = min(segment_indices)
+    segment_max = max(segment_indices)
+    for idx in assigned_indices:
+        start = max(segment_min, idx - radius)
+        end = min(segment_max, idx + radius)
+        local_indices.update(range(start, end + 1))
+    return local_indices
+
+
 def _match_assigned_words(
     ctx: _LineMappingContext,
     line_idx: int,
@@ -71,6 +91,7 @@ def _match_assigned_words(
     line_shift: float,
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     line_last_idx_ref: List[Optional[int]],
     *,
     filter_and_order_candidates_fn: Callable[..., Any],
@@ -100,8 +121,15 @@ def _match_assigned_words(
             segment_indices = set(
                 _segment_word_indices(ctx.all_words, ctx.word_segment_idx, line_segment)
             )
-            candidate_indices.update(segment_indices)
+        local_segment_indices = _expand_assigned_indices_to_local_window(
+            assigned,
+            segment_indices,
+        )
+        candidate_indices.update(local_segment_indices)
         whisper_candidates = filter_and_order_candidates_fn(ctx, candidate_indices)
+        if not whisper_candidates and segment_indices:
+            candidate_indices.update(segment_indices)
+            whisper_candidates = filter_and_order_candidates_fn(ctx, candidate_indices)
         if not whisper_candidates:
             fallback_indices = _collect_unused_words_near_line(
                 ctx.all_words,
@@ -124,10 +152,13 @@ def _match_assigned_words(
             line_segment,
             line_anchor_time,
             lrc_idx_opt,
+            prior_matched_word_idx=line_last_idx_ref[0],
+            line_word_count=len(line.words),
             trace_context={
                 "phase": "assigned_words",
                 "assigned_count": len(assigned),
                 "segment_count": len(segment_indices),
+                "local_segment_count": len(local_segment_indices),
                 "fallback_used": fallback_used,
             },
         )
@@ -141,6 +172,7 @@ def _match_assigned_words(
             line_segment,
             line_matches,
             line_match_intervals,
+            line_match_word_indices,
             word_idx,
             line_last_idx_ref,
         )
@@ -157,6 +189,7 @@ def _fill_unmatched_gaps(
     line_shift: float,
     line_matches: List[Tuple[int, Tuple[float, float]]],
     line_match_intervals: Dict[int, Tuple[float, float]],
+    line_match_word_indices: Dict[int, int],
     line_last_idx_ref: List[Optional[int]],
     *,
     compute_gap_window_fn: Callable[..., Tuple[float, float]],
@@ -221,6 +254,8 @@ def _fill_unmatched_gaps(
             line_segment,
             line_anchor_time,
             lrc_idx_opt,
+            prior_matched_word_idx=line_last_idx_ref[0],
+            line_word_count=len(line.words),
             trace_context={
                 "phase": "gap_fill",
                 "assigned_count": len(assigned),
@@ -242,6 +277,7 @@ def _fill_unmatched_gaps(
             line_segment,
             line_matches,
             line_match_intervals,
+            line_match_word_indices,
             word_idx,
             line_last_idx_ref,
         )

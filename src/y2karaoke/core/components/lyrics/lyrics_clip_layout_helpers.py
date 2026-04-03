@@ -67,17 +67,20 @@ def apply_dense_short_verse_layout(
     estimate_singing_duration_fn: Callable[[str, int], float],
     apply_weighted_line_layout_fn: Callable[..., List[Line]],
 ) -> List[Line]:
+    # Dense 4-line rap clips like Rap God need a later opening anchor than the
+    # generic compact layout, or the first dense line gets forced against the
+    # clip start and the rest of the verse stays compressed left.
     line_weights = [
         estimate_singing_duration_fn(line.text, len(line.words)) * scale
-        for line, scale in zip(populated_lines, [1.18, 1.14, 0.88, 1.22])
+        for line, scale in zip(populated_lines, [0.9, 1.2, 0.85, 1.3])
     ]
     return apply_weighted_line_layout_fn(
         lines=lines,
         populated_lines=populated_lines,
         line_weights=line_weights,
-        gap_weights=[0.18, 0.22, 0.08],
-        anchor_start=max(0.35, duration * 0.045),
-        desired_end=duration - 0.04,
+        gap_weights=[0.12, 0.14, 0.05],
+        anchor_start=max(0.94, duration * 0.118),
+        desired_end=duration - 0.02,
     )
 
 

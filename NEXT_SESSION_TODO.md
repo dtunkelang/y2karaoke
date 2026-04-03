@@ -1,6 +1,6 @@
 # Next Session TODO
 
-Last updated: 2026-03-28
+Last updated: 2026-04-02
 
 Use this file as a session handoff, not as a second backlog.
 
@@ -13,6 +13,116 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 
 ## Current Position
 
+- 2026-04-02 late-night refresh:
+  - newest focused kept rerun is now [20260402T223322Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T223322Z/benchmark_report.json)
+    - `Rap God` improved from the prior kept focused run [20260402T211154Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T211154Z/benchmark_report.json):
+      - gold start mean `0.1939 -> 0.1379`
+      - gold start p95 `0.515 -> 0.455`
+      - gold end mean `0.1913 -> 0.1388`
+      - downstream regression lines `2 -> 1`
+      - pre-Whisper start mean stayed `0.155`
+    - kept code path:
+      - [whisper_integration_correct.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_correct.py)
+      - [whisper_integration_forced_fallback.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_integration_forced_fallback.py)
+      - [whisper_forced_local_repairs.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_forced_local_repairs.py)
+    - production read:
+      - sparse Whisper fallback now reuses the full forced-fallback finalize path instead of returning raw WhisperX-constrained alignment directly
+      - the real `Rap God` miss was already present in raw WhisperX forced output: line 1 started at `0.554` even though the mapped baseline start was `0.944`
+      - the kept local repair restores forced starts when a long unsupported leading prefix is followed by a later token whose normal-Whisper anchor sits close to the baseline start
+      - important detail:
+        - anchor selection must prefer baseline-start proximity first and low-signal-token avoidance second
+        - using “first non-low-signal token wins” missed the real `Rap God` family because the only useful nearby support was around late low-signal tokens like `I'm`
+    - most useful trace artifacts from the diagnosis:
+      - `/tmp/rap_god_whisperx_forced.json`
+      - `/tmp/rap_god_forced_fallback_stages.json`
+    - next branch after the broad canary:
+      - if the canary is clean, reassess broad offenders from the new report before choosing the next target
+      - if more `Rap God` work is needed later, the remaining issue is now narrower and downstream, not the old raw line-1 early-start failure
+- 2026-04-02 late refresh:
+  - newest kept broad cached curated canary is now [20260402T215513Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T215513Z/benchmark_report.json)
+    - weighted start mean: `0.1968s`
+    - mean gold end error: `0.2056s`
+    - compared with prior kept broad [20260402T212919Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T212919Z/benchmark_report.json):
+      - weighted start improved `0.2146 -> 0.1968`
+      - mean gold end improved `0.2121 -> 0.2056`
+      - agreement diagnostics stayed effectively flat
+      - material song movement was:
+        - `Con Calma`: `0.3206 / 0.3330 -> 0.2409 / 0.2489`
+    - top current offenders:
+      - `Without Me`: `0.2017 / 0.1957`
+      - `Rap God`: `0.1939 / 0.1913`
+      - `Houdini`: `0.1924 / 0.2334`
+      - `Royals` opening clip: `0.1869 / 0.1567`
+      - `Sweet Caroline`: `0.1832 / 0.2287`
+      - `Royals` companion clip: `0.1776 / 0.1470`
+      - `Con Calma`: `0.2409 / 0.2489`
+  - kept `Con Calma` assigned-window mapper fix:
+    - code path:
+      - [whisper_mapping_pipeline_matching.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_mapping_pipeline_matching.py)
+      - [whisper_mapping_pipeline_assembly.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/whisper/whisper_mapping_pipeline_assembly.py)
+    - validating focused rerun: [20260402T215406Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T215406Z/benchmark_report.json)
+      - `Con Calma` improved `0.3206 / 0.3330 -> 0.2409 / 0.2489`
+      - `gold_start_p95` improved `0.724 -> 0.658`
+    - validating broad rerun: [20260402T215513Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T215513Z/benchmark_report.json)
+      - broad pack improved with no material regressions elsewhere
+    - trace confirmation:
+      - line 9 now keeps the local handoff:
+        - `solita, -> solita,@22.5`
+        - `acompáñame -> acompáñame,@23.08`
+      - line 10 now starts on `la@24.1` instead of inheriting a hidden future reservation
+      - useful trace artifacts:
+        - `/tmp/con_calma_mapper_details_local_window.json`
+        - `/tmp/con_calma_mapper_candidates_local_window.json`
+    - production read:
+      - the assembly-layer reservation release is a useful guard, but it was not the whole fix
+      - the real production win came from narrowing assigned-word candidate search to a tiny local neighborhood around each DTW-assigned index before widening to the full segment
+      - this prevents the `solita -> acompáñame -> me` theft chain inside merged segment 2 without reopening the old tail-repair branch
+- 2026-04-02 refresh:
+  - newest kept broad cached curated canary is now [20260402T211254Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T211254Z/benchmark_report.json)
+    - weighted start mean: `0.2150s`
+    - mean gold end error: `0.2120s`
+    - compared with prior kept broad [20260328T_broad_after_sweet_advisory](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_broad_after_sweet_advisory/benchmark_report.json):
+      - weighted start improved `0.2161 -> 0.2150`
+      - mean gold end improved `0.2141 -> 0.2120`
+      - material song movement was:
+        - `Rap God`: `0.2088 / 0.2023 -> 0.1939 / 0.1913`
+        - `Royals` companion clip: slight trade `0.2093 / 0.1278 -> 0.2126 / 0.1192`
+    - top current offenders:
+      - `Con Calma`: `0.3206 / 0.3330`
+      - `Royals` companion clip: `0.2126 / 0.1192`
+      - `Without Me`: `0.2017 / 0.1957`
+      - `Rap God`: `0.1939 / 0.1913`
+      - `Houdini`: `0.1924 / 0.2334`
+      - `Royals` opening clip: `0.1869 / 0.1567`
+      - `Sweet Caroline`: `0.1832 / 0.2287`
+  - kept `Rap God` dense-short-verse seed fix:
+    - code path: [lyrics_clip_layout_helpers.py](/Users/dtunkelang/y2karaoke/src/y2karaoke/core/components/lyrics/lyrics_clip_layout_helpers.py)
+    - focused rerun: [20260402T211154Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T211154Z/benchmark_report.json)
+      - `Rap God` improved `0.2088 / 0.2023 -> 0.1939 / 0.1913`
+    - production read:
+      - dense 4-line rap clips now seed later, with less over-weight on line 1 and more preserved tail span
+      - `Rap God` pre-Whisper starts moved from `0.36 / 2.49 / 4.45 / 5.40` to `0.94 / 2.51 / 4.47 / 5.34`
+      - final rendered starts improved from `0.40 / 2.99 / 4.11 / 5.59` to `0.55 / 2.99 / 4.12 / 5.59`
+    - guard result:
+      - broad cached canary stayed clean and improved slightly overall
+    - remaining `Rap God` limitation:
+      - line 1 is still pulled early by low-confidence Whisper support around `I'm a human`
+      - report still shows `gold_downstream_regression_line_count = 2`
+      - implication:
+        - this family is healthier, but the next `Rap God` work should inspect low-confidence early-window carryover / downstream regression, not more plain-text seed tuning
+  - kept benchmark-triage fix for `Time After Time`-style false positives:
+    - code path: [run_benchmark_suite.py](/Users/dtunkelang/y2karaoke/tools/run_benchmark_suite.py)
+    - validating single-song rerun: [20260402T212819Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T212819Z/benchmark_report.json)
+      - gold/DTW metrics stayed the same: `0.1752 / 0.1503`, `dtw_line=1.0`, `timing_quality_score=0.9389`
+      - `Time After Time` no longer appears in `likely pipeline failure`
+    - validating broad rerun: [20260402T212919Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T212919Z/benchmark_report.json)
+      - broad weighted start/end stayed flat at `0.2150 / 0.2120`
+      - prior false hotspot removed:
+        - old broad [20260402T211254Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T211254Z/benchmark_report.json) had `Time After Time` as the sole `likely pipeline failure`
+        - new broad [20260402T212919Z](/Users/dtunkelang/y2karaoke/benchmarks/results/20260402T212919Z/benchmark_report.json) has no `likely pipeline failure` rows
+    - read:
+      - repeated-short-refrain repairs can create large anchor disagreement even when final gold timing is already strong
+      - benchmark triage now de-escalates those high-agreement-error cases when gold, DTW, and timing-quality signals are all already excellent
 - 2026-03-28 refresh:
   - newest kept broad cached curated canary is now [20260328T_broad_after_sweet_advisory](/Users/dtunkelang/y2karaoke/benchmarks/results/20260328T_broad_after_sweet_advisory/benchmark_report.json)
     - weighted start mean: `0.2161s`
@@ -192,13 +302,21 @@ In normal mode, batch note-only updates unless they would be expensive to redisc
 
 ## Next Week Plan
 
-1. Start from the newest broad cached canary, not the older `Con Calma` ordering:
+1. Start from the newest broad cached canary:
    `PYTHONPATH=src ./.venv/bin/python tools/run_benchmark_suite.py --manifest benchmarks/curated_clip_songs.yaml --match "Houdini|Con Calma|Sweet Caroline|Take On Me|Taste|Without Me|I Gotta Feeling|Time After Time|Total Eclipse|Stayin' Alive|Rap God|Royals" --offline`
-2. `Taste` is healthier again after the accepted-forced-alignment prefix repair. The cleaner next code-side targets are now `Rap God`, `Houdini`, and possibly `Time After Time`.
-3. `Without Me` is no longer the best next driver after the latest forced-alignment repair. Keep it as a protected control unless a new failure family appears.
-4. If continuing the best-understood narrow failure instead, start with `Rap God` before reopening `Taste` or `Without Me`.
-5. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure. No new clips are needed right now.
-6. The newest companion clips are now:
+2. `Con Calma` is no longer the lead production target:
+   - the assigned-window mapper fix is now kept, and the broad canary confirms it as a real production win
+   - if revisiting it, inspect whether the post-assembly reservation release is still needed once more evidence accumulates, but do not reopen the old tail-repair branch
+3. `Rap God` is now the clearest remaining code-side target:
+   - inspect downstream regression / low-confidence early-window carryover rather than retuning the dense plain-text layout again
+4. `Time After Time` is no longer the best next code-side target:
+   - the broad canary now shows it was a benchmark-triage false positive, not the clearest remaining production miss
+5. If `Rap God` stalls, the next targets are probably:
+   - `Without Me` only if a narrow new regression source appears
+   - `Royals` companion clip if a clean localized explanation emerges
+   - `Houdini` only if the remaining end error points to a contained repeated-tail family again
+6. Ask for manual curation verification when the remaining miss looks plausibly like gold drift rather than a clean pipeline failure. No new clips are needed right now.
+7. The newest companion clips are now:
    - `Please Please Please` (`chorus-setup-tail`)
    - `Espresso` (`opening-hook`)
    Rerun with:
