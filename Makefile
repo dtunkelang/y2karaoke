@@ -158,8 +158,8 @@ curated-canary-experiment:
 	@test -n "$(RUN_PREFIX)" || (echo "RUN_PREFIX is required"; exit 2)
 	$(PYTHON) tools/run_curated_experiment_harness.py --experiment "$(EXPERIMENT)" --run-prefix "$(RUN_PREFIX)" $(if $(LABEL),--label "$(LABEL)",) $(if $(MATCH),--match "$(MATCH)",) $(if $(MAX_SONGS),--max-songs "$(MAX_SONGS)",)
 
-check: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails bootstrap-quality-guardrails benchmark-validate
+check: dep-check fmt-check lint type quality-guardrails bootstrap-quality-guardrails benchmark-validate test-fast perf-smoke
 
-ci-fast: dep-check fmt-check lint type test-fast perf-smoke quality-guardrails bootstrap-quality-guardrails benchmark-validate
+ci-fast: dep-check fmt-check lint type quality-guardrails bootstrap-quality-guardrails benchmark-validate test-fast perf-smoke
 
 ci-full: test-full

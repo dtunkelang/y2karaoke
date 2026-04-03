@@ -47,9 +47,10 @@ from .whisper_forced_advisory_nudges import (
 from . import whisper_forced_local_repairs as _forced_local_repairs
 from . import whisper_forced_segment_boundary_repairs as _segment_boundary_repairs
 from .whisper_split_refrain_restore import (
-    restore_split_short_refrains_to_matching_segments as _restore_split_short_refrains_to_matching_segments,  # noqa: E501
+    restore_split_short_refrains_to_matching_segments as _restore_split_refrains,
 )
 
+_flr = _forced_local_repairs
 _can_apply_reanchored_line = _forced_local_repairs.can_apply_reanchored_line
 _mean_nearest_onset_distance = _forced_local_repairs.mean_nearest_onset_distance
 _whisper_word_count = _forced_local_repairs.non_placeholder_whisper_word_count
@@ -57,16 +58,11 @@ _normalize_token = _forced_local_repairs.normalize_token
 _reanchor_forced_lines_to_local_content_words = (
     _forced_local_repairs.reanchor_forced_lines_to_local_content_words
 )
-_restore_forced_leading_unmatched_prefix_starts_from_source = (
-    _forced_local_repairs.restore_forced_leading_unmatched_prefix_starts_from_source
-)
 _retime_three_word_lines_from_suffix_matches = (
     _forced_local_repairs.retime_three_word_lines_from_suffix_matches
 )
 _shift_line = _forced_local_repairs.shift_line
-_restore_exact_segment_boundaries = (
-    _segment_boundary_repairs.restore_forced_exact_adjacent_segment_boundaries
-)
+_seg_bounds = _segment_boundary_repairs.restore_forced_exact_adjacent_segment_boundaries
 
 
 def _forced_finalize_step_enabled(env_name: str) -> bool:
@@ -715,11 +711,9 @@ def _apply_post_finalize_forced_refrain_repairs(
             "Restored %d short refrain line(s) from WhisperX aligned word sequences",
             restored_word_sequence_refrains,
         )
-    forced_lines, restored_split_refrains = (
-        _restore_split_short_refrains_to_matching_segments(
-            forced_lines,
-            forced_segments or transcription or [],
-        )
+    forced_lines, restored_split_refrains = _restore_split_refrains(
+        forced_lines,
+        forced_segments or transcription or [],
     )
     if restored_split_refrains:
         logger.info(
@@ -820,8 +814,10 @@ def _finalize_forced_line_timing(
             prefix_reanchored_count,
         )
     forced_lines, restored_leading_prefix_starts = (
-        _restore_forced_leading_unmatched_prefix_starts_from_source(
-            baseline_lines, forced_lines, whisper_words
+        _flr.restore_forced_leading_unmatched_prefix_starts_from_source(
+            baseline_lines,
+            forced_lines,
+            whisper_words,
         )
     )
     if restored_leading_prefix_starts:
@@ -1074,7 +1070,7 @@ def _apply_forced_post_finalize_repairs(
         lines=forced_lines,
         line_range=trace_line_range,
     )
-    forced_lines, restored_exact_segment_boundaries = _restore_exact_segment_boundaries(
+    forced_lines, restored_exact_segment_boundaries = _seg_bounds(
         forced_lines, transcription
     )
     if restored_exact_segment_boundaries:
