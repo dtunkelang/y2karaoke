@@ -14,6 +14,7 @@ songs:
   - verse
   - offset
   audio_start_sec: 27
+  clip_duration_sec: 30.15
   youtube_id: fHI8X4OXluQ
   youtube_url: https://www.youtube.com/watch?v=fHI8X4OXluQ
   preferred_lyrics_provider: lyriq
@@ -28,6 +29,7 @@ songs:
   - repeated-hook
   - comparability
   audio_start_sec: 112
+  clip_duration_sec: 38.25
   youtube_id: fHI8X4OXluQ
   youtube_url: https://www.youtube.com/watch?v=fHI8X4OXluQ
   preferred_lyrics_provider: lyriq
@@ -42,6 +44,7 @@ songs:
   - source-timing
   - late-run
   audio_start_sec: 10
+  clip_duration_sec: 30.15
   youtube_id: Y2ESxHKuSOk
   youtube_url: https://www.youtube.com/watch?v=Y2ESxHKuSOk
   preferred_lyrics_provider: lyriq
@@ -56,6 +59,7 @@ songs:
   - adlib
   - tail
   audio_start_sec: 140
+  clip_duration_sec: 15.7
   youtube_id: Y2ESxHKuSOk
   youtube_url: https://www.youtube.com/watch?v=Y2ESxHKuSOk
   preferred_lyrics_provider: lyriq
@@ -70,6 +74,7 @@ songs:
   - tail
   - sparse-support
   audio_start_sec: 123
+  clip_duration_sec: 28.95
   youtube_id: K5KAc5CoCuk
   youtube_url: https://www.youtube.com/watch?v=K5KAc5CoCuk
   preferred_lyrics_provider: lyriq
@@ -84,6 +89,7 @@ songs:
   - verse
   - clean
   audio_start_sec: 20
+  clip_duration_sec: 18.1
   youtube_id: wnJ6LuUFpMo
   youtube_url: https://www.youtube.com/watch?v=wnJ6LuUFpMo
   preferred_lyrics_provider: lyriq
@@ -98,6 +104,7 @@ songs:
   - mid-song
   - clean
   audio_start_sec: 56
+  clip_duration_sec: 29.1
   youtube_id: wnJ6LuUFpMo
   youtube_url: https://www.youtube.com/watch?v=wnJ6LuUFpMo
   preferred_lyrics_provider: lyriq
@@ -112,6 +119,7 @@ songs:
   - verse
   - clean
   audio_start_sec: 89.8
+  clip_duration_sec: 34.2
   youtube_id: liTfD88dbCo
   youtube_url: https://www.youtube.com/watch?v=liTfD88dbCo
   preferred_lyrics_provider: lyriq
@@ -126,6 +134,7 @@ songs:
   - verse
   - clean
   audio_start_sec: 110.4
+  clip_duration_sec: 33.0
   youtube_id: dvgZkm1xWPE
   youtube_url: https://www.youtube.com/watch?v=dvgZkm1xWPE
   preferred_lyrics_provider: lyriq
@@ -140,12 +149,29 @@ songs:
   - chorus
   - repeated-hook
   audio_start_sec: 76
+  clip_duration_sec: 32.85
   youtube_id: hT_nvWreIhg
   youtube_url: https://www.youtube.com/watch?v=hT_nvWreIhg
   preferred_lyrics_provider: lyriq
   fallback_lyrics_provider: syncedlyrics
   lrc_duration_tolerance_sec: 35
   notes: Clean repeated-chorus English clip with known agreement drift.
+- artist: OneRepublic
+  title: Counting Stars
+  clip_id: later-chorus
+  clip_tags:
+  - stress
+  - chorus
+  - repeated-hook
+  - companion
+  audio_start_sec: 205.0
+  clip_duration_sec: 33.0
+  youtube_id: hT_nvWreIhg
+  youtube_url: https://www.youtube.com/watch?v=hT_nvWreIhg
+  preferred_lyrics_provider: lyriq
+  fallback_lyrics_provider: syncedlyrics
+  lrc_duration_tolerance_sec: 35
+  notes: Later repeated-chorus companion clip for the first-chorus Counting Stars stress case.
 - artist: Billie Eilish
   title: bad guy
   clip_id: tough-guy
@@ -154,6 +180,7 @@ songs:
   - rhythmic
   - verse
   audio_start_sec: 42
+  clip_duration_sec: 27.5
   youtube_id: ayxYgDgBD3g
   youtube_url: https://www.youtube.com/watch?v=ayxYgDgBD3g
   preferred_lyrics_provider: lyriq
@@ -168,6 +195,7 @@ songs:
   - chorus
   - rhythmic
   audio_start_sec: 50.1
+  clip_duration_sec: 24.9
   youtube_id: OPf0YbXqDm0
   youtube_url: https://www.youtube.com/watch?v=OPf0YbXqDm0
   preferred_lyrics_provider: lyriq
@@ -182,6 +210,7 @@ songs:
   - chorus
   - clean
   audio_start_sec: 54.8
+  clip_duration_sec: 30.0
   youtube_id: 7wtfhZwyrcc
   youtube_url: https://www.youtube.com/watch?v=7wtfhZwyrcc
   preferred_lyrics_provider: syncedlyrics
@@ -196,6 +225,7 @@ songs:
   - verse-hook
   - clean
   audio_start_sec: 31.8
+  clip_duration_sec: 29.0
   youtube_id: oiKj0Z_Xnjc
   youtube_url: https://www.youtube.com/watch?v=oiKj0Z_Xnjc
   preferred_lyrics_provider: lyriq
@@ -210,6 +240,7 @@ songs:
   - source-text
   - verse
   audio_start_sec: 33
+  clip_duration_sec: 28.0
   youtube_id: 5yUv1QYD770
   youtube_url: https://www.youtube.com/watch?v=5yUv1QYD770
   preferred_lyrics_provider: lyriq
@@ -224,6 +255,7 @@ songs:
   - duet
   - tail
   audio_start_sec: 174
+  clip_duration_sec: 40.1
   youtube_id: 5yUv1QYD770
   youtube_url: https://www.youtube.com/watch?v=5yUv1QYD770
   preferred_lyrics_provider: lyriq
@@ -238,6 +270,7 @@ songs:
   - chorus
   - duet
   audio_start_sec: 93.5
+  clip_duration_sec: 28.95
   youtube_id: 8UVNT4wvIGY
   youtube_url: https://www.youtube.com/watch?v=8UVNT4wvIGY
   preferred_lyrics_provider: lyriq
@@ -252,6 +285,7 @@ songs:
   - chorus
   - clean
   audio_start_sec: 58.0
+  clip_duration_sec: 28.45
   youtube_id: rYEDA3JcQqw
   youtube_url: https://www.youtube.com/watch?v=rYEDA3JcQqw
   preferred_lyrics_provider: lyriq
@@ -267,6 +301,7 @@ songs:
   - chorus
   - clean
   audio_start_sec: 55.0
+  clip_duration_sec: 29.7
   youtube_id: CAEUnn0HNLM
   youtube_url: https://www.youtube.com/watch?v=CAEUnn0HNLM
   preferred_lyrics_provider: lyriq
@@ -282,6 +317,7 @@ songs:
   - chorus
   - repeated-hook
   audio_start_sec: 73.0
+  clip_duration_sec: 30.8
   youtube_id: zoJAcgmOS4Q
   youtube_url: https://www.youtube.com/watch?v=zoJAcgmOS4Q
   preferred_lyrics_provider: lyriq
@@ -296,6 +332,7 @@ songs:
   - chorus
   - clipped-onset
   audio_start_sec: 36.85
+  clip_duration_sec: 29.55
   youtube_id: bZ0ZMLQSAWU
   youtube_url: https://www.youtube.com/watch?v=bZ0ZMLQSAWU
   preferred_lyrics_provider: lyriq
@@ -311,6 +348,7 @@ songs:
   - chorus
   - clean
   audio_start_sec: 46.78
+  clip_duration_sec: 30.2
   youtube_id: R7UrFYvl5TE
   youtube_url: https://www.youtube.com/watch?v=R7UrFYvl5TE
   preferred_lyrics_provider: lyriq
@@ -325,6 +363,7 @@ songs:
   - chorus
   - source-text
   audio_start_sec: 57.0
+  clip_duration_sec: 29.45
   youtube_id: aeDdS9aIpck
   youtube_url: https://www.youtube.com/watch?v=aeDdS9aIpck
   preferred_lyrics_provider: lyriq
@@ -340,6 +379,7 @@ songs:
   - chorus
   - clean
   audio_start_sec: 42.0
+  clip_duration_sec: 28.2
   youtube_id: eHx--ZtG_Ds
   youtube_url: https://www.youtube.com/watch?v=eHx--ZtG_Ds
   preferred_lyrics_provider: lyriq
@@ -355,6 +395,7 @@ songs:
   - chorus
   - clipped-tail
   audio_start_sec: 72.0
+  clip_duration_sec: 30.8
   youtube_id: 22c3_LoIfZQ
   youtube_url: https://www.youtube.com/watch?v=22c3_LoIfZQ
   preferred_lyrics_provider: lyriq
@@ -522,7 +563,7 @@ songs:
   - compact-lines
   - chorus
   audio_start_sec: 28.0
-  clip_duration_sec: 16.0
+  clip_duration_sec: 16.25
   youtube_id: hs_yk24ghzA
   youtube_url: https://www.youtube.com/watch?v=hs_yk24ghzA
   preferred_lyrics_provider: lyriq

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import shutil
@@ -13,6 +14,7 @@ import sys
 import time
 import urllib.request
 import webbrowser
+import wave
 from pathlib import Path
 from urllib.parse import urlencode, urlparse
 
@@ -27,6 +29,14 @@ DEFAULT_GOLD_ROOT = REPO_ROOT / "benchmarks" / "gold_set_candidate" / "20260305T
 EDITOR_BASE_URL = "http://127.0.0.1:8765/"
 EDITOR_READY_TIMEOUT_SEC = 5.0
 EDITOR_READY_POLL_SEC = 0.1
+CLIP_DURATION_TOLERANCE_SEC = 0.5
+
+
+def _song_float(song: dict[str, object], key: str, default: float = 0.0) -> float:
+    value = song.get(key)
+    if isinstance(value, (int, float)):
+        return float(value)
+    return default
 
 
 def _slugify(text: str) -> str:
@@ -87,6 +97,59 @@ def _match_song(
     return hits[0]
 
 
+def _load_stale_gold_tool():
+    module_path = REPO_ROOT / "tools" / "report_stale_curated_gold.py"
+    spec = importlib.util.spec_from_file_location(
+        "report_stale_curated_gold", module_path
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Unable to load stale-gold helper from {module_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _match_stale_song(
+    songs: list[dict[str, object]],
+    *,
+    stale_index: int,
+    tolerance_sec: float,
+) -> tuple[int, dict[str, object], Path | None]:
+    module = _load_stale_gold_tool()
+    entries = module.collect_stale_gold_entries(
+        manifest_path=MANIFEST_PATH,
+        gold_root=CLIP_GOLD_ROOT,
+        tolerance_sec=tolerance_sec,
+    )
+    if not entries:
+        raise ValueError("No stale curated gold entries found")
+    if stale_index < 1 or stale_index > len(entries):
+        raise ValueError(
+            "stale-index "
+            f"{stale_index} is out of range for {len(entries)} stale entries"
+        )
+    entry = entries[stale_index - 1]
+    artist = str(entry["artist"]).strip().lower()
+    title = str(entry["title"]).strip().lower()
+    clip_id = str(entry["clip_id"]).strip().lower()
+    for index, song in enumerate(songs, start=1):
+        if (
+            str(song.get("artist", "")).strip().lower() == artist
+            and str(song.get("title", "")).strip().lower() == title
+            and str(song.get("clip_id", "")).strip().lower() == clip_id
+        ):
+            gold_path = entry.get("gold_path")
+            if isinstance(gold_path, Path):
+                return index, song, gold_path
+            if isinstance(gold_path, str) and gold_path:
+                return index, song, Path(gold_path)
+            return index, song, None
+    raise ValueError(
+        "Stale curated gold entry not found in manifest: "
+        f"{entry['artist']} - {entry['title']} [{entry['clip_id']}]"
+    )
+
+
 def _gold_path(index: int, song: dict[str, object]) -> Path:
     slug = _song_slug(song)
     indexed = CLIP_GOLD_ROOT / f"{index:02d}_{slug}.gold.json"
@@ -126,8 +189,8 @@ def _cache_dir(song: dict[str, object]) -> Path:
 
 
 def _canonical_trimmed_clip_path(song: dict[str, object]) -> Path:
-    start = float(song.get("audio_start_sec") or 0.0)
-    duration = float(song.get("clip_duration_sec") or 0.0)
+    start = _song_float(song, "audio_start_sec")
+    duration = _song_float(song, "clip_duration_sec")
     if duration <= 0:
         raise ValueError("clip_duration_sec must be set for canonical clip audio")
     return _cache_dir(song) / f"trimmed_from_{start:.2f}s_for_{duration:.2f}s.wav"
@@ -136,7 +199,7 @@ def _canonical_trimmed_clip_path(song: dict[str, object]) -> Path:
 def _source_audio_candidates(song: dict[str, object]) -> list[Path]:
     cache_dir = _cache_dir(song)
     title = str(song["title"])
-    start = float(song.get("audio_start_sec") or 0.0)
+    start = _song_float(song, "audio_start_sec")
     candidates = [
         cache_dir / f"{title}.wav",
         cache_dir / f"trimmed_from_{start:.2f}s.wav",
@@ -154,10 +217,36 @@ def _source_audio_candidates(song: dict[str, object]) -> list[Path]:
     return candidates
 
 
+def _wav_duration_sec(path: Path) -> float | None:
+    try:
+        with wave.open(str(path), "rb") as wav_file:
+            frame_rate = wav_file.getframerate()
+            frame_count = wav_file.getnframes()
+    except (FileNotFoundError, OSError, wave.Error):
+        return None
+    if frame_rate <= 0:
+        return None
+    return frame_count / frame_rate
+
+
+def _source_trim_offset_sec(source: Path, song: dict[str, object]) -> float:
+    start = _song_float(song, "audio_start_sec")
+    trimmed_name = f"trimmed_from_{start:.2f}s"
+    if source.stem == trimmed_name:
+        return 0.0
+    return start
+
+
 def _ensure_clip_audio(song: dict[str, object]) -> Path:
     clip_path = _canonical_trimmed_clip_path(song)
+    duration = _song_float(song, "clip_duration_sec")
     if clip_path.exists() and clip_path.stat().st_size > 44:
-        return clip_path
+        clip_duration = _wav_duration_sec(clip_path)
+        if (
+            clip_duration is not None
+            and abs(clip_duration - duration) <= CLIP_DURATION_TOLERANCE_SEC
+        ):
+            return clip_path
 
     source = next(
         (path for path in _source_audio_candidates(song) if path.exists()), None
@@ -168,8 +257,7 @@ def _ensure_clip_audio(song: dict[str, object]) -> Path:
             f"{[str(path) for path in _source_audio_candidates(song)]}"
         )
 
-    start = float(song.get("audio_start_sec") or 0.0)
-    duration = float(song.get("clip_duration_sec") or 0.0)
+    source_offset = _source_trim_offset_sec(source, song)
     clip_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_clip_path = clip_path.with_suffix(".tmp.wav")
     if tmp_clip_path.exists():
@@ -178,7 +266,7 @@ def _ensure_clip_audio(song: dict[str, object]) -> Path:
         "ffmpeg",
         "-y",
         "-ss",
-        f"{start:g}",
+        f"{source_offset:g}",
         "-t",
         f"{duration:g}",
         "-i",
@@ -197,6 +285,16 @@ def _ensure_clip_audio(song: dict[str, object]) -> Path:
     )
     if not tmp_clip_path.exists() or tmp_clip_path.stat().st_size <= 44:
         raise RuntimeError(f"Failed to generate valid clip audio at {tmp_clip_path}")
+    generated_duration = _wav_duration_sec(tmp_clip_path)
+    if (
+        generated_duration is None
+        or abs(generated_duration - duration) > CLIP_DURATION_TOLERANCE_SEC
+    ):
+        tmp_clip_path.unlink(missing_ok=True)
+        raise RuntimeError(
+            "Generated clip duration "
+            f"{generated_duration!r}s does not match requested {duration:.2f}s"
+        )
     tmp_clip_path.replace(clip_path)
     return clip_path
 
@@ -306,7 +404,8 @@ def _ensure_editor_server() -> None:
 
     if _is_editor_reachable(host, port) and not _is_editor_healthy():
         raise RuntimeError(
-            f"Port {host}:{port} is already in use, but it is not serving the gold timing editor"
+            f"Port {host}:{port} is already in use, "
+            "but it is not serving the gold timing editor"
         )
 
     proc = _start_editor_server()
@@ -325,8 +424,18 @@ def _ensure_editor_server() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--match", help="Substring match for artist/title/clip_id")
     parser.add_argument(
-        "--match", required=True, help="Substring match for artist/title/clip_id"
+        "--stale-index",
+        type=int,
+        default=None,
+        help="Open the Nth stale curated gold entry from report_stale_curated_gold.py",
+    )
+    parser.add_argument(
+        "--stale-tolerance-sec",
+        type=float,
+        default=0.5,
+        help="Tolerance used when selecting stale curated gold entries",
     )
     parser.add_argument(
         "--open-editor",
@@ -334,10 +443,23 @@ def main() -> int:
         help="Open the resolved curated clip in the local gold editor",
     )
     args = parser.parse_args()
+    if bool(args.match) == bool(args.stale_index is not None):
+        parser.error("Provide exactly one of --match or --stale-index")
 
     songs = _load_manifest(MANIFEST_PATH)
-    index, song = _match_song(songs, args.match)
-    gold_path = _gold_path(index, song)
+    try:
+        if args.stale_index is not None:
+            index, song, preferred_gold_path = _match_stale_song(
+                songs,
+                stale_index=args.stale_index,
+                tolerance_sec=args.stale_tolerance_sec,
+            )
+        else:
+            index, song = _match_song(songs, args.match)
+            preferred_gold_path = None
+    except ValueError as exc:
+        parser.exit(1, f"curated_clip_helper: {exc}\n")
+    gold_path = preferred_gold_path or _gold_path(index, song)
     audio_path = _ensure_clip_audio(song)
     _update_gold_audio_path(gold_path, audio_path)
     url = _editor_url(gold_path, audio_path)

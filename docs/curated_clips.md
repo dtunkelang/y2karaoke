@@ -843,8 +843,30 @@ Tag filters are additive at the CLI level: a song is selected if it matches any 
   1. identify one clip, one line, one likely code path
   2. name the exact artifact and rerun command
   3. run one focused probe
-  4. either keep the win or record the elimination
-  5. only then widen to the broader canary
+  4. run the smallest relevant local verification slice:
+     - targeted pytest for the touched code path
+     - a small cached guard pack covering the likely blast radius
+  5. either keep the win or record the elimination
+  6. only then widen further if the change is stacking with other kept wins or is about to become a commit/push candidate
+- Full curated canaries are not the default per-edit loop.
+  Use them when:
+  - you are preparing to commit/push a kept production win
+  - several narrow wins have accumulated and you need a fresh broad rerank
+  - a change plausibly affects multiple clip families and the guard pack is no longer representative
+  - you are validating a benchmark or triage-policy change rather than a single narrow production fix
+- For narrow production iteration, prefer this order by default:
+  1. focused target rerun
+  2. targeted unit slice
+  3. small cached guard pack
+  4. full curated canary only when necessary or explicitly useful
+- The guard pack is also a fail-fast step, not a fixed ceremony.
+  Early-terminate it when:
+  - the target clip clearly gives back the focused win
+  - a high-signal control in the expected blast radius regresses enough to disqualify the branch already
+  - the first few completed clips show the branch is attacking the wrong family
+- In other words:
+  - do not spend 20 to 40 minutes waiting for a guard pack to finish if the first meaningful results already say "not a win"
+  - save the partial artifact, record why it was disqualified, and go back to the narrow code path
 
 ## Say My Name: Forced Leading Overhang
 
