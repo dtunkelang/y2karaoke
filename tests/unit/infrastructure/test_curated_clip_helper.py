@@ -388,3 +388,53 @@ def test_main_reports_clean_stale_index_without_traceback(
 
     assert exc_info.value.code == 1
     assert captured.err == "curated_clip_helper: No stale curated gold entries found\n"
+
+
+def test_open_editor_url_uses_mac_open_for_google_chrome(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _which(name: str) -> str | None:
+        if name == "open":
+            return "/usr/bin/open"
+        return None
+
+    def _run(cmd: list[str], **kwargs: object) -> None:
+        captured["cmd"] = cmd
+
+    monkeypatch.setattr(_MODULE.shutil, "which", _which)
+    monkeypatch.setattr(_MODULE.subprocess, "run", _run)
+
+    _MODULE._open_editor_url("http://127.0.0.1:8765/?foo=bar")
+
+    assert captured["cmd"] == [
+        "/usr/bin/open",
+        "-a",
+        "Google Chrome",
+        "http://127.0.0.1:8765/?foo=bar",
+    ]
+
+
+def test_open_editor_url_falls_back_to_google_chrome_binary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def _which(name: str) -> str | None:
+        if name == "google-chrome":
+            return "/usr/bin/google-chrome"
+        return None
+
+    def _run(cmd: list[str], **kwargs: object) -> None:
+        captured["cmd"] = cmd
+
+    monkeypatch.setattr(_MODULE.shutil, "which", _which)
+    monkeypatch.setattr(_MODULE.subprocess, "run", _run)
+
+    _MODULE._open_editor_url("http://127.0.0.1:8765/?foo=bar")
+
+    assert captured["cmd"] == [
+        "google-chrome",
+        "http://127.0.0.1:8765/?foo=bar",
+    ]

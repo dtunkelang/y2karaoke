@@ -13,7 +13,6 @@ import subprocess
 import sys
 import time
 import urllib.request
-import webbrowser
 import wave
 from pathlib import Path
 from urllib.parse import urlencode, urlparse
@@ -422,6 +421,35 @@ def _ensure_editor_server() -> None:
     raise RuntimeError(f"Gold timing editor did not become ready on {host}:{port}")
 
 
+def _open_editor_url(url: str) -> None:
+    open_cmd = shutil.which("open")
+    if open_cmd is not None:
+        try:
+            subprocess.run(
+                [open_cmd, "-a", "Google Chrome", url],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return
+        except (OSError, subprocess.CalledProcessError):
+            pass
+
+    if shutil.which("google-chrome") is not None:
+        try:
+            subprocess.run(
+                ["google-chrome", url],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return
+        except (OSError, subprocess.CalledProcessError):
+            pass
+
+    raise RuntimeError("Unable to open Gold Timing Editor in Google Chrome")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--match", help="Substring match for artist/title/clip_id")
@@ -476,7 +504,7 @@ def main() -> int:
     )
     if args.open_editor:
         _ensure_editor_server()
-        webbrowser.open(url)
+        _open_editor_url(url)
     return 0
 
 

@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 import sys
 
-
 _MODULE_PATH = (
     Path(__file__).resolve().parents[3] / "tools" / "report_curated_gold_line_bounds.py"
 )
