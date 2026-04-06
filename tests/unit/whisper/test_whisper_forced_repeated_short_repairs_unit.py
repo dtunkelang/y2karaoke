@@ -67,3 +67,32 @@ def test_restore_leading_repeated_short_line_tails_skips_unsafe_gap() -> None:
 
     assert count == 0
     assert repaired[0].end_time == forced[0].end_time
+
+
+def test_restore_leading_repeated_suffix_tails_repairs_chandelier_shape() -> None:
+    baseline = [
+        _line(
+            "I'm gonna swing from the chandelier from the chandelier",
+            0.37,
+            8.15,
+        ),
+        _line("I'm gonna live like tomorrow doesn't exist", 8.66, 14.48),
+    ]
+    forced = [
+        _line(
+            "I'm gonna swing from the chandelier from the chandelier",
+            0.06,
+            5.45,
+        ),
+        _line("I'm gonna live like tomorrow doesn't exist", 8.43, 14.25),
+    ]
+
+    repaired, count = module.restore_leading_repeated_suffix_tails_from_baseline(
+        baseline,
+        forced,
+    )
+
+    assert count == 1
+    assert repaired[0].words[5].end_time == forced[0].words[5].end_time
+    assert repaired[0].words[6].start_time > forced[0].words[6].start_time
+    assert repaired[0].end_time == baseline[0].end_time

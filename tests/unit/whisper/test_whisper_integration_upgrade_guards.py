@@ -121,7 +121,7 @@ def test_should_accept_whisperx_upgrade_rejects_excessive_overlap():
         TranscriptionWord(text="b", start=5.0, end=5.2, probability=0.9),
     ]
     base_segments = [TranscriptionSegment(start=0.0, end=5.2, text="ab", words=[])]
-    upgraded_words = []
+    upgraded_words: list[witx._WhisperxWord] = []
     for i in range(120):
         if i == 0:
             start = 0.0
@@ -189,6 +189,114 @@ def test_should_accept_whisperx_upgrade_rejects_shorter_span():
     )
 
     assert accepted is False
+
+
+def test_should_accept_whisperx_upgrade_accepts_dense_short_clip_with_four_segments():
+    base_words = [
+        TranscriptionWord(text="a", start=0.0, end=0.3, probability=0.9),
+        TranscriptionWord(text="b", start=31.0, end=31.3, probability=0.9),
+    ]
+    base_segments = [
+        TranscriptionSegment(start=0.0, end=1.2, text="intro", words=[]),
+        TranscriptionSegment(start=30.0, end=31.3, text="tail", words=[]),
+    ]
+    upgraded_words = [
+        witx._WhisperxWord(
+            start=float(i) * 0.46,
+            end=float(i) * 0.46 + 0.18,
+            text=f"w{i}",
+            probability=0.9,
+        )
+        for i in range(68)
+    ]
+    upgraded_segments = [
+        witx._WhisperxSegment(
+            start=block[0].start,
+            end=block[-1].end,
+            text=f"s{idx}",
+            words=block,
+        )
+        for idx, block in enumerate(
+            [
+                upgraded_words[0:17],
+                upgraded_words[17:34],
+                upgraded_words[34:51],
+                upgraded_words[51:68],
+            ]
+        )
+    ]
+
+    accepted = witx._should_accept_whisperx_upgrade(
+        base_segments=base_segments,
+        base_words=base_words,
+        upgraded_segments=upgraded_segments,
+        upgraded_words=upgraded_words,
+        logger=wi.logger,
+    )
+
+    assert accepted is True
+
+
+def test_sparse_whisperx_upgrade_accepts_dense_short_clip_word_gain(monkeypatch):
+    base_segments = [
+        TranscriptionSegment(start=0.0, end=1.2, text="intro", words=[]),
+        TranscriptionSegment(start=30.0, end=31.3, text="tail", words=[]),
+    ]
+    base_words = [
+        TranscriptionWord(
+            text=f"b{i}", start=float(i), end=float(i) + 0.1, probability=0.9
+        )
+        for i in range(8)
+    ]
+    upgraded_words = [
+        witx._WhisperxWord(
+            start=float(i) * 0.46,
+            end=float(i) * 0.46 + 0.18,
+            text=f"w{i}",
+            probability=0.9,
+        )
+        for i in range(68)
+    ]
+    upgraded_segments = [
+        witx._WhisperxSegment(
+            start=block[0].start,
+            end=block[-1].end,
+            text=f"s{idx}",
+            words=block,
+        )
+        for idx, block in enumerate(
+            [
+                upgraded_words[0:17],
+                upgraded_words[17:34],
+                upgraded_words[34:51],
+                upgraded_words[51:68],
+            ]
+        )
+    ]
+
+    monkeypatch.setattr(
+        witx,
+        "_transcribe_with_whisperx",
+        lambda **_kwargs: (upgraded_segments, upgraded_words, "en"),
+    )
+
+    result, words, lang, upgraded = (
+        witx._maybe_upgrade_sparse_transcription_with_whisperx(
+            result=base_segments,
+            all_words=base_words,
+            detected_lang="en",
+            vocals_path="vocals.wav",
+            language=None,
+            model_size="large",
+            temperature=0.0,
+            logger=wi.logger,
+        )
+    )
+
+    assert upgraded is True
+    assert lang == "en"
+    assert len(result) == 4
+    assert len(words) == 68
 
 
 def test_normalize_whisperx_segments_enforces_monotonic_words():

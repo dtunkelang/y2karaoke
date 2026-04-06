@@ -92,6 +92,19 @@ def shift_line(line: models.Line, delta: float) -> models.Line:
     )
 
 
+def _nearest_onset_distance_for_time(
+    time_sec: float,
+    audio_features: timing_models.AudioFeatures | None,
+) -> float | None:
+    if (
+        audio_features is None
+        or audio_features.onset_times is None
+        or len(audio_features.onset_times) == 0
+    ):
+        return None
+    return float(min(abs(audio_features.onset_times - time_sec)))
+
+
 def _count_leading_light_tokens(normalized_tokens: List[str]) -> int:
     count = 0
     for token in normalized_tokens:
@@ -213,12 +226,14 @@ def restore_forced_leading_unmatched_prefix_starts_from_source(
     baseline_lines: List[models.Line],
     forced_lines: List[models.Line],
     whisper_words: List[timing_models.TranscriptionWord] | None,
+    audio_features: timing_models.AudioFeatures | None = None,
     *,
     min_word_count: int = 6,
     min_leading_unmatched_tokens: int = 3,
     min_start_gain_sec: float = 0.25,
     max_start_gain_sec: float = 0.7,
     max_anchor_delta_sec: float = 0.2,
+    min_onset_gain_sec: float = 0.04,
     lookback_sec: float = 0.25,
     lookahead_sec: float = 1.0,
 ) -> tuple[List[models.Line], int]:
@@ -256,6 +271,20 @@ def restore_forced_leading_unmatched_prefix_starts_from_source(
         if best_anchor_idx < min_leading_unmatched_tokens:
             continue
         if abs(baseline.start_time - best_anchor_start) > max_anchor_delta_sec:
+            continue
+        baseline_onset_distance = _nearest_onset_distance_for_time(
+            baseline.start_time,
+            audio_features,
+        )
+        forced_onset_distance = _nearest_onset_distance_for_time(
+            forced.start_time,
+            audio_features,
+        )
+        if (
+            baseline_onset_distance is not None
+            and forced_onset_distance is not None
+            and baseline_onset_distance + min_onset_gain_sec >= forced_onset_distance
+        ):
             continue
 
         repaired[idx] = _retime_line_to_window(

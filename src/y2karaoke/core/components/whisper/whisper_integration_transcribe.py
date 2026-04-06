@@ -215,7 +215,8 @@ def _maybe_upgrade_sparse_transcription_with_whisperx(
 
     wx_segments, wx_words, wx_lang = wx
     wx_segments, wx_words = _normalize_whisperx_segments(wx_segments)
-    if len(wx_words) < max(120, len(all_words) * 2):
+    min_word_count = max(48, len(all_words) * 6)
+    if len(wx_words) < min_word_count:
         return result, all_words, detected_lang, False
     if not _should_accept_whisperx_upgrade(
         base_segments=result,
@@ -297,7 +298,8 @@ def _should_accept_whisperx_upgrade(
         return False
     if p95 > 4.5 or median < 0.03 or short_ratio > 0.2:
         logger.debug(
-            "Rejected whisperx fallback: bad duration shape (median=%.3f, p95=%.3f, short_ratio=%.2f)",
+            "Rejected whisperx fallback: bad duration shape "
+            "(median=%.3f, p95=%.3f, short_ratio=%.2f)",
             median,
             p95,
             short_ratio,
@@ -308,17 +310,24 @@ def _should_accept_whisperx_upgrade(
     upgraded_end = max((float(w.end) for w in upgraded_words), default=0.0)
     if base_end > 0.0 and upgraded_end < base_end * 0.9:
         logger.debug(
-            "Rejected whisperx fallback: shorter transcript span (base=%.2f, upgraded=%.2f)",
+            "Rejected whisperx fallback: shorter transcript span "
+            "(base=%.2f, upgraded=%.2f)",
             base_end,
             upgraded_end,
         )
         return False
 
-    if len(upgraded_segments) < max(6, len(base_segments)):
+    min_segment_count = max(3, len(base_segments))
+    if len(upgraded_segments) < min_segment_count:
+        strong_dense_upgrade = len(upgraded_words) >= max(
+            48, len(base_words) * 6
+        ) and len(upgraded_segments) >= max(2, len(base_segments))
+        if strong_dense_upgrade:
+            return True
         logger.debug(
             "Rejected whisperx fallback: insufficient segment coverage (%d < %d)",
             len(upgraded_segments),
-            max(6, len(base_segments)),
+            min_segment_count,
         )
         return False
     return True
