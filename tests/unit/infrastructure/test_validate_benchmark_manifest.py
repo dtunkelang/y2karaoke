@@ -42,6 +42,7 @@ def test_validate_manifest_allows_duplicate_artist_title_when_clip_id_differs(tm
                 "    clip_tags:",
                 "      - control",
                 "    audio_start_sec: 0",
+                "    clip_duration_sec: 10",
                 "    notes: Intro control clip",
                 "  - artist: Artist",
                 "    title: Song",
@@ -54,6 +55,7 @@ def test_validate_manifest_allows_duplicate_artist_title_when_clip_id_differs(tm
                 "    clip_tags:",
                 "      - tail",
                 "    audio_start_sec: 90",
+                "    clip_duration_sec: 10",
                 "    notes: Outro stress clip",
             ]
         ),
@@ -83,6 +85,7 @@ def test_validate_manifest_rejects_duplicate_artist_title_same_clip_id(tmp_path)
                 "    clip_tags:",
                 "      - control",
                 "    audio_start_sec: 0",
+                "    clip_duration_sec: 10",
                 "    notes: Intro control clip",
                 "  - artist: Artist",
                 "    title: Song",
@@ -95,6 +98,7 @@ def test_validate_manifest_rejects_duplicate_artist_title_same_clip_id(tmp_path)
                 "    clip_tags:",
                 "      - control",
                 "    audio_start_sec: 90",
+                "    clip_duration_sec: 10",
                 "    notes: Duplicate intro clip",
             ]
         ),
@@ -126,6 +130,7 @@ def test_validate_manifest_allows_duplicate_youtube_id_when_clip_id_differs(tmp_
                 "    clip_tags:",
                 "      - control",
                 "    audio_start_sec: 0",
+                "    clip_duration_sec: 10",
                 "    notes: Intro control clip",
                 "  - artist: Artist",
                 "    title: Song",
@@ -138,6 +143,7 @@ def test_validate_manifest_allows_duplicate_youtube_id_when_clip_id_differs(tmp_
                 "    clip_tags:",
                 "      - tail",
                 "    audio_start_sec: 90",
+                "    clip_duration_sec: 10",
                 "    notes: Outro stress clip",
             ]
         ),
@@ -167,6 +173,7 @@ def test_validate_manifest_rejects_duplicate_youtube_id_same_clip_id(tmp_path):
                 "    clip_tags:",
                 "      - control",
                 "    audio_start_sec: 0",
+                "    clip_duration_sec: 10",
                 "    notes: Intro control clip",
                 "  - artist: Artist",
                 "    title: Song B",
@@ -179,6 +186,7 @@ def test_validate_manifest_rejects_duplicate_youtube_id_same_clip_id(tmp_path):
                 "    clip_tags:",
                 "      - control",
                 "    audio_start_sec: 90",
+                "    clip_duration_sec: 10",
                 "    notes: Duplicate intro clip",
             ]
         ),
@@ -210,6 +218,7 @@ def test_validate_manifest_rejects_negative_audio_start_sec(tmp_path):
                 "    clip_tags:",
                 "      - control",
                 "    audio_start_sec: -1",
+                "    clip_duration_sec: 10",
                 "    notes: Invalid intro clip",
             ]
         ),
@@ -271,6 +280,7 @@ def test_validate_manifest_requires_clip_tags_for_clip_entries(tmp_path):
                 "    lrc_duration_tolerance_sec: 30",
                 "    clip_id: intro",
                 "    audio_start_sec: 0",
+                "    clip_duration_sec: 10",
                 "    notes: Intro clip",
             ]
         ),
@@ -303,6 +313,7 @@ def test_validate_manifest_rejects_duplicate_clip_tags(tmp_path):
                 "      - control",
                 "      - Control",
                 "    audio_start_sec: 0",
+                "    clip_duration_sec: 10",
                 "    notes: Intro clip",
             ]
         ),
@@ -312,3 +323,34 @@ def test_validate_manifest_rejects_duplicate_clip_tags(tmp_path):
     errors = module.validate_manifest(manifest)
 
     assert "songs[0].clip_tags must not contain duplicates" in errors
+
+
+def test_validate_manifest_requires_clip_duration_for_clip_entries(tmp_path):
+    module = _load_module()
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text(
+        "\n".join(
+            [
+                "version: 1",
+                "name: Clip Pack",
+                "songs:",
+                "  - artist: Artist",
+                "    title: Song",
+                "    youtube_id: abcdefghijk",
+                "    youtube_url: https://www.youtube.com/watch?v=abcdefghijk",
+                "    preferred_lyrics_provider: lyriq",
+                "    fallback_lyrics_provider: syncedlyrics",
+                "    lrc_duration_tolerance_sec: 30",
+                "    clip_id: intro",
+                "    clip_tags:",
+                "      - control",
+                "    audio_start_sec: 0",
+                "    notes: Intro clip",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    errors = module.validate_manifest(manifest)
+
+    assert "songs[0].clip_duration_sec is required for clip entries" in errors

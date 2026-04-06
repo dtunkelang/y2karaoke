@@ -16,11 +16,42 @@ YOUTUBE_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 VALID_PROVIDERS = {"lyriq", "syncedlyrics"}
 
 
-def _validate_song(song: Any, index: int) -> list[str]:
-    errors: list[str] = []
-    if not isinstance(song, dict):
-        return [f"songs[{index}] must be a mapping"]
+def _append_if_invalid(
+    errors: list[str],
+    *,
+    valid: bool,
+    message: str,
+) -> None:
+    if not valid:
+        errors.append(message)
 
+
+def _append_numeric_range_error(
+    errors: list[str],
+    *,
+    value: Any,
+    index: int,
+    field: str,
+    min_value: float | None = None,
+    max_value: float | None = None,
+    inclusive_min: bool = True,
+) -> None:
+    if not isinstance(value, (int, float)):
+        errors.append(f"songs[{index}].{field} must be numeric")
+        return
+    value_f = float(value)
+    if min_value is not None:
+        if inclusive_min and value_f < min_value:
+            errors.append(f"songs[{index}].{field} must be >= {min_value:g}")
+            return
+        if not inclusive_min and value_f <= min_value:
+            errors.append(f"songs[{index}].{field} must be > {min_value:g}")
+            return
+    if max_value is not None and value_f > max_value:
+        errors.append(f"songs[{index}].{field} must be <= {max_value:g}")
+
+
+def _validate_required_keys(song: dict[str, Any], index: int) -> list[str]:
     required = [
         "artist",
         "title",
@@ -32,19 +63,31 @@ def _validate_song(song: Any, index: int) -> list[str]:
     ]
     missing = [key for key in required if key not in song]
     if missing:
-        errors.append(f"songs[{index}] missing required keys: {', '.join(missing)}")
-        return errors
+        return [f"songs[{index}] missing required keys: {', '.join(missing)}"]
+    return []
 
+
+def _validate_core_fields(song: dict[str, Any], index: int) -> list[str]:
+    errors: list[str] = []
     artist = song["artist"]
     title = song["title"]
-    if not isinstance(artist, str) or not artist.strip():
-        errors.append(f"songs[{index}].artist must be a non-empty string")
-    if not isinstance(title, str) or not title.strip():
-        errors.append(f"songs[{index}].title must be a non-empty string")
+    _append_if_invalid(
+        errors,
+        valid=isinstance(artist, str) and bool(artist.strip()),
+        message=f"songs[{index}].artist must be a non-empty string",
+    )
+    _append_if_invalid(
+        errors,
+        valid=isinstance(title, str) and bool(title.strip()),
+        message=f"songs[{index}].title must be a non-empty string",
+    )
 
     youtube_id = song["youtube_id"]
-    if not isinstance(youtube_id, str) or not YOUTUBE_ID_RE.match(youtube_id):
-        errors.append(f"songs[{index}].youtube_id must be an 11-char YouTube ID")
+    _append_if_invalid(
+        errors,
+        valid=isinstance(youtube_id, str) and bool(YOUTUBE_ID_RE.match(youtube_id)),
+        message=f"songs[{index}].youtube_id must be an 11-char YouTube ID",
+    )
 
     youtube_url = song["youtube_url"]
     if not isinstance(youtube_url, str) or "youtube.com/watch?v=" not in youtube_url:
@@ -58,11 +101,13 @@ def _validate_song(song: Any, index: int) -> list[str]:
     fallback = song["fallback_lyrics_provider"]
     if preferred not in VALID_PROVIDERS:
         errors.append(
-            f"songs[{index}].preferred_lyrics_provider must be one of {sorted(VALID_PROVIDERS)}"
+            "songs[{index}].preferred_lyrics_provider must be one of "
+            f"{sorted(VALID_PROVIDERS)}"
         )
     if fallback not in VALID_PROVIDERS:
         errors.append(
-            f"songs[{index}].fallback_lyrics_provider must be one of {sorted(VALID_PROVIDERS)}"
+            "songs[{index}].fallback_lyrics_provider must be one of "
+            f"{sorted(VALID_PROVIDERS)}"
         )
     if preferred == fallback:
         errors.append(f"songs[{index}] preferred and fallback providers must differ")
@@ -75,8 +120,11 @@ def _validate_song(song: Any, index: int) -> list[str]:
             f"songs[{index}].lrc_duration_tolerance_sec must be between 1 and 180"
         )
 
-    if "notes" in song and not isinstance(song["notes"], str):
-        errors.append(f"songs[{index}].notes must be a string when present")
+    return errors
+
+
+def _validate_clip_fields(song: dict[str, Any], index: int) -> tuple[list[str], bool]:
+    errors: list[str] = []
     if "clip_id" in song:
         clip_id = song["clip_id"]
         if clip_id is not None and (
@@ -86,19 +134,59 @@ def _validate_song(song: Any, index: int) -> list[str]:
     clip_id = song.get("clip_id")
     is_clip_entry = isinstance(clip_id, str) and bool(clip_id.strip())
     if "audio_start_sec" in song:
-        audio_start_sec = song["audio_start_sec"]
-        if not isinstance(audio_start_sec, (int, float)):
-            errors.append(f"songs[{index}].audio_start_sec must be numeric")
-        elif float(audio_start_sec) < 0.0:
-            errors.append(f"songs[{index}].audio_start_sec must be >= 0")
+        _append_numeric_range_error(
+            errors,
+            value=song["audio_start_sec"],
+            index=index,
+            field="audio_start_sec",
+            min_value=0.0,
+        )
     elif is_clip_entry:
         errors.append(f"songs[{index}].audio_start_sec is required for clip entries")
     if "clip_duration_sec" in song:
-        clip_duration_sec = song["clip_duration_sec"]
-        if not isinstance(clip_duration_sec, (int, float)):
-            errors.append(f"songs[{index}].clip_duration_sec must be numeric")
-        elif float(clip_duration_sec) <= 0.0:
-            errors.append(f"songs[{index}].clip_duration_sec must be > 0")
+        _append_numeric_range_error(
+            errors,
+            value=song["clip_duration_sec"],
+            index=index,
+            field="clip_duration_sec",
+            min_value=0.0,
+            inclusive_min=False,
+        )
+    elif is_clip_entry:
+        errors.append(f"songs[{index}].clip_duration_sec is required for clip entries")
+    return errors, is_clip_entry
+
+
+def _validate_clip_tags(
+    clip_tags: Any,
+    *,
+    index: int,
+) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(clip_tags, list) or not clip_tags:
+        return [f"songs[{index}].clip_tags must be a non-empty list when present"]
+    normalized_tags: set[str] = set()
+    for tag_idx, tag in enumerate(clip_tags):
+        if not isinstance(tag, str) or not tag.strip():
+            errors.append(
+                f"songs[{index}].clip_tags[{tag_idx}] must be a non-empty string"
+            )
+            continue
+        normalized_tags.add(tag.strip().lower())
+    if len(normalized_tags) != len(clip_tags):
+        errors.append(f"songs[{index}].clip_tags must not contain duplicates")
+    return errors
+
+
+def _validate_optional_fields(
+    song: dict[str, Any],
+    index: int,
+    *,
+    is_clip_entry: bool,
+) -> list[str]:
+    errors: list[str] = []
+    if "notes" in song and not isinstance(song["notes"], str):
+        errors.append(f"songs[{index}].notes must be a string when present")
     if "lyrics_file" in song:
         lyrics_file = song["lyrics_file"]
         if lyrics_file is not None and (
@@ -106,26 +194,26 @@ def _validate_song(song: Any, index: int) -> list[str]:
         ):
             errors.append(f"songs[{index}].lyrics_file must be a non-empty string")
     if "clip_tags" in song:
-        clip_tags = song["clip_tags"]
-        if not isinstance(clip_tags, list) or not clip_tags:
-            errors.append(
-                f"songs[{index}].clip_tags must be a non-empty list when present"
-            )
-        else:
-            normalized_tags: set[str] = set()
-            for tag_idx, tag in enumerate(clip_tags):
-                if not isinstance(tag, str) or not tag.strip():
-                    errors.append(
-                        f"songs[{index}].clip_tags[{tag_idx}] must be a non-empty string"
-                    )
-                    continue
-                normalized_tags.add(tag.strip().lower())
-            if len(normalized_tags) != len(clip_tags):
-                errors.append(f"songs[{index}].clip_tags must not contain duplicates")
+        errors.extend(_validate_clip_tags(song["clip_tags"], index=index))
     elif is_clip_entry:
         errors.append(f"songs[{index}].clip_tags are required for clip entries")
     if is_clip_entry and not isinstance(song.get("notes"), str):
         errors.append(f"songs[{index}].notes are required for clip entries")
+    return errors
+
+
+def _validate_song(song: Any, index: int) -> list[str]:
+    if not isinstance(song, dict):
+        return [f"songs[{index}] must be a mapping"]
+
+    errors = _validate_required_keys(song, index)
+    if errors:
+        return errors
+
+    errors.extend(_validate_core_fields(song, index))
+    clip_errors, is_clip_entry = _validate_clip_fields(song, index)
+    errors.extend(clip_errors)
+    errors.extend(_validate_optional_fields(song, index, is_clip_entry=is_clip_entry))
 
     return errors
 
@@ -183,7 +271,8 @@ def _validate_uniqueness(songs: list[Any]) -> list[str]:
             track_key = (artist.strip().lower(), title.strip().lower(), clip_key)
             if track_key in seen_tracks:
                 errors.append(
-                    f"Duplicate artist/title[/clip_id] at songs[{idx}]: {artist} - {title}"
+                    "Duplicate artist/title[/clip_id] at "
+                    f"songs[{idx}]: {artist} - {title}"
                 )
             seen_tracks.add(track_key)
     return errors
