@@ -11,8 +11,19 @@ from ...models import Word, Line, SongMetadata
 from ...romanization import romanize_line
 from .lyrics_clip_layout_helpers import (
     adjust_repetitive_compact_layout as _adjust_repetitive_compact_layout,
+    apply_short_setup_repeated_hook_layout as _apply_short_setup_repeated_hook_layout,
     apply_special_plain_text_layout as _apply_special_plain_text_layout,
+    is_alternating_hook_chorus_clip as _is_alternating_hook_chorus_clip,
+    is_dominant_repetition_run_clip as _is_dominant_repetition_run_clip,
+    is_four_line_late_tail_chorus_clip as _is_four_line_late_tail_chorus_clip,
+    is_four_line_staggered_chorus_clip as _is_four_line_staggered_chorus_clip,
+    is_repeated_five_line_chorus_clip as _is_repeated_five_line_chorus_clip,
+    is_seven_line_repeated_hook_bridge_clip as _is_seven_line_repeated_hook_bridge_clip,
+    is_short_setup_repeated_hook_clip as _is_short_setup_repeated_hook_clip,
     is_short_title_chorus_clip as _is_short_title_chorus_clip,
+    is_staggered_compact_hook_clip as _is_staggered_compact_hook_clip,
+    is_three_line_call_response_clip as _is_three_line_call_response_clip,
+    is_three_line_subset_hook_clip as _is_three_line_subset_hook_clip,
     line_tokens_for_weight as _line_tokens_for_weight,
 )
 from .lyrics_clip_mixed_density_helpers import (
@@ -20,11 +31,153 @@ from .lyrics_clip_mixed_density_helpers import (
     is_mixed_density_chorus_clip as _is_mixed_density_chorus_clip_impl,
 )
 from .lrc import (
-    parse_lrc_with_timing,
     create_lines_from_lrc,
     create_lines_from_lrc_timings,
+    parse_lrc_with_timing,
     uncensor_lyrics_text,
 )
+
+
+def _plain_text_layout_shape_flags(
+    *,
+    populated_lines: List[Line],
+    duration: float,
+) -> dict[str, bool]:
+    return {
+        "short_title_chorus_clip": _is_short_title_chorus_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "four_line_staggered_chorus_clip": _is_four_line_staggered_chorus_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "four_line_late_tail_chorus_clip": _is_four_line_late_tail_chorus_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "alternating_hook_chorus_clip": _is_alternating_hook_chorus_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "repeated_five_line_chorus_clip": _is_repeated_five_line_chorus_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "seven_line_repeated_hook_bridge_clip": (
+            _is_seven_line_repeated_hook_bridge_clip(
+                populated_lines=populated_lines,
+                duration=duration,
+            )
+        ),
+        "staggered_compact_hook_clip": _is_staggered_compact_hook_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "three_line_call_response_clip": _is_three_line_call_response_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "three_line_subset_hook_clip": _is_three_line_subset_hook_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "short_setup_repeated_hook_clip": _is_short_setup_repeated_hook_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+        "dominant_repetition_run_clip": _is_dominant_repetition_run_clip(
+            populated_lines=populated_lines,
+            duration=duration,
+        ),
+    }
+
+
+def _apply_special_plain_text_layout_if_any(
+    *,
+    lines: List[Line],
+    populated_lines: List[Line],
+    duration: float,
+    dense_short_verse_clip: bool,
+    layout_flags: dict[str, bool],
+) -> List[Line] | None:
+    return _apply_special_plain_text_layout(
+        lines=lines,
+        populated_lines=populated_lines,
+        duration=duration,
+        short_title_chorus_clip=layout_flags["short_title_chorus_clip"],
+        four_line_staggered_chorus_clip=layout_flags["four_line_staggered_chorus_clip"],
+        four_line_late_tail_chorus_clip=layout_flags["four_line_late_tail_chorus_clip"],
+        alternating_hook_chorus_clip=layout_flags["alternating_hook_chorus_clip"],
+        repeated_five_line_chorus_clip=layout_flags["repeated_five_line_chorus_clip"],
+        seven_line_repeated_hook_bridge_clip=layout_flags[
+            "seven_line_repeated_hook_bridge_clip"
+        ],
+        staggered_compact_hook_clip=layout_flags["staggered_compact_hook_clip"],
+        three_line_call_response_clip=layout_flags["three_line_call_response_clip"],
+        three_line_subset_hook_clip=layout_flags["three_line_subset_hook_clip"],
+        short_setup_repeated_hook_clip=layout_flags["short_setup_repeated_hook_clip"],
+        dense_short_verse_clip=dense_short_verse_clip,
+        estimate_singing_duration_fn=_estimate_singing_duration,
+        apply_weighted_line_layout_fn=_apply_weighted_line_layout,
+    )
+
+
+def _apply_anchor_specific_plain_text_layout(
+    *,
+    lines: List[Line],
+    populated_lines: List[Line],
+    duration: float,
+    anchor_start: float,
+    desired_end: float,
+    layout_flags: dict[str, bool],
+) -> List[Line] | None:
+    anchor_special_flags = {
+        **layout_flags,
+        "short_title_chorus_clip": False,
+        "short_setup_repeated_hook_clip": False,
+        "dominant_repetition_run_clip": False,
+    }
+    special_layout = _apply_special_plain_text_layout_if_any(
+        lines=lines,
+        populated_lines=populated_lines,
+        duration=duration,
+        dense_short_verse_clip=False,
+        layout_flags=anchor_special_flags,
+    )
+    if special_layout is not None:
+        return special_layout
+    if layout_flags["short_setup_repeated_hook_clip"]:
+        return _apply_short_setup_repeated_hook_layout(
+            lines=lines,
+            populated_lines=populated_lines,
+            anchor_start=anchor_start,
+            desired_end=desired_end,
+            apply_weighted_line_layout_fn=_apply_weighted_line_layout,
+        )
+    return None
+
+
+def _special_plain_text_or_spread(
+    *,
+    lines: List[Line],
+    populated_lines: List[Line],
+    duration: float,
+    target_duration: float,
+    dense_short_verse_clip: bool,
+    layout_flags: dict[str, bool],
+) -> List[Line]:
+    special_layout = _apply_special_plain_text_layout_if_any(
+        lines=lines,
+        populated_lines=populated_lines,
+        duration=duration,
+        dense_short_verse_clip=dense_short_verse_clip,
+        layout_flags=layout_flags,
+    )
+    if special_layout is not None:
+        return special_layout
+    return _spread_lines_across_target_duration(lines, target_duration)
+
 
 logger = logging.getLogger(__name__)
 
@@ -379,50 +532,58 @@ def _anchor_plain_text_lines_to_audio_window(
         compact_short_clip_word_threshold=compact_short_clip_word_threshold,
         compact_short_clip_line_count=compact_short_clip_line_count,
         compact_short_clip_duration_sec=compact_short_clip_duration_sec,
-        dense_short_verse_min_avg_words_per_line=dense_short_verse_min_avg_words_per_line,
+        dense_short_verse_min_avg_words_per_line=(
+            dense_short_verse_min_avg_words_per_line
+        ),
         dense_short_verse_max_lines=dense_short_verse_max_lines,
         dense_short_verse_max_duration_sec=dense_short_verse_max_duration_sec,
-        sparse_sustained_clip_min_duration_sec=sparse_sustained_clip_min_duration_sec,
+        sparse_sustained_clip_min_duration_sec=(sparse_sustained_clip_min_duration_sec),
         sparse_sustained_clip_max_lines=sparse_sustained_clip_max_lines,
-        sparse_sustained_clip_max_words_per_line=sparse_sustained_clip_max_words_per_line,
-        sparse_sustained_clip_min_avg_words_per_line=sparse_sustained_clip_min_avg_words_per_line,
-        sparse_sustained_clip_max_avg_words_per_line=sparse_sustained_clip_max_avg_words_per_line,
-        short_phrase_sustained_clip_min_duration_sec=short_phrase_sustained_clip_min_duration_sec,
+        sparse_sustained_clip_max_words_per_line=(
+            sparse_sustained_clip_max_words_per_line
+        ),
+        sparse_sustained_clip_min_avg_words_per_line=(
+            sparse_sustained_clip_min_avg_words_per_line
+        ),
+        sparse_sustained_clip_max_avg_words_per_line=(
+            sparse_sustained_clip_max_avg_words_per_line
+        ),
+        short_phrase_sustained_clip_min_duration_sec=(
+            short_phrase_sustained_clip_min_duration_sec
+        ),
         short_phrase_sustained_clip_max_lines=short_phrase_sustained_clip_max_lines,
-        short_phrase_sustained_clip_max_avg_words_per_line=short_phrase_sustained_clip_max_avg_words_per_line,
-        mixed_density_chorus_clip_min_duration_sec=mixed_density_chorus_clip_min_duration_sec,
+        short_phrase_sustained_clip_max_avg_words_per_line=(
+            short_phrase_sustained_clip_max_avg_words_per_line
+        ),
+        mixed_density_chorus_clip_min_duration_sec=(
+            mixed_density_chorus_clip_min_duration_sec
+        ),
         mixed_density_chorus_clip_min_lines=mixed_density_chorus_clip_min_lines,
     )
-    short_title_chorus_clip = _is_short_title_chorus_clip(
+    layout_flags = _plain_text_layout_shape_flags(
         populated_lines=populated_lines,
         duration=duration,
     )
     if not vocals_path:
-        special_layout = _apply_special_plain_text_layout(
+        return _special_plain_text_or_spread(
             lines=lines,
             populated_lines=populated_lines,
             duration=duration,
-            short_title_chorus_clip=short_title_chorus_clip,
+            target_duration=target_duration,
             dense_short_verse_clip=dense_short_verse_clip,
-            estimate_singing_duration_fn=_estimate_singing_duration,
-            apply_weighted_line_layout_fn=_apply_weighted_line_layout,
+            layout_flags=layout_flags,
         )
-        if special_layout is not None:
-            return special_layout
-        return _spread_lines_across_target_duration(lines, target_duration)
 
     from ..alignment.alignment import detect_song_start
 
     detected_start = float(detect_song_start(vocals_path))
     if detected_start < float(min_detectable_start_sec):
-        special_layout = _apply_special_plain_text_layout(
+        special_layout = _apply_special_plain_text_layout_if_any(
             lines=lines,
             populated_lines=populated_lines,
             duration=duration,
-            short_title_chorus_clip=short_title_chorus_clip,
             dense_short_verse_clip=dense_short_verse_clip,
-            estimate_singing_duration_fn=_estimate_singing_duration,
-            apply_weighted_line_layout_fn=_apply_weighted_line_layout,
+            layout_flags=layout_flags,
         )
         if special_layout is not None:
             return special_layout
@@ -440,17 +601,37 @@ def _anchor_plain_text_lines_to_audio_window(
         sparse_sustained_clip_anchor_ratio=sparse_sustained_clip_anchor_ratio,
         trailing_padding_sec=trailing_padding_sec,
         repetitive_compact_clip=repetitive_compact_clip,
-        repetitive_compact_clip_trailing_padding_sec=repetitive_compact_clip_trailing_padding_sec,
-        compact_short_clip_trailing_padding_sec=compact_short_clip_trailing_padding_sec,
-        sparse_sustained_clip_trailing_padding_sec=sparse_sustained_clip_trailing_padding_sec,
+        dominant_repetition_run_clip=layout_flags["dominant_repetition_run_clip"],
+        repetitive_compact_clip_trailing_padding_sec=(
+            repetitive_compact_clip_trailing_padding_sec
+        ),
+        compact_short_clip_trailing_padding_sec=(
+            compact_short_clip_trailing_padding_sec
+        ),
+        sparse_sustained_clip_trailing_padding_sec=(
+            sparse_sustained_clip_trailing_padding_sec
+        ),
         mixed_density_chorus_clip=mixed_density_chorus_clip,
         mixed_density_chorus_clip_anchor_ratio=mixed_density_chorus_clip_anchor_ratio,
-        mixed_density_chorus_clip_trailing_padding_sec=mixed_density_chorus_clip_trailing_padding_sec,
+        mixed_density_chorus_clip_trailing_padding_sec=(
+            mixed_density_chorus_clip_trailing_padding_sec
+        ),
     )
     desired_end = max(anchor_start, duration - trailing_padding)
     available_span = desired_end - anchor_start
     if available_span <= 0.0:
         return lines
+
+    special_anchor_layout = _apply_anchor_specific_plain_text_layout(
+        lines=lines,
+        populated_lines=populated_lines,
+        duration=duration,
+        anchor_start=anchor_start,
+        desired_end=desired_end,
+        layout_flags=layout_flags,
+    )
+    if special_anchor_layout is not None:
+        return special_anchor_layout
 
     if (
         average_words_per_line > compact_line_word_threshold
@@ -458,7 +639,7 @@ def _anchor_plain_text_lines_to_audio_window(
         and not dense_short_verse_clip
         and not two_line_subset_refrain_clip
         and not mixed_density_chorus_clip
-        and not short_title_chorus_clip
+        and not layout_flags["short_title_chorus_clip"]
     ):
         return _scale_dense_plain_text_lines(
             lines=lines,
@@ -579,6 +760,7 @@ def _resolve_plain_text_clip_anchor(
     sparse_sustained_clip_anchor_ratio: float,
     trailing_padding_sec: float,
     repetitive_compact_clip: bool,
+    dominant_repetition_run_clip: bool,
     repetitive_compact_clip_trailing_padding_sec: float,
     compact_short_clip_trailing_padding_sec: float,
     sparse_sustained_clip_trailing_padding_sec: float,
@@ -606,6 +788,8 @@ def _resolve_plain_text_clip_anchor(
             trailing_padding,
             float(repetitive_compact_clip_trailing_padding_sec),
         )
+        if dominant_repetition_run_clip:
+            trailing_padding = min(trailing_padding, 0.0)
     elif compact_short_clip:
         trailing_padding = min(
             trailing_padding,
@@ -869,7 +1053,9 @@ def _detect_and_apply_offset(
         offset = lyrics_offset
     elif abs(delta) > 2.5 and abs(delta) <= AUTO_OFFSET_MAX_ABS_SEC:
         logger.warning(
-            f"Detected vocal offset ({delta:+.2f}s) matches suspicious range (2.5-5.0s) - NOT auto-applying."
+            "Detected vocal offset "
+            f"({delta:+.2f}s) matches suspicious range (2.5-5.0s) "
+            "- NOT auto-applying."
         )
     elif abs(delta) > 0.3 and abs(delta) <= 2.5:
         scale = 0.6 if used_alternate_anchor else 1.0

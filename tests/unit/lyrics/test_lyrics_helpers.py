@@ -253,9 +253,11 @@ def test_anchor_plain_text_lines_to_audio_window_shifts_to_detected_onset(monkey
 
     lh._anchor_plain_text_lines_to_audio_window(lines, 10.0, "vocals.wav")
 
-    assert lines[0].start_time == pytest.approx(2.4, abs=0.05)
-    assert lines[1].start_time > 3.5
-    assert lines[-1].start_time > 7.0
+    assert lines[0].start_time == pytest.approx(2.6, abs=0.05)
+    assert 4.45 < lines[1].start_time < 4.65
+    assert 6.2 < lines[2].start_time < 6.4
+    assert lines[-1].start_time > 8.35
+    assert lines[-1].end_time > 9.7
 
 
 def test_anchor_plain_text_lines_to_audio_window_keeps_early_onset(monkeypatch):
@@ -299,6 +301,34 @@ def test_anchor_plain_text_lines_to_audio_window_stretches_repetitive_compact_ho
     assert lines[-1].end_time > 14.5
 
 
+def test_anchor_plain_text_lines_to_audio_window_extends_dominant_repetition_run_tail(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Guess who's back, back again?",
+            "Shady's back, tell a friend",
+            "Guess who's back? Guess who's back?",
+            "Guess who's back? Guess who's back?",
+            "Guess who's back? Guess who's back?",
+            "Guess who's back?",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 1.045,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 15.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(1.045, abs=0.05)
+    assert lines[2].end_time > 10.0
+    assert lines[3].start_time > 10.0
+    assert lines[4].end_time > 13.0
+    assert lines[-1].start_time > 13.45
+    assert lines[-1].end_time > 14.9
+
+
 def test_anchor_plain_text_lines_to_audio_window_rebalances_dense_short_verse(
     monkeypatch,
 ):
@@ -323,6 +353,32 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_dense_short_verse(
     assert 4.35 < lines[2].start_time < 4.5
     assert 5.3 < lines[-1].start_time < 5.45
     assert lines[-1].end_time > 7.9
+
+
+def test_anchor_plain_text_lines_to_audio_window_rebalances_short_setup_repeated_hook(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "I gotta feeling",
+            "That tonight's gonna be a good night",
+            "That tonight's gonna be a good night",
+            "That tonight's gonna be a good, good night",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 1.115,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 16.25, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(1.115, abs=0.05)
+    assert 2.55 < lines[0].end_time < 2.75
+    assert 4.7 < lines[1].start_time < 5.05
+    assert 8.2 < lines[2].start_time < 8.75
+    assert 11.65 < lines[3].start_time < 12.4
+    assert lines[-1].end_time > 15.35
 
 
 def test_anchor_plain_text_lines_to_audio_window_spreads_sparse_sustained_clip(
@@ -412,6 +468,56 @@ def test_anchor_plain_text_lines_to_audio_window_rebalances_three_line_intro(
     assert 13.65 < lines[1].end_time < 13.85
     assert lines[2].start_time > 29.1
     assert lines[2].end_time > 31.6
+
+
+def test_anchor_plain_text_lines_to_audio_window_rebalances_three_line_subset_hook(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "You used to call me on my cell phone",
+            "Late night when you need my love",
+            "Call me on my cell phone",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.766,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 11.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(0.766, abs=0.05)
+    assert 4.05 < lines[0].end_time < 4.2
+    assert 5.15 < lines[1].start_time < 5.3
+    assert 7.7 < lines[1].end_time < 7.9
+    assert 8.5 < lines[2].start_time < 8.6
+    assert lines[2].end_time > 10.85
+
+
+def test_anchor_plain_text_lines_to_audio_window_rebalances_three_line_call_response(
+    monkeypatch,
+):
+    lines = lh._create_lines_from_plain_text(
+        [
+            "Shout, shout",
+            "Let it all out",
+            "These are the things I can do without",
+        ]
+    )
+    monkeypatch.setattr(
+        "y2karaoke.core.components.alignment.alignment.detect_song_start",
+        lambda *_: 0.736,
+    )
+
+    lh._anchor_plain_text_lines_to_audio_window(lines, 10.0, "vocals.wav")
+
+    assert lines[0].start_time == pytest.approx(0.736, abs=0.05)
+    assert 2.35 < lines[0].end_time < 2.6
+    assert 3.55 < lines[1].start_time < 3.75
+    assert 5.1 < lines[1].end_time < 5.3
+    assert 5.9 < lines[2].start_time < 6.05
+    assert lines[2].end_time > 9.85
 
 
 def test_anchor_plain_text_lines_to_audio_window_rebalances_mixed_density_chorus_clip(
